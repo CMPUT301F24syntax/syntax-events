@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Syntax Event Lottery</string>
+    <string name="login_as">Login As</string>
 </resources>
