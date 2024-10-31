@@ -39,7 +39,5 @@ public class MainActivity extends AppCompatActivity {
         Button organizer_login_btn = findViewById(R.id.organizer_login_btn);
         Button admin_login_btn = findViewById(R.id.admin_login_btn);
 
-
     }
-
 }
