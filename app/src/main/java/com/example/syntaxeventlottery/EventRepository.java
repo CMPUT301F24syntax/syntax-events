@@ -24,7 +24,9 @@ public class EventRepository {
     public EventRepository() {
         this.db = FirebaseFirestore.getInstance();
         this.eventsRef = db.collection("Events");
+        eventsDataList = new ArrayList<>();
     }
+
 
     // get real time updates of Events List, call everytime there is a change to the db
     public void updateEvents() {
@@ -49,7 +51,17 @@ public class EventRepository {
     public void addEventToRepo(Event event) {
         // add event to local list
         eventsDataList.add(event);
-        HashMap<String, Users, >
+        // add event to Firestore collection
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("eventID", event.getEventID());
+        data.put("qrCode", event.getQrCode());
+        data.put("organizer", event.getOrganizer());
+        data.put("facility", event.getFacility());
+        data.put("startDate", event.getStartDate());
+        data.put("endDate", event.getEndDate());
+        data.put("capacity", event.getCapacity());
+        eventsRef.document(event.getEventID()).set(data);
+        Log.d("Firestore Events", "event added");
     }
 
 }
