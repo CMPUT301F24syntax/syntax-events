@@ -2,15 +2,19 @@ package com.example.syntaxeventlottery;
 
 import com.google.firebase.firestore.auth.User;
 
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.UUID;
 
 public class Event {
 
     private String eventID;
     private String qrCode;
     private Users organizer;
-    private Facility facility;
+    private String facility;
     private Date startDate;
     private Date endDate;
     private int capacity;
@@ -18,10 +22,10 @@ public class Event {
     private boolean isDrawed; // if lottery draw has taken place
     private ArrayList<Users> waitingList;
     private ArrayList<Users> selectedList;
+    private String Poster;
 
-    public Event(String eventID, Users organizer, Facility facility, Date startDate, Date endDate, int capacity) {
-        this.eventID = eventID;
-        this.
+    public Event(Users organizer, String facility, Date startDate, Date endDate, int capacity) {
+        this.qrCode = null;
         this.organizer = organizer;
         this.facility = facility;
         this.startDate = startDate;
@@ -39,11 +43,11 @@ public class Event {
         this.qrCode = qrCode;
     }
 
-    public int getEventID() {
+    public String getEventID() {
         return eventID;
     }
 
-    public void setEventID(int eventID) {
+    public void setEventID(String eventID) {
         this.eventID = eventID;
     }
 
@@ -55,11 +59,11 @@ public class Event {
         this.organizer = organizer;
     }
 
-    public Facility getFacility() {
+    public String getFacility() {
         return facility;
     }
 
-    public void setFacility(Facility facility) {
+    public void setFacility(String facility) {
         this.facility = facility;
     }
 
@@ -117,5 +121,27 @@ public class Event {
 
     public void setSelectedList(ArrayList<Users> selectedList) {
         this.selectedList = selectedList;
+    }
+    public String GetPoster(){return Poster;}
+
+    public void setPoster(String Poster){this.Poster = Poster;}
+    public void EventIdGenerator(String UserId){
+        if (this.eventID == null){
+            LocalDateTime now = null;
+            String formattedDateTime = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                now = LocalDateTime.now();
+            }
+
+            // Custom format
+            DateTimeFormatter formatter = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            }
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                formattedDateTime = now.format(formatter);
+            }
+            this.eventID = formattedDateTime + "||" + UserId;
+        }
     }
 }
