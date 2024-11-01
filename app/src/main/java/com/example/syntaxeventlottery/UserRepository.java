@@ -3,7 +3,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import android.net.Uri;
-import android.util.Log;
 
 public class UserRepository {
 
@@ -21,7 +20,7 @@ public class UserRepository {
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        Users user = documentSnapshot.toObject(Users.class);
+                        User user = documentSnapshot.toObject(User.class);
                         listener.onUserDataFetched(user);
                     } else {
                         listener.onUserDataFetchError(new Exception("User not found"));
@@ -31,7 +30,7 @@ public class UserRepository {
     }
 
     // Update user data
-    public void updateUser(String userId, Users user, OnUserUpdateListener listener) {
+    public void updateUser(String userId, User user, OnUserUpdateListener listener) {
         db.collection("Users").document(userId)
                 .set(user)
                 .addOnSuccessListener(aVoid -> listener.onUserUpdateSuccess())
@@ -55,7 +54,7 @@ public class UserRepository {
     }
 
     public interface OnUserDataFetchListener {
-        void onUserDataFetched(Users user);
+        void onUserDataFetched(User user);
         void onUserDataFetchError(Exception e);
     }
 

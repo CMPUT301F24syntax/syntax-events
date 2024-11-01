@@ -1,6 +1,6 @@
 package com.example.syntaxeventlottery;
 
-public class Users {
+public class User {
     private String deviceCode;
     private String email;
     private String phoneNumber;
@@ -8,10 +8,10 @@ public class Users {
     private String username;
 
     // No-argument constructor (required for Firebase reflection)
-    public Users() {}
+    public User() {}
 
     // Parameterized constructor
-    public Users(String deviceCode, String email, String phoneNumber, String profilePhotoUrl, String username) {
+    public User(String deviceCode, String email, String phoneNumber, String profilePhotoUrl, String username) {
         this.deviceCode = deviceCode;
         this.email = email;
         this.phoneNumber = phoneNumber;
