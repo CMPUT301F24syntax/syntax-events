@@ -25,12 +25,12 @@ public class MainActivity extends AppCompatActivity {
         adminButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Show a Toast message or navigate to another activity
+                // Show a Toast message
                 Toast.makeText(MainActivity.this, "Admin Mode Selected", Toast.LENGTH_SHORT).show();
 
-                // Example: Navigate to Admin activity
-                // Intent intent = new Intent(MainActivity.this, AdminActivity.class);
-                // startActivity(intent);
+                // Navigate to AdminActivity
+                Intent intent = new Intent(MainActivity.this, AdminActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -38,12 +38,12 @@ public class MainActivity extends AppCompatActivity {
         userButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Show a Toast message or navigate to another activity
+                // Show a Toast message
                 Toast.makeText(MainActivity.this, "User Mode Selected", Toast.LENGTH_SHORT).show();
 
-                // Example: Navigate to User activity
-                // Intent intent = new Intent(MainActivity.this, UserActivity.class);
-                // startActivity(intent);
+                // Navigate to UserHomeActivity
+                Intent intent = new Intent(MainActivity.this, UserHomeActivity.class);
+                startActivity(intent);
             }
         });
     }
