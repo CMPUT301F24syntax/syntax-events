@@ -1,7 +1,5 @@
 package com.example.syntaxeventlottery;
 
-import com.google.firebase.firestore.auth.User;
-
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -103,7 +101,7 @@ public class Event {
         isDrawn = drawn;
     }
 
-    public boolean isFull() {
+    public boolean getIsFull() {
         return isFull;
     }
 
@@ -148,6 +146,5 @@ public class Event {
             this.eventID = idString.toString();
         }
     }
-
 
 }

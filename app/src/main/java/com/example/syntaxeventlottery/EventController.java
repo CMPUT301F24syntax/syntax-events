@@ -46,12 +46,12 @@ public class EventController {
     }
 
     // get all events where the organizer passed as argument is the event organizer
-    public ArrayList<Event> getOrganizerEvent(Users organizer) {
+    public ArrayList<Event> getOrganizerEvent(User organizer) {
         ArrayList<Event> organizerEvents = new ArrayList<>();
 
         for (int i = 0; i < eventRepository.getEventsDataList().size(); i++) {
             Event currEvent = eventRepository.getEventsDataList().get(i);
-            if (currEvent.getOrganizer() == organizer) {
+            if (organizer.getDeviceCode() == currEvent.getOrganizer().getDeviceCode()) {
                 organizerEvents.add(currEvent);
             }
         }
@@ -59,7 +59,7 @@ public class EventController {
     }
 
     // get list of events where the entrant is in the waiting list
-    public ArrayList<Event> getEntrantWaitingListEvents(Users entrant) {
+    public ArrayList<Event> getEntrantWaitingListEvents(User entrant) {
         ArrayList<Event> entrantWaitingListEvents = new ArrayList<>();
 
         for (int i = 0; i < eventRepository.getEventsDataList().size(); i++) {
@@ -73,7 +73,7 @@ public class EventController {
     }
 
     // get list of events where the entrant has been selected to participate in the event
-    public ArrayList<Event> getEntrantSelectedListEvents(Users entrant) {
+    public ArrayList<Event> getEntrantSelectedListEvents(User entrant) {
         ArrayList<Event> entrantSelectedListEvents = new ArrayList<>();
 
         for (int i = 0; i < eventRepository.getEventsDataList().size(); i++) {
@@ -86,6 +86,5 @@ public class EventController {
         return entrantSelectedListEvents;
     }
 
-    // get list of
 
 }
