@@ -1,30 +1,26 @@
 package com.example.syntaxeventlottery;
 
-import com.google.firebase.firestore.auth.User;
-
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.UUID;
 
 public class Event {
 
     private String eventID;
     private String qrCode;
-    private Users organizer;
+    private User organizer;
     private String facility;
     private Date startDate;
     private Date endDate;
     private int capacity;
     private boolean isFull; // if capacity is full
     private boolean isDrawed; // if lottery draw has taken place
-    private ArrayList<Users> waitingList;
-    private ArrayList<Users> selectedList;
+    private ArrayList<User> waitingList;
+    private ArrayList<User> selectedList;
     private String Poster;
 
-    public Event(Users organizer, String facility, Date startDate, Date endDate, int capacity) {
+    public Event(User organizer, String facility, Date startDate, Date endDate, int capacity) {
         this.qrCode = null;
         this.organizer = organizer;
         this.facility = facility;
@@ -51,11 +47,11 @@ public class Event {
         this.eventID = eventID;
     }
 
-    public Users getOrganizer() {
+    public User getOrganizer() {
         return organizer;
     }
 
-    public void setOrganizer(Users organizer) {
+    public void setOrganizer(User organizer) {
         this.organizer = organizer;
     }
 
@@ -107,19 +103,19 @@ public class Event {
         isFull = full;
     }
 
-    public ArrayList<Users> getWaitingList() {
+    public ArrayList<User> getWaitingList() {
         return waitingList;
     }
 
-    public void setWaitingList(ArrayList<Users> waitingList) {
+    public void setWaitingList(ArrayList<User> waitingList) {
         this.waitingList = waitingList;
     }
 
-    public ArrayList<Users> getSelectedList() {
+    public ArrayList<User> getSelectedList() {
         return selectedList;
     }
 
-    public void setSelectedList(ArrayList<Users> selectedList) {
+    public void setSelectedList(ArrayList<User> selectedList) {
         this.selectedList = selectedList;
     }
     public String GetPoster(){return Poster;}
