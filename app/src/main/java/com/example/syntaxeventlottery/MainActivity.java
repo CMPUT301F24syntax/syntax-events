@@ -15,6 +15,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.net.URL;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -39,5 +41,12 @@ public class MainActivity extends AppCompatActivity {
         Button organizer_login_btn = findViewById(R.id.organizer_login_btn);
         Button admin_login_btn = findViewById(R.id.admin_login_btn);
 
+        Users testuser = new Users("test code", "test email", "test number", "test url", "test_user_1234");
+
+        Event testEvent = new Event(testuser,"test facility",new Date(), new Date(), 0);
+        testEvent.EventIdGenerator(testuser.getUsername());
+
+        EventRepository repo = new EventRepository();
+        repo.addEventToRepo(testEvent);
     }
 }
