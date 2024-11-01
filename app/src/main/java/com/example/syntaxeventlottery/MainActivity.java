@@ -1,52 +1,50 @@
 package com.example.syntaxeventlottery;
 
-import android.net.Uri;
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.View;
 import android.widget.Button;
-
-import androidx.activity.EdgeToEdge;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
-
-import java.net.URL;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
-    /* set logged_in val to false for now */
-    private boolean logged_in = false;
+    private Button adminButton;
+    private Button userButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        if (logged_in) {
-            setContentView(R.layout.activity_main);
-        } else {
-            setContentView(R.layout.login_activity);
-        }
-        /* get button views for entrant, organizer and admin login */
-        Button entrant_login_btn = findViewById(R.id.entrant_login_btn);
-        Button organizer_login_btn = findViewById(R.id.organizer_login_btn);
-        Button admin_login_btn = findViewById(R.id.admin_login_btn);
+        setContentView(R.layout.activity_main);
 
-        Users testuser = new Users("test code", "test email", "test number", "test url", "test_user_1234");
+        // Initialize buttons
+        adminButton = findViewById(R.id.adminButton);
+        userButton = findViewById(R.id.userButton);
 
-        Event testEvent = new Event(testuser,"test facility",new Date(), new Date(), 0);
-        testEvent.EventIdGenerator(testuser.getUsername());
+        // Set click listener for the Admin button
+        adminButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Show a Toast message or navigate to another activity
+                Toast.makeText(MainActivity.this, "Admin Mode Selected", Toast.LENGTH_SHORT).show();
 
-        EventRepository repo = new EventRepository();
-        repo.addEventToRepo(testEvent);
+                // Example: Navigate to Admin activity
+                // Intent intent = new Intent(MainActivity.this, AdminActivity.class);
+                // startActivity(intent);
+            }
+        });
+
+        // Set click listener for the User button
+        userButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Show a Toast message or navigate to another activity
+                Toast.makeText(MainActivity.this, "User Mode Selected", Toast.LENGTH_SHORT).show();
+
+                // Example: Navigate to User activity
+                // Intent intent = new Intent(MainActivity.this, UserActivity.class);
+                // startActivity(intent);
+            }
+        });
     }
 }
