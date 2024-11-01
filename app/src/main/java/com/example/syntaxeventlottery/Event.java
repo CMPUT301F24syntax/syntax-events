@@ -1,37 +1,40 @@
 package com.example.syntaxeventlottery;
 
+import com.google.firebase.firestore.auth.User;
+
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.UUID;
 
 public class Event {
 
-    // Attributes
-    private int eventID;
+    private String eventID;
     private String qrCode;
-    private String poster;
-    private Facility facility;
-    private String startDate;
-    private String endDate;
+    private Users organizer;
+    private String facility;
+    private Date startDate;
+    private Date endDate;
     private int capacity;
-    private boolean status; // true for full, false for empty
-    private ArrayList<String> waitingList;
-    private ArrayList<String> participant;
+    private boolean isFull; // if capacity is full
+    private boolean isDrawed; // if lottery draw has taken place
+    private ArrayList<Users> waitingList;
+    private ArrayList<Users> selectedList;
+    private String Poster;
 
-    // Constructor
-    public Event() {
-        waitingList = new ArrayList<>();
-        participant = new ArrayList<>();
+    public Event(Users organizer, String facility, Date startDate, Date endDate, int capacity) {
+        this.qrCode = null;
+        this.organizer = organizer;
+        this.facility = facility;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.capacity = capacity;
+        this.isFull = false;
+        this.isDrawed = false;
     }
 
-    // Getter and Setter for eventID
-    public int getEventID() {
-        return eventID;
-    }
-
-    public void setEventID(int eventID) {
-        this.eventID = eventID;
-    }
-
-    // Getter and Setter for qrCode
     public String getQrCode() {
         return qrCode;
     }
@@ -40,33 +43,105 @@ public class Event {
         this.qrCode = qrCode;
     }
 
-    // Getter and Setter for poster
-    public String getPoster() {
-        return poster;
+    public String getEventID() {
+        return eventID;
     }
 
-    public void setPoster(String poster) {
-        this.poster = poster;
+    public void setEventID(String eventID) {
+        this.eventID = eventID;
     }
 
-    // Additional methods based on UML diagram
-    public void createEvent() {
-        // Implementation for creating an event
+    public Users getOrganizer() {
+        return organizer;
     }
 
-    public void publishEvent() {
-        // Implementation for publishing an event
+    public void setOrganizer(Users organizer) {
+        this.organizer = organizer;
     }
 
-    public void delEvent() {
-        // Implementation for deleting an event
+    public String getFacility() {
+        return facility;
     }
 
-    public void updateEvent() {
-        // Implementation for updating an event
+    public void setFacility(String facility) {
+        this.facility = facility;
     }
 
-    public void editParticipantLimit() {
-        // Implementation for editing participant limit
+    public Date getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+
+    public boolean isDrawed() {
+        return isDrawed;
+    }
+
+    public void setDrawed(boolean drawed) {
+        isDrawed = drawed;
+    }
+
+    public boolean isFull() {
+        return isFull;
+    }
+
+    public void setFull(boolean full) {
+        isFull = full;
+    }
+
+    public ArrayList<Users> getWaitingList() {
+        return waitingList;
+    }
+
+    public void setWaitingList(ArrayList<Users> waitingList) {
+        this.waitingList = waitingList;
+    }
+
+    public ArrayList<Users> getSelectedList() {
+        return selectedList;
+    }
+
+    public void setSelectedList(ArrayList<Users> selectedList) {
+        this.selectedList = selectedList;
+    }
+    public String GetPoster(){return Poster;}
+
+    public void setPoster(String Poster){this.Poster = Poster;}
+    public void EventIdGenerator(String UserId){
+        if (this.eventID == null){
+            LocalDateTime now = null;
+            String formattedDateTime = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                now = LocalDateTime.now();
+            }
+
+            // Custom format
+            DateTimeFormatter formatter = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            }
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                formattedDateTime = now.format(formatter);
+            }
+            this.eventID = formattedDateTime + "||" + UserId;
+        }
     }
 }
