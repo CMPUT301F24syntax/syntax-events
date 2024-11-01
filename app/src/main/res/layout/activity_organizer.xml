@@ -1,0 +1,117 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/white">
+
+    <!-- Scrollable content area -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Organizer Section with Icon, Text, and Back Button -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingBottom="16dp">
+
+                <!-- Organizer Image -->
+                <ImageView
+                    android:id="@+id/organizerImage"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_organizer"
+                    android:contentDescription="Organizer Icon" />
+
+                <!-- Organizer Text -->
+                <TextView
+                    android:id="@+id/organizerText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="Organizer"
+                    android:textSize="20sp"
+                    android:textColor="@android:color/black" />
+
+                <!-- Back Button -->
+                <Button
+                    android:id="@+id/backButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Back"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@android:color/black"
+                    android:textColor="@android:color/white" />
+            </LinearLayout>
+
+            <!-- Event Name Input -->
+            <EditText
+                android:id="@+id/eventNameEditText"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="Event Name"
+                android:backgroundTint="@android:color/darker_gray"
+                android:padding="8dp" />
+
+            <!-- Event Start Date Input -->
+            <EditText
+                android:id="@+id/eventStartDateEditText"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="Start Date (e.g., yyyy-MM-dd HH:mm)"
+                android:backgroundTint="@android:color/darker_gray"
+                android:padding="8dp"
+                android:layout_marginTop="8dp" />
+
+            <!-- Event End Date Input -->
+            <EditText
+                android:id="@+id/eventEndDateEditText"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="End Date (e.g., yyyy-MM-dd HH:mm)"
+                android:backgroundTint="@android:color/darker_gray"
+                android:padding="8dp"
+                android:layout_marginTop="8dp" />
+
+            <!-- Facility Input -->
+            <EditText
+                android:id="@+id/facilityEditText"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="Facility"
+                android:backgroundTint="@android:color/darker_gray"
+                android:padding="8dp"
+                android:layout_marginTop="8dp" />
+
+            <!-- Capacity Input -->
+            <EditText
+                android:id="@+id/capacityEditText"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="Capacity"
+                android:inputType="number"
+                android:backgroundTint="@android:color/darker_gray"
+                android:padding="8dp"
+                android:layout_marginTop="8dp" />
+
+            <!-- Button to Create Event -->
+            <Button
+                android:id="@+id/createEventButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@android:color/black"
+                android:text="Create Event and Generate QR code"
+                android:layout_marginTop="16dp" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

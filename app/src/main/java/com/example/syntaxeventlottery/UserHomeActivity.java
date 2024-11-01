@@ -1,7 +1,11 @@
 package com.example.syntaxeventlottery;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import java.text.SimpleDateFormat;
@@ -22,6 +26,19 @@ public class UserHomeActivity extends AppCompatActivity {
 
         // Initialize the TextView for displaying the date and time
         dateTextView = findViewById(R.id.dateTextView);
+
+        // Initialize the Organizer button
+        ImageButton organizerButton = findViewById(R.id.organizerButton);
+
+        // Set a click listener on the Organizer button
+        organizerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Start the OrganizerActivity
+                Intent intent = new Intent(UserHomeActivity.this, OrganizerActivity.class);
+                startActivity(intent);
+            }
+        });
 
         // Handler to update the time every second
         handler = new Handler();
