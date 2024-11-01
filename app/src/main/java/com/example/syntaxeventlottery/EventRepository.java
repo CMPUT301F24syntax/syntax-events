@@ -27,14 +27,13 @@ public class EventRepository {
         eventsDataList = new ArrayList<>();
     }
 
-
     // get real time updates of Events List, call everytime there is a change to the db
     public void updateEvents() {
         eventsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot querySnapshots, @Nullable FirebaseFirestoreException error) {
                 if (error != null) {
-                    Log.e("Firestore Events", error.toString());
+                    Log.e("Firestore Events Repository", error.toString());
                     return;
                 }
                 if (querySnapshots != null) {
@@ -49,6 +48,10 @@ public class EventRepository {
     }
 
     public void addEventToRepo(Event event) {
+        if (!eventIsValid(event)) {
+            Log.e("Firestore Events Repository", "Event validation failed");
+            return;
+        }
         // add event to local list
         eventsDataList.add(event);
         // add event to Firestore collection
@@ -60,8 +63,58 @@ public class EventRepository {
         data.put("startDate", event.getStartDate());
         data.put("endDate", event.getEndDate());
         data.put("capacity", event.getCapacity());
-        eventsRef.document(event.getEventID()).set(data);
-        Log.d("Firestore Events", "event added");
+        // log a message on success or failure
+        eventsRef.document(event.getEventID()).set(data)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("Firestore Events Repository", "Event added successfully");
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore Events Repository", "Error adding Event", e);
+                })
+                .addOnCompleteListener(task -> {
+                    // call updateEvents() for real time updates
+                    updateEvents();
+                });
     }
 
+    public void deleteEventFromRepo(Event event) {
+        // remove from local list
+        eventsDataList.remove(event);
+
+        // remove from database
+        eventsRef.document(event.getEventID()).delete()
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("Firestore Events Repository", "Event deleted successfully");
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore Events Repository", "Error deleting event",e);
+                })
+                .addOnCompleteListener(task -> {
+                    // call updateEvents() for real time updates
+                    updateEvents();
+                });
+    }
+
+    public boolean eventIsValid(Event event) {
+        // event validation
+        if (event.getEventID() == null || event.getFacility() == null || event.getQrCode() == null
+        || event.getOrganizer() == null || event.getStartDate() == null || event.getEndDate() == null || event.getPoster() == null) {
+            Log.e("Firestore Event validation","Missing Event fields");
+            return false;
+        }
+        if (event.getStartDate().after(event.getEndDate())) {
+            Log.e("Firestore Event validation","Event start date is after end date");
+            return false;
+        }
+        if (event.isFull() || event.isDrawn()) {
+            Log.e("Firestore Event validation","Event cannot be full or drawn on creation");
+            return false;
+        }
+        if (event.getCapacity() <= 0) {
+            Log.e("Firestore Event validation","Event capacity must be greater than 0");
+            return false;
+        }
+        // return true if no errors validating
+        return true;
+    }
 }

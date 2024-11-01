@@ -1,30 +1,27 @@
 package com.example.syntaxeventlottery;
 
-import com.google.firebase.firestore.auth.User;
-
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.UUID;
 
 public class Event {
 
     private String eventID;
     private String qrCode;
     private Users organizer;
-    private String facility;
+    private Facility facility;
     private Date startDate;
     private Date endDate;
     private int capacity;
     private boolean isFull; // if capacity is full
-    private boolean isDrawed; // if lottery draw has taken place
+    private boolean isDrawn; // if lottery draw has taken place
     private ArrayList<Users> waitingList;
     private ArrayList<Users> selectedList;
-    private String Poster;
+    private String poster;
 
-    public Event(Users organizer, String facility, Date startDate, Date endDate, int capacity) {
+    public Event(Users organizer, Facility facility, Date startDate, Date endDate, int capacity) {
+        this.eventID = null;
         this.qrCode = null;
         this.organizer = organizer;
         this.facility = facility;
@@ -32,7 +29,10 @@ public class Event {
         this.endDate = endDate;
         this.capacity = capacity;
         this.isFull = false;
-        this.isDrawed = false;
+        this.isDrawn = false;
+        this.waitingList = new ArrayList<>();
+        this.selectedList = new ArrayList<>();
+        this.poster = null;
     }
 
     public String getQrCode() {
@@ -59,11 +59,11 @@ public class Event {
         this.organizer = organizer;
     }
 
-    public String getFacility() {
+    public Facility getFacility() {
         return facility;
     }
 
-    public void setFacility(String facility) {
+    public void setFacility(Facility facility) {
         this.facility = facility;
     }
 
@@ -91,12 +91,12 @@ public class Event {
         this.capacity = capacity;
     }
 
-    public boolean isDrawed() {
-        return isDrawed;
+    public boolean isDrawn() {
+        return isDrawn;
     }
 
-    public void setDrawed(boolean drawed) {
-        isDrawed = drawed;
+    public void setDrawn(boolean drawn) {
+        isDrawn = drawn;
     }
 
     public boolean isFull() {
@@ -122,26 +122,26 @@ public class Event {
     public void setSelectedList(ArrayList<Users> selectedList) {
         this.selectedList = selectedList;
     }
-    public String GetPoster(){return Poster;}
+    public String getPoster() {
+        return poster;
+    }
 
-    public void setPoster(String Poster){this.Poster = Poster;}
-    public void EventIdGenerator(String UserId){
-        if (this.eventID == null){
-            LocalDateTime now = null;
-            String formattedDateTime = null;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                now = LocalDateTime.now();
-            }
+    public void setPoster(String Poster) {
+        this.poster = Poster;
+    }
 
-            // Custom format
-            DateTimeFormatter formatter = null;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-            }
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                formattedDateTime = now.format(formatter);
-            }
-            this.eventID = formattedDateTime + "||" + UserId;
+    public void EventIdGenerator(){
+        // unique event id will be a combination of system time, organizer device code, facility location, start/end dates
+        if (this.eventID == null) {
+            StringBuilder idString = new StringBuilder(); // StringBuilder: Class which can manipulate strings
+            long currSystemTime = System.currentTimeMillis();
+            idString.append(currSystemTime).append('-');
+            idString.append(organizer.getDeviceCode()).append('-');
+            idString.append(facility.getLocation()).append('-');
+            idString.append(String.valueOf(startDate)).append('-');
+            idString.append(String.valueOf(endDate));
+
+            this.eventID = idString.toString();
         }
     }
 }
