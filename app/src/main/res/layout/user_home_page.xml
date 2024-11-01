@@ -12,76 +12,72 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center_vertical">
+        android:padding="16dp">
 
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@drawable/ic_location"
-            android:contentDescription="Location Icon" />
+            android:contentDescription="Location Icon"
+            android:src="@drawable/ic_location" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Location"
             android:paddingStart="8dp"
-            android:textSize="16sp"
-            android:textColor="@android:color/black" />
+            android:text="Location"
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
     </LinearLayout>
 
-    <!-- Date Section -->
     <TextView
         android:id="@+id/dateTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:padding="8dp"
         android:text="Oct 31, 2024"
-        android:textSize="20sp"
         android:textColor="@android:color/black"
-        android:padding="8dp" />
+        android:textSize="20sp" />
 
-    <!-- QR Code Scan Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@color/grey"
-        android:padding="16dp"
         android:layout_margin="16dp"
-        android:gravity="center">
+        android:background="@color/grey"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="16dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:text="Scan QR-code for Information"
-            android:textSize="16sp"
             android:textColor="@android:color/black"
-            android:gravity="center" />
+            android:textSize="16sp" />
 
         <ImageButton
             android:id="@+id/qrScanButton2"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/ic_qr_code"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="QR Scan"
             android:scaleType="centerInside"
-            android:background="?attr/selectableItemBackgroundBorderless" />
+            android:src="@drawable/ic_qr_code" />
     </LinearLayout>
 
-    <!-- Events I Attend Section -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Events I Attend"
-        android:textSize="20sp"
-        android:textColor="@android:color/black"
         android:paddingStart="16dp"
-        android:paddingTop="8dp" />
+        android:paddingTop="8dp"
+        android:text="Events I Attend"
+        android:textColor="@android:color/black"
+        android:textSize="20sp" />
 
-    <!-- RecyclerView for "Events I Attend" -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/attendingEventsRecyclerView"
         android:layout_width="match_parent"
@@ -89,17 +85,15 @@
         android:clipToPadding="false"
         android:padding="16dp" />
 
-    <!-- Future Event Section -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Future event"
-        android:textSize="20sp"
-        android:textColor="@android:color/black"
         android:paddingStart="16dp"
-        android:paddingTop="16dp" />
+        android:paddingTop="16dp"
+        android:text="Future event"
+        android:textColor="@android:color/black"
+        android:textSize="20sp" />
 
-    <!-- RecyclerView for "Future Events" -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/futureEventsRecyclerView"
         android:layout_width="match_parent"
@@ -107,147 +101,157 @@
         android:clipToPadding="false"
         android:padding="16dp" />
 
-    <!-- Bottom Navigation Bar -->
-    <LinearLayout
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:layout_gravity="bottom"
-        android:background="@android:color/darker_gray"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:padding="8dp">
+        android:layout_height="match_parent">
 
-        <!-- QR Scan Button -->
+        <!-- Other content above -->
+
+        <!-- Bottom Navigation Bar -->
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:id="@+id/bottom_navigation"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_alignParentBottom="true"
+            android:background="@android:color/darker_gray"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:padding="8dp">
 
-            <ImageButton
-                android:id="@+id/qrScanButton1"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="QR Scan"
-                android:scaleType="centerInside"
-                android:src="@drawable/ic_qr_code" />
-
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- QR Scan Button -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:gravity="center"
-                android:text="QR Scan"
-                android:textColor="@android:color/black"
-                android:textSize="12sp" />
-        </LinearLayout>
+                android:orientation="vertical">
 
+                <ImageButton
+                    android:id="@+id/qrScanButton1"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="QR Scan"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_qr_code" />
 
-        <!-- News Button -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="QR Scan"
+                    android:textColor="@android:color/black"
+                    android:textSize="12sp" />
+            </LinearLayout>
 
-            <ImageButton
-                android:id="@+id/newsButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="News"
-                android:scaleType="centerInside"
-                android:src="@drawable/ic_news" />
-
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- News Button -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:gravity="center"
-                android:text="News"
-                android:textColor="@android:color/black"
-                android:textSize="12sp" />
-        </LinearLayout>
+                android:orientation="vertical">
 
-        <!-- Home Button -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
+                <ImageButton
+                    android:id="@+id/newsButton"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="News"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_news" />
 
-            <ImageButton
-                android:id="@+id/homeButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Home"
-                android:scaleType="centerInside"
-                android:src="@drawable/ic_home" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="News"
+                    android:textColor="@android:color/black"
+                    android:textSize="12sp" />
+            </LinearLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- Home Button -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:gravity="center"
-                android:text="Home"
-                android:textColor="@android:color/black"
-                android:textSize="12sp" />
-        </LinearLayout>
+                android:orientation="vertical">
 
-        <!-- Accepted Event Button -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
+                <ImageButton
+                    android:id="@+id/homeButton"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Home"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_home" />
 
-            <ImageButton
-                android:id="@+id/acceptedEventButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Accepted Event"
-                android:scaleType="centerInside"
-                android:src="@drawable/ic_accepted_event" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Home"
+                    android:textColor="@android:color/black"
+                    android:textSize="12sp" />
+            </LinearLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- Accepted Event Button -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:scaleType="centerInside"
+                android:layout_weight="1"
                 android:gravity="center"
-                android:text="Accepted Event"
-                android:textColor="@android:color/black"
-                android:textSize="10sp" />
-        </LinearLayout>
+                android:orientation="vertical">
 
-        <!-- Profile Button -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
+                <ImageButton
+                    android:id="@+id/acceptedEventButton"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Accepted Event"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_accepted_event" />
 
-            <ImageButton
-                android:id="@+id/profileButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:scaleType="centerInside"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Profile"
-                android:src="@drawable/ic_profile" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Accepted Event"
+                    android:textColor="@android:color/black"
+                    android:textSize="10sp" />
+            </LinearLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- Profile Button -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:gravity="center"
-                android:text="Profile"
-                android:textColor="@android:color/black"
-                android:textSize="12sp" />
+                android:orientation="vertical">
+
+                <ImageButton
+                    android:id="@+id/profileButton"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Profile"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_profile" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Profile"
+                    android:textColor="@android:color/black"
+                    android:textSize="12sp" />
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+    </RelativeLayout>
+
+
 
 </LinearLayout>
