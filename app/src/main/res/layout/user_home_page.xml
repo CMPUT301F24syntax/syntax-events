@@ -198,7 +198,7 @@
                     android:textSize="12sp" />
             </LinearLayout>
 
-            <!-- Accepted Event Button -->
+            <!-- Organizer Button -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -207,19 +207,19 @@
                 android:orientation="vertical">
 
                 <ImageButton
-                    android:id="@+id/acceptedEventButton"
+                    android:id="@+id/organizerButton"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Accepted Event"
+                    android:contentDescription="Organizer"
                     android:scaleType="centerInside"
-                    android:src="@drawable/ic_accepted_event" />
+                    android:src="@drawable/ic_organizer" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="Accepted Event"
+                    android:text="Organizer"
                     android:textColor="@android:color/black"
                     android:textSize="10sp" />
             </LinearLayout>

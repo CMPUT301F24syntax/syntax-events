@@ -26,6 +26,8 @@
         <!-- Register UserHomeActivity -->
         <activity android:name=".UserHomeActivity" android:exported="true" />
 
+        <activity android:name=".OrganizerActivity" android:exported="true" />
+
     </application>
 
 </manifest>
