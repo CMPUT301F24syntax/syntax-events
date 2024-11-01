@@ -63,4 +63,5 @@ public class EventRepository {
         eventsRef.document(event.getEventID()).set(data);
         Log.d("Firestore Events", "event added");
     }
+
 }
