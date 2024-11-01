@@ -91,19 +91,19 @@ public class Event {
         this.capacity = capacity;
     }
 
-    public boolean isDrawn() {
+    public boolean getIsDrawn() {
         return isDrawn;
     }
 
-    public void setDrawn(boolean drawn) {
+    public void setIsDrawn(boolean drawn) {
         isDrawn = drawn;
     }
 
-    public boolean isFull() {
+    public boolean getIsFull() {
         return isFull;
     }
 
-    public void setFull(boolean full) {
+    public void setIsFull(boolean full) {
         isFull = full;
     }
 
@@ -144,4 +144,6 @@ public class Event {
             this.eventID = idString.toString();
         }
     }
+
+
 }
