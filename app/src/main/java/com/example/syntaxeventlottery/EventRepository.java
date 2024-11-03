@@ -1,10 +1,15 @@
 package com.example.syntaxeventlottery;
+
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import android.net.Uri;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -15,18 +20,19 @@ import javax.annotation.Nullable;
 public class EventRepository {
     private FirebaseFirestore db;
     private CollectionReference eventsRef;
-    private ArrayList<Event> eventsDataList; // local data list
+    private ArrayList<Event> eventsDataList;
 
     public EventRepository() {
         this.db = FirebaseFirestore.getInstance();
         this.eventsRef = db.collection("Events");
-        eventsDataList = new ArrayList<>();
+        this.eventsDataList = new ArrayList<>();
     }
 
-
+    // local datalist getter for controller
     public ArrayList<Event> getEventsDataList(){
         return eventsDataList;
     }
+
 
     // get real time updates of Events List, call everytime there is a change to the db
     public void updateEventsRepository() {
@@ -59,8 +65,10 @@ public class EventRepository {
 
         // add event to Firestore collection
         HashMap<String, Object> data = new HashMap<>();
+        data.put("eventName", event.getEventName());
         data.put("eventID", event.getEventID());
         data.put("qrCode", event.getQrCode());
+        data.put("qrCodeUrl", event.getQrCodeUrl());
         data.put("organizer", event.getOrganizer());
         data.put("facility", event.getFacility());
         data.put("startDate", event.getStartDate());
@@ -70,7 +78,8 @@ public class EventRepository {
         data.put("isDrawn", event.getIsDrawn());
         data.put("waitingList", event.getWaitingList());
         data.put("selectedList", event.getSelectedList());
-        data.put("poster", event.getPoster());
+        data.put("poster", event.getPosterUrl());
+
         // log a message on success or failure
         eventsRef.document(event.getEventID()).set(data)
                 .addOnSuccessListener(aVoid -> {
@@ -128,8 +137,10 @@ public class EventRepository {
 
         // create hashmap with new event details
         HashMap<String,Object> data = new HashMap<>();
+        data.put("eventName", updatedEvent.getEventName());
         data.put("eventID", updatedEvent.getEventID());
         data.put("qrCode", updatedEvent.getQrCode());
+        data.put("qrCodeUrl", updatedEvent.getQrCodeUrl());
         data.put("organizer", updatedEvent.getOrganizer());
         data.put("facility", updatedEvent.getFacility());
         data.put("startDate", updatedEvent.getStartDate());
@@ -139,7 +150,7 @@ public class EventRepository {
         data.put("isDrawn", updatedEvent.getIsDrawn());
         data.put("waitingList", updatedEvent.getWaitingList());
         data.put("selectedList", updatedEvent.getSelectedList());
-        data.put("poster", updatedEvent.getPoster());
+        data.put("posterUrl", updatedEvent.getPosterUrl());
 
         // update firestore
         eventsRef.document(eventFoundInList.getEventID()).set(data)
@@ -159,7 +170,7 @@ public class EventRepository {
     public boolean eventIsValid(Event event) {
         // event validation
         if (event.getEventID() == null || event.getFacility() == null || event.getQrCode() == null
-        || event.getOrganizer() == null || event.getStartDate() == null || event.getEndDate() == null || event.getPoster() == null) {
+                || event.getOrganizer() == null || event.getStartDate() == null || event.getEndDate() == null || event.getPoster() == null) {
             Log.e("Firestore Event validation","Missing Event fields");
             return false;
         }
@@ -177,5 +188,13 @@ public class EventRepository {
         }
         // return true if no errors validating
         return true;
+    }
+
+    // image storage handler
+    public void uploadImageToStorage(Uri imageUri, String path, OnCompleteListener<Uri> onCompleteListener) {
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(path);
+        storageRef.putFile(imageUri)
+                .continueWithTask(task -> storageRef.getDownloadUrl())
+                .addOnCompleteListener(onCompleteListener);
     }
 }

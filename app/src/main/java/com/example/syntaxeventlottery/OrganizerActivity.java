@@ -4,21 +4,25 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OrganizerActivity extends AppCompatActivity {
 
-    private EditText eventNameEditText;
-    private EditText eventStartDateEditText;
-    private EditText eventEndDateEditText;
-    private EditText facilityEditText;
-    private EditText capacityEditText;
     private Button createEventButton;
     private Button backButton;
+    private RecyclerView eventRecyclerView;
+    private EventAdapter eventAdapter;
+    private List<Event> eventList = new ArrayList<>();
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,53 +30,63 @@ public class OrganizerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_organizer);
 
         // Initialize UI components
-        eventNameEditText = findViewById(R.id.eventNameEditText);
-        eventStartDateEditText = findViewById(R.id.eventStartDateEditText);
-        eventEndDateEditText = findViewById(R.id.eventEndDateEditText);
-        facilityEditText = findViewById(R.id.facilityEditText);
-        capacityEditText = findViewById(R.id.capacityEditText);
         createEventButton = findViewById(R.id.createEventButton);
         backButton = findViewById(R.id.backButton);
+        eventRecyclerView = findViewById(R.id.eventRecyclerView);
 
-        // Set click listener for the back button
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Close this activity and return to the previous screen
-                finish();
-            }
-        });
+        // Initialize Firestore
+        db = FirebaseFirestore.getInstance();
 
-        // Set click listener for the create event button
+        // Set up RecyclerView
+        eventRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        eventAdapter = new EventAdapter(eventList, this);
+        eventRecyclerView.setAdapter(eventAdapter);
+
+        // Load events from Firestore
+        loadEventsFromFirestore();
+
+        // Navigate to Create Event page
         createEventButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Retrieve input data from the EditText fields
-                String eventName = eventNameEditText.getText().toString();
-                String eventStartDate = eventStartDateEditText.getText().toString();
-                String eventEndDate = eventEndDateEditText.getText().toString();
-                String facility = facilityEditText.getText().toString();
-                String capacityStr = capacityEditText.getText().toString();
-
-                // Check if all fields are filled
-                if (eventName.isEmpty() || eventStartDate.isEmpty() || eventEndDate.isEmpty() || facility.isEmpty() || capacityStr.isEmpty()) {
-                    Toast.makeText(OrganizerActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                // Parse capacity to integer
-                int capacity = Integer.parseInt(capacityStr);
-
-                // Display a success message (placeholder for actual QR code generation and saving event)
-                Toast.makeText(OrganizerActivity.this, "Event Created and QR Code Generated", Toast.LENGTH_SHORT).show();
-
-                // Optionally, clear the fields after submission
-                eventNameEditText.setText("");
-                eventStartDateEditText.setText("");
-                eventEndDateEditText.setText("");
-                facilityEditText.setText("");
-                capacityEditText.setText("");
+                Intent intent = new Intent(OrganizerActivity.this, OrganizerCreateEvent.class);
+                startActivity(intent);
             }
         });
+
+        // Navigate back to Home page
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish(); // Ends this activity and returns to the previous one
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh the event list when returning to this activity
+        loadEventsFromFirestore();
+    }
+
+    private void loadEventsFromFirestore() {
+        db.collection("events").get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        eventList.clear();  // Clear the list before adding fresh data
+                        QuerySnapshot querySnapshot = task.getResult();
+                        for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+                            Event event = document.toObject(Event.class);
+                            eventList.add(event);
+                        }
+                        eventAdapter.notifyDataSetChanged();
+                    } else {
+                        Toast.makeText(this, "Failed to load events.", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error loading events: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
     }
 }
