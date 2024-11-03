@@ -170,7 +170,7 @@ public class EventRepository {
     public boolean eventIsValid(Event event) {
         // event validation
         if (event.getEventID() == null || event.getFacility() == null || event.getQrCode() == null
-                || event.getOrganizer() == null || event.getStartDate() == null || event.getEndDate() == null || event.getPoster() == null) {
+                || event.getOrganizer() == null || event.getStartDate() == null || event.getEndDate() == null || event.getPosterUrl() == null) {
             Log.e("Firestore Event validation","Missing Event fields");
             return false;
         }
