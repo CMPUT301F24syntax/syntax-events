@@ -5,6 +5,7 @@
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET"/>
 
 
     <application
@@ -29,8 +30,9 @@
 
         <!-- Register UserHomeActivity -->
         <activity android:name=".UserHomeActivity" android:exported="true" />
-
         <activity android:name=".OrganizerActivity" android:exported="true" />
+        <activity android:name=".OrganizerCreateEvent" android:exported="true" />
+        <activity android:name=".EventDetailActivity" android:exported="true" />
 
     </application>
 
