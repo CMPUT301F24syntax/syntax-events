@@ -1,6 +1,7 @@
 package com.example.syntaxeventlottery;
 
 public class User {
+    private String userID; // Unique identifier for the user
     private String deviceCode;
     private String email;
     private String phoneNumber;
@@ -17,9 +18,21 @@ public class User {
         this.phoneNumber = phoneNumber;
         this.profilePhotoUrl = profilePhotoUrl;
         this.username = username;
+        this.userID = generateUserID(); // Automatically generate userID
+    }
+
+    // Method to generate a unique, shorter userID
+    private String generateUserID() {
+        // Combine the username and the last 4 digits of the current timestamp
+        long timestamp = System.currentTimeMillis() % 10000;
+        return username + "_" + timestamp;
     }
 
     // Getters and Setters
+    public String getUserID() {
+        return userID;
+    }
+
     public String getDeviceCode() {
         return deviceCode;
     }
@@ -62,8 +75,9 @@ public class User {
 
     @Override
     public String toString() {
-        return "Users{" +
-                "deviceCode='" + deviceCode + '\'' +
+        return "User{" +
+                "userID='" + userID + '\'' +
+                ", deviceCode='" + deviceCode + '\'' +
                 ", email='" + email + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", profilePhotoUrl='" + profilePhotoUrl + '\'' +
