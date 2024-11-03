@@ -1,12 +1,20 @@
 package com.example.syntaxeventlottery;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -24,7 +32,22 @@ public class OrganizerActivity extends AppCompatActivity {
     private EditText capacityEditText;
     private Button createEventButton;
     private Button backButton;
+    private Button uploadButton;
+    private ImageView eventImageView;
     private FirebaseFirestore db;
+    private FirebaseStorage storage;
+    private Uri imageUri;
+
+    // ActivityResultLauncher for selecting an image
+    private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    imageUri = result.getData().getData();
+                    eventImageView.setImageURI(imageUri);  // Display selected image in ImageView
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,25 +62,24 @@ public class OrganizerActivity extends AppCompatActivity {
         capacityEditText = findViewById(R.id.capacityEditText);
         createEventButton = findViewById(R.id.createEventButton);
         backButton = findViewById(R.id.backButton);
+        uploadButton = findViewById(R.id.uploadButton);
+        eventImageView = findViewById(R.id.eventImageView);
 
-        // Initialize Firestore
+        // Initialize Firestore and Firebase Storage
         db = FirebaseFirestore.getInstance();
+        storage = FirebaseStorage.getInstance();
 
         // Set click listener for the back button
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
+        backButton.setOnClickListener(v -> finish());
+
+        // Set click listener for the upload button
+        uploadButton.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            imagePickerLauncher.launch(intent);
         });
 
         // Set click listener for the create event button
-        createEventButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveEventToDatabase();
-            }
-        });
+        createEventButton.setOnClickListener(v -> saveEventToDatabase());
     }
 
     private void saveEventToDatabase() {
@@ -106,7 +128,32 @@ public class OrganizerActivity extends AppCompatActivity {
         eventData.put("facility", facility);
         eventData.put("capacity", capacity);
 
-        // Save to Firestore using eventID as the document ID
+        // If an image is selected, upload it and save the URL
+        if (imageUri != null) {
+            uploadImageAndSaveEventData(eventID, eventData);
+        } else {
+            saveEventData(eventID, eventData, null);
+        }
+    }
+
+    private void uploadImageAndSaveEventData(String eventID, Map<String, Object> eventData) {
+        StorageReference storageRef = storage.getReference().child("event_images/" + eventID);
+        storageRef.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> storageRef.getDownloadUrl()
+                        .addOnSuccessListener(uri -> {
+                            saveEventData(eventID, eventData, uri.toString());
+                            // Hide upload button and show selected image
+                            uploadButton.setVisibility(View.GONE);
+                            eventImageView.setImageURI(imageUri);
+                        })
+                        .addOnFailureListener(e -> Toast.makeText(this, "Image upload failed", Toast.LENGTH_SHORT).show()))
+                .addOnFailureListener(e -> Toast.makeText(this, "Image upload failed", Toast.LENGTH_SHORT).show());
+    }
+
+    private void saveEventData(String eventID, Map<String, Object> eventData, String imageUrl) {
+        if (imageUrl != null) {
+            eventData.put("imageUrl", imageUrl);
+        }
         db.collection("events").document(eventID)
                 .set(eventData)
                 .addOnSuccessListener(aVoid -> {
@@ -122,5 +169,8 @@ public class OrganizerActivity extends AppCompatActivity {
         eventEndDateEditText.setText("");
         facilityEditText.setText("");
         capacityEditText.setText("");
+        eventImageView.setImageURI(null);
+        uploadButton.setVisibility(View.VISIBLE); // Reset button visibility for next event
+        imageUri = null;
     }
 }
