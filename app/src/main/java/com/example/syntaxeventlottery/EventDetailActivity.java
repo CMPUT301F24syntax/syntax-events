@@ -1,6 +1,7 @@
 package com.example.syntaxeventlottery;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -9,21 +10,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.DocumentSnapshot;
 
+import java.util.Date;
 
 public class EventDetailActivity extends AppCompatActivity {
 
-    private ImageView eventPosterImageView;
+    private ImageView eventPosterImageView, eventQRCodeImageView;
     private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView,
             eventEndDateTextView, eventFacilityTextView, eventCapacityTextView;
-    private Button updatePosterButton, editInfoButton;
+    private Button updatePosterButton, editInfoButton, backButton;
     private FirebaseFirestore db;
 
     @Override
@@ -33,6 +32,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
         // Initialize UI components
         eventPosterImageView = findViewById(R.id.eventPosterImageView);
+        eventQRCodeImageView = findViewById(R.id.eventQRCodeImageView);
         eventNameTextView = findViewById(R.id.eventNameTextView);
         eventDescriptionTextView = findViewById(R.id.eventDescriptionTextView);
         eventStartDateTextView = findViewById(R.id.eventStartDateTextView);
@@ -41,6 +41,7 @@ public class EventDetailActivity extends AppCompatActivity {
         eventCapacityTextView = findViewById(R.id.eventCapacityTextView);
         updatePosterButton = findViewById(R.id.updatePosterButton);
         editInfoButton = findViewById(R.id.editInfoButton);
+        backButton = findViewById(R.id.backButton);
 
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
@@ -55,52 +56,60 @@ public class EventDetailActivity extends AppCompatActivity {
             Toast.makeText(this, "Event ID is missing", Toast.LENGTH_SHORT).show();
         }
 
-        // Set click listener for updating the poster
-        updatePosterButton.setOnClickListener(new View.OnClickListener() {
+        // Set click listener for the back button to return to the previous screen
+        backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: Implement logic to open gallery or camera for poster selection
-                // This could involve starting an intent to pick an image and then uploading to Firebase Storage
-            }
-        });
-
-        // Set click listener for editing information
-        editInfoButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: Implement logic to open an edit screen or dialog for event details
-                // You could open a new activity or a dialog where the user can update event details
+                finish(); // Closes this activity and returns to the previous one
             }
         });
     }
 
     private void loadEventDetails(String eventId) {
         DocumentReference eventRef = db.collection("events").document(eventId);
+
+        // Fetch the event details from Firestore
         eventRef.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
+            if (task.isSuccessful() && task.getResult() != null) {
                 DocumentSnapshot document = task.getResult();
                 if (document.exists()) {
+                    // Retrieve event data and display in the views
                     String eventName = document.getString("eventName");
-                    String posterUrl = document.getString("poster");
+                    String eventDescription = document.getString("eventDescription");
+                    String eventPosterUrl = document.getString("posterUrl");
+                    Date startDate = document.getDate("startDate");
+                    Date endDate = document.getDate("endDate");
+                    String facility = document.getString("facility");
+                    Long capacity = document.getLong("capacity");
+                    String qrCodeUrl = document.getString("qrCodeUrl");
 
-                    eventNameTextView.setText(eventName != null ? eventName : "No event name");
+                    // Set data to TextViews
+                    eventNameTextView.setText(eventName);
+                    eventDescriptionTextView.setText(eventDescription);
+                    eventStartDateTextView.setText("Start Date: " + startDate);
+                    eventEndDateTextView.setText("End Date: " + endDate);
+                    eventFacilityTextView.setText("Location: " + facility);
+                    eventCapacityTextView.setText("Capacity: " + (capacity != null ? capacity.toString() : "N/A"));
 
-                    // Check if poster URL is null
-                    if (posterUrl != null) {
-                        Glide.with(this)
-                                .load(posterUrl)
+                    // Load event poster using Glide
+                    if (eventPosterUrl != null) {
+                        Glide.with(EventDetailActivity.this)
+                                .load(eventPosterUrl)
                                 .into(eventPosterImageView);
-                    } else {
-                        // Load a placeholder image if poster URL is null
-                        eventPosterImageView.setImageResource(R.drawable.placeholder); // Ensure placeholder exists in drawable
+                    }
+
+                    // Load QR code using Glide
+                    if (qrCodeUrl != null) {
+                        Glide.with(EventDetailActivity.this)
+                                .load(qrCodeUrl)
+                                .into(eventQRCodeImageView);
                     }
                 } else {
-                    Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(EventDetailActivity.this, "Event not found", Toast.LENGTH_SHORT).show();
                 }
             } else {
-                Toast.makeText(this, "Failed to load event details", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EventDetailActivity.this, "Failed to load event details", Toast.LENGTH_SHORT).show();
             }
         });
     }
-
 }

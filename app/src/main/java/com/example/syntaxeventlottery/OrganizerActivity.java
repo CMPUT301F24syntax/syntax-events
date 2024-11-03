@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -62,21 +63,30 @@ public class OrganizerActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh the event list when returning to this activity
+        loadEventsFromFirestore();
+    }
+
     private void loadEventsFromFirestore() {
         db.collection("events").get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        eventList.clear();
+                        eventList.clear();  // Clear the list before adding fresh data
                         QuerySnapshot querySnapshot = task.getResult();
                         for (DocumentSnapshot document : querySnapshot.getDocuments()) {
                             Event event = document.toObject(Event.class);
                             eventList.add(event);
                         }
                         eventAdapter.notifyDataSetChanged();
+                    } else {
+                        Toast.makeText(this, "Failed to load events.", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> {
-                    // Handle failure
+                    Toast.makeText(this, "Error loading events: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
 }

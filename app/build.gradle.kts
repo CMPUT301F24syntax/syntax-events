@@ -35,19 +35,27 @@ android {
 dependencies {
     // QR code
     implementation("com.google.zxing:core:3.4.1")
+
     // Glide for updating the pictures
     implementation("com.github.bumptech.glide:glide:4.12.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
 
-    //Firestore dependencies
-    implementation("com.google.firebase:firebase-storage:20.2.1")
+    // Firestore and Firebase dependencies
     implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
+    implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-common") // Firebase compatibility
 
+    // Google Play Services
+    implementation("com.google.android.gms:play-services-base:18.5.0")
+
+    // AndroidX and Material dependencies
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+
+    // Testing dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

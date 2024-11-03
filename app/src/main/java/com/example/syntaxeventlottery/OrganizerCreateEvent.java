@@ -20,7 +20,6 @@ import com.google.firebase.storage.StorageReference;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
-
 import java.io.ByteArrayOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -31,27 +30,21 @@ import java.util.UUID;
 
 public class OrganizerCreateEvent extends AppCompatActivity {
 
-    private EditText eventNameEditText;
-    private EditText eventStartDateEditText;
-    private EditText eventEndDateEditText;
-    private EditText facilityEditText;
-    private EditText capacityEditText;
-    private Button createEventButton;
-    private Button backButton;
-    private Button uploadButton;
+    private EditText eventNameEditText, eventStartDateEditText, eventEndDateEditText, facilityEditText, capacityEditText;
+    private Button createEventButton, backButton, uploadButton;
     private ImageView eventImageView;
     private FirebaseFirestore db;
     private FirebaseStorage storage;
     private Uri imageUri;
     private Bitmap qrCodeBitmap;
 
-    // ActivityResultLauncher for selecting an image
+    // Image picker launcher
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     imageUri = result.getData().getData();
-                    eventImageView.setImageURI(imageUri);  // Display selected image in ImageView
+                    eventImageView.setImageURI(imageUri);
                 }
             }
     );
@@ -61,7 +54,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.organizer_create_event);
 
-        // Initialize UI components
+        // Initialize UI and Firebase
         eventNameEditText = findViewById(R.id.eventNameEditText);
         eventStartDateEditText = findViewById(R.id.eventStartDateEditText);
         eventEndDateEditText = findViewById(R.id.eventEndDateEditText);
@@ -71,25 +64,23 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         backButton = findViewById(R.id.backButton);
         uploadButton = findViewById(R.id.uploadButton);
         eventImageView = findViewById(R.id.eventImageView);
-
-        // Initialize Firestore and Firebase Storage
         db = FirebaseFirestore.getInstance();
         storage = FirebaseStorage.getInstance();
 
-        // Set click listener for the back button
+        // Back button click listener
         backButton.setOnClickListener(v -> finish());
 
-        // Set click listener for the upload button
+        // Image upload button click listener
         uploadButton.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             imagePickerLauncher.launch(intent);
         });
 
-        // Set click listener for the create event button
+        // Create event button click listener
         createEventButton.setOnClickListener(v -> saveEventToDatabase());
     }
 
-    // QR code generate
+    // Generate QR Code
     private Bitmap generateQRCodeBitmap(String content) {
         QRCodeWriter writer = new QRCodeWriter();
         try {
@@ -107,48 +98,40 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         }
     }
 
-
+    // Save event data to Firestore
     private void saveEventToDatabase() {
-        // Generate a unique eventID
         String eventID = UUID.randomUUID().toString();
-
-        // Retrieve input data from the EditText fields
         String eventName = eventNameEditText.getText().toString();
         String eventStartDate = eventStartDateEditText.getText().toString();
         String eventEndDate = eventEndDateEditText.getText().toString();
         String facility = facilityEditText.getText().toString();
         String capacityStr = capacityEditText.getText().toString();
 
-        // Check if all fields are filled
         if (eventName.isEmpty() || eventStartDate.isEmpty() || eventEndDate.isEmpty() || facility.isEmpty() || capacityStr.isEmpty()) {
-            Toast.makeText(OrganizerCreateEvent.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Parse capacity to integer
         int capacity;
         try {
             capacity = Integer.parseInt(capacityStr);
         } catch (NumberFormatException e) {
-            Toast.makeText(OrganizerCreateEvent.this, "Invalid capacity value", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Invalid capacity value", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Parse start and end dates
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         Date startDate, endDate;
         try {
             startDate = dateFormat.parse(eventStartDate);
             endDate = dateFormat.parse(eventEndDate);
         } catch (ParseException e) {
-            Toast.makeText(OrganizerCreateEvent.this, "Invalid date format. Use yyyy-MM-dd HH:mm", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Invalid date format. Use yyyy-MM-dd HH:mm", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Generate QR code based on event ID
         qrCodeBitmap = generateQRCodeBitmap(eventID);
 
-        // Create a Map to store event data
         Map<String, Object> eventData = new HashMap<>();
         eventData.put("eventID", eventID);
         eventData.put("eventName", eventName);
@@ -157,7 +140,6 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         eventData.put("facility", facility);
         eventData.put("capacity", capacity);
 
-        // If an image is selected, upload it and save the URL
         if (imageUri != null) {
             uploadImageAndSaveEventData(eventID, eventData);
         } else {
@@ -165,8 +147,8 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         }
     }
 
+    // Upload QR code to Firebase Storage
     private void uploadQRCodeAndSaveEventData(String eventID, Map<String, Object> eventData) {
-        // upload the generated QR code to Firebase Storage
         StorageReference qrCodeRef = storage.getReference().child("qrcodes/" + eventID + ".png");
         qrCodeRef.putBytes(bitmapToByteArray(qrCodeBitmap))
                 .addOnSuccessListener(taskSnapshot -> qrCodeRef.getDownloadUrl()
@@ -178,35 +160,38 @@ public class OrganizerCreateEvent extends AppCompatActivity {
                 .addOnFailureListener(e -> Toast.makeText(this, "QR Code upload failed", Toast.LENGTH_SHORT).show());
     }
 
+    // Convert Bitmap to ByteArray
     private byte[] bitmapToByteArray(Bitmap bitmap) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
         return baos.toByteArray();
     }
 
+    // Upload event poster image and save event data
     private void uploadImageAndSaveEventData(String eventID, Map<String, Object> eventData) {
         StorageReference storageRef = storage.getReference().child("event_images/" + eventID);
         storageRef.putFile(imageUri)
                 .addOnSuccessListener(taskSnapshot -> storageRef.getDownloadUrl()
                         .addOnSuccessListener(uri -> {
-                            eventData.put("imageUrl", uri.toString());
+                            eventData.put("posterUrl", uri.toString());
                             uploadQRCodeAndSaveEventData(eventID, eventData);
                         })
                         .addOnFailureListener(e -> Toast.makeText(this, "Image upload failed", Toast.LENGTH_SHORT).show()))
                 .addOnFailureListener(e -> Toast.makeText(this, "Image upload failed", Toast.LENGTH_SHORT).show());
     }
 
+    // Save event data to Firestore
     private void saveEventData(String eventID, Map<String, Object> eventData, String imageUrl) {
         if (imageUrl != null) {
-            eventData.put("imageUrl", imageUrl);
+            eventData.put("posterUrl", imageUrl);
         }
         db.collection("events").document(eventID)
                 .set(eventData)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(OrganizerCreateEvent.this, "Event Created and Saved to Database", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Event Created and Saved to Database", Toast.LENGTH_SHORT).show();
                     clearInputFields();
                 })
-                .addOnFailureListener(e -> Toast.makeText(OrganizerCreateEvent.this, "Failed to save event", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> Toast.makeText(this, "Failed to save event", Toast.LENGTH_SHORT).show());
     }
 
     private void clearInputFields() {
@@ -216,7 +201,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         facilityEditText.setText("");
         capacityEditText.setText("");
         eventImageView.setImageURI(null);
-        uploadButton.setVisibility(View.VISIBLE); // Reset button visibility for next event
+        uploadButton.setVisibility(View.VISIBLE);
         imageUri = null;
     }
 }

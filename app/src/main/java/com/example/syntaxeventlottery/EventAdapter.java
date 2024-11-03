@@ -39,15 +39,22 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         // Set the event name in the TextView
         holder.eventNameTextView.setText(event.getEventName());
 
-        // Load event poster using Glide library, which supports image loading and caching
+        // Load event poster using Glide
         Glide.with(context)
-                .load(event.getPosterUrl()) // Assuming `event.getPoster()` returns the URL of the poster image
+                .load(event.getPosterUrl()) // Load poster URL from event object
                 .into(holder.eventPosterImageView);
 
         // Set click listener for each event item to open EventDetailActivity
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, EventDetailActivity.class);
             intent.putExtra("event_id", event.getEventID()); // Pass the event ID to the detail activity
+            intent.putExtra("poster_url", event.getPosterUrl()); // Pass poster URL
+            intent.putExtra("qr_url", event.getQrCodeUrl()); // Pass QR code URL
+            intent.putExtra("event_name", event.getEventName());
+            intent.putExtra("event_start_date", event.getStartDate().toString());
+            intent.putExtra("event_end_date", event.getEndDate().toString());
+            intent.putExtra("event_facility", event.getFacility());
+            intent.putExtra("event_capacity", event.getCapacity());
             context.startActivity(intent);
         });
     }

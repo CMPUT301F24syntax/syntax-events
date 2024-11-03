@@ -15,7 +15,9 @@ import java.util.Date;
 public class Event {
     private String eventName;
     private String eventID;
-    private String qrCode; // Base64-encoded QR code string
+    private String qrCode;  // Base64-encoded QR code string
+    private String qrCodeUrl;  // URL for the QR code image in Firebase Storage
+    private String posterUrl;  // URL for the poster image in Firebase Storage
     private User organizer;
     private String facility;
     private Date startDate;
@@ -25,9 +27,8 @@ public class Event {
     private boolean isDrawed;
     private ArrayList<User> waitingList;
     private ArrayList<User> selectedList;
-    private String posterUrl; // URL for the event poster or background image
 
-    // Constructor to initialize an event with all parameters
+    // Constructors
     public Event(String eventName, User organizer, String facility, Date startDate, Date endDate, int capacity) {
         this.eventName = eventName;
         this.organizer = organizer;
@@ -41,125 +42,48 @@ public class Event {
         this.selectedList = new ArrayList<>();
     }
 
-    // Default constructor
     public Event() {
         this.waitingList = new ArrayList<>();
         this.selectedList = new ArrayList<>();
     }
 
     // Getter and Setter methods
-    public String getEventName() {
-        return eventName;
-    }
+    public String getEventName() { return eventName; }
+    public void setEventName(String eventName) { this.eventName = eventName; }
+    public String getQrCode() { return qrCode; }
+    public void setQrCode(String qrCode) { this.qrCode = qrCode; }
+    public String getEventID() { return eventID; }
+    public void setEventID(String eventID) { this.eventID = eventID; }
+    public User getOrganizer() { return organizer; }
+    public void setOrganizer(User organizer) { this.organizer = organizer; }
+    public String getFacility() { return facility; }
+    public void setFacility(String facility) { this.facility = facility; }
+    public Date getStartDate() { return startDate; }
+    public void setStartDate(Date startDate) { this.startDate = startDate; }
+    public Date getEndDate() { return endDate; }
+    public void setEndDate(Date endDate) { this.endDate = endDate; }
+    public int getCapacity() { return capacity; }
+    public void setCapacity(int capacity) { this.capacity = capacity; }
+    public boolean isDrawed() { return isDrawed; }
+    public void setDrawed(boolean drawed) { isDrawed = drawed; }
+    public boolean isFull() { return isFull; }
+    public void setFull(boolean full) { isFull = full; }
+    public ArrayList<User> getWaitingList() { return waitingList; }
+    public void setWaitingList(ArrayList<User> waitingList) { this.waitingList = waitingList; }
+    public ArrayList<User> getSelectedList() { return selectedList; }
+    public void setSelectedList(ArrayList<User> selectedList) { this.selectedList = selectedList; }
+    public String getPosterUrl() { return posterUrl; }
+    public void setPosterUrl(String posterUrl) { this.posterUrl = posterUrl; }
+    public String getQrCodeUrl() { return qrCodeUrl; }
+    public void setQrCodeUrl(String qrCodeUrl) { this.qrCodeUrl = qrCodeUrl; }
 
-    public void setEventName(String eventName) {
-        this.eventName = eventName;
-    }
-
-    public String getQrCode() {
-        return qrCode;
-    }
-
-    public void setQrCode(String qrCode) {
-        this.qrCode = qrCode;
-    }
-
-    public String getEventID() {
-        return eventID;
-    }
-
-    public void setEventID(String eventID) {
-        this.eventID = eventID;
-    }
-
-    public User getOrganizer() {
-        return organizer;
-    }
-
-    public void setOrganizer(User organizer) {
-        this.organizer = organizer;
-    }
-
-    public String getFacility() {
-        return facility;
-    }
-
-    public void setFacility(String facility) {
-        this.facility = facility;
-    }
-
-    public Date getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
-    }
-
-    public Date getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(Date endDate) {
-        this.endDate = endDate;
-    }
-
-    public int getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
-    }
-
-    public boolean isDrawed() {
-        return isDrawed;
-    }
-
-    public void setDrawed(boolean drawed) {
-        isDrawed = drawed;
-    }
-
-    public boolean isFull() {
-        return isFull;
-    }
-
-    public void setFull(boolean full) {
-        isFull = full;
-    }
-
-    public ArrayList<User> getWaitingList() {
-        return waitingList;
-    }
-
-    public void setWaitingList(ArrayList<User> waitingList) {
-        this.waitingList = waitingList;
-    }
-
-    public ArrayList<User> getSelectedList() {
-        return selectedList;
-    }
-
-    public void setSelectedList(ArrayList<User> selectedList) {
-        this.selectedList = selectedList;
-    }
-
-    public String getPosterUrl() {
-        return posterUrl;
-    }
-
-    public void setPosterUrl(String posterUrl) {
-        this.posterUrl = posterUrl;
-    }
-
-    // Method to generate a unique event ID based on the organizer's user ID and the current timestamp
+    // Method to generate event ID
     public void generateEventID(String userId) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmm");
-        String formattedDateTime = formatter.format(new Date());
-        this.eventID = formattedDateTime + "||" + userId;
+        this.eventID = formatter.format(new Date()) + "||" + userId;
     }
 
-    // Method to generate a QR code as a Bitmap
+    // QR Code Generation and Encoding
     public Bitmap generateQRCodeBitmap(String content) {
         QRCodeWriter writer = new QRCodeWriter();
         try {
@@ -177,7 +101,6 @@ public class Event {
         }
     }
 
-    // Method to encode Bitmap to Base64 string if needed
     public String encodeToBase64(Bitmap image) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
@@ -185,11 +108,10 @@ public class Event {
         return Base64.encodeToString(byteArray, Base64.DEFAULT);
     }
 
-    // Generate and set QR code as a Base64 string
     public void generateAndSetQRCode() {
         Bitmap qrCodeBitmap = generateQRCodeBitmap(this.eventID);
         if (qrCodeBitmap != null) {
-            this.qrCode = encodeToBase64(qrCodeBitmap); // Store as Base64-encoded string
+            this.qrCode = encodeToBase64(qrCodeBitmap);
         }
     }
 }
