@@ -6,17 +6,19 @@ public class User {
     private String phoneNumber;
     private String profilePhotoUrl;
     private String username;
+    private RoleManager roleManager;
 
     // No-argument constructor (required for Firebase reflection)
     public User() {}
 
     // Parameterized constructor
-    public User(String deviceCode, String email, String phoneNumber, String profilePhotoUrl, String username) {
+    public User(String deviceCode, String email, String phoneNumber, String profilePhotoUrl, String username, UserRepository userRepository) {
         this.deviceCode = deviceCode;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.profilePhotoUrl = profilePhotoUrl;
         this.username = username;
+        this.roleManager = new RoleManager(deviceCode, userRepository);
     }
 
     // Getters and Setters
@@ -60,6 +62,10 @@ public class User {
         this.username = username;
     }
 
+    public RoleManager getRoleManager() {
+        return roleManager;
+    }
+
     @Override
     public String toString() {
         return "Users{" +
@@ -68,6 +74,7 @@ public class User {
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", profilePhotoUrl='" + profilePhotoUrl + '\'' +
                 ", username='" + username + '\'' +
+                ", roles=" + roleManager.getRolesString() +
                 '}';
     }
 }

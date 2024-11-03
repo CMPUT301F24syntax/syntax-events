@@ -4,6 +4,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import android.net.Uri;
 
+import java.util.Set;
+
 public class UserRepository {
 
     private FirebaseFirestore db;
@@ -52,6 +54,18 @@ public class UserRepository {
                 }))
                 .addOnFailureListener(listener::onUploadFailure);
     }
+
+    public void updateRoles(String userId, Set<String> roles) {
+        db.collection("Users").document(userId)
+                .update("roles", roles)
+                .addOnSuccessListener(aVoid -> {
+                    System.out.println("User roles updated");
+                })
+                .addOnFailureListener(e -> {
+                    System.err.println("User roles update failed: " + e.getMessage());
+
+                });
+        }
 
     public interface OnUserDataFetchListener {
         void onUserDataFetched(User user);
