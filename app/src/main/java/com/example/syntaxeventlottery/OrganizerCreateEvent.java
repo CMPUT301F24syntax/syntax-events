@@ -11,15 +11,19 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+
 import java.io.ByteArrayOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -30,6 +34,7 @@ import java.util.UUID;
 
 public class OrganizerCreateEvent extends AppCompatActivity {
 
+    // Declare variables for the UI components
     private EditText eventNameEditText, eventStartDateEditText, eventEndDateEditText, facilityEditText, capacityEditText, eventDescriptionEditText;
     private Button createEventButton, backButton, uploadButton;
     private ImageView eventImageView;
@@ -103,13 +108,13 @@ public class OrganizerCreateEvent extends AppCompatActivity {
     private void saveEventToDatabase() {
         String eventID = UUID.randomUUID().toString();
         String eventName = eventNameEditText.getText().toString();
-        String eventDescription = eventDescriptionEditText.getText().toString(); // 获取描述
-        String eventStartDate = eventStartDateEditText.getText().toString();
-        String eventEndDate = eventEndDateEditText.getText().toString();
+        String eventDescription = eventDescriptionEditText.getText().toString();
+        String eventStartDateText = eventStartDateEditText.getText().toString();
+        String eventEndDateText = eventEndDateEditText.getText().toString();
         String facility = facilityEditText.getText().toString();
         String capacityStr = capacityEditText.getText().toString();
 
-        if (eventName.isEmpty() || eventDescription.isEmpty() || eventStartDate.isEmpty() || eventEndDate.isEmpty() || facility.isEmpty() || capacityStr.isEmpty()) {
+        if (eventName.isEmpty() || eventDescription.isEmpty() || eventStartDateText.isEmpty() || eventEndDateText.isEmpty() || facility.isEmpty() || capacityStr.isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -125,8 +130,8 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         Date startDate, endDate;
         try {
-            startDate = dateFormat.parse(eventStartDate);
-            endDate = dateFormat.parse(eventEndDate);
+            startDate = dateFormat.parse(eventStartDateText);
+            endDate = dateFormat.parse(eventEndDateText);
         } catch (ParseException e) {
             Toast.makeText(this, "Invalid date format. Use yyyy-MM-dd HH:mm", Toast.LENGTH_SHORT).show();
             return;
@@ -137,9 +142,9 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         Map<String, Object> eventData = new HashMap<>();
         eventData.put("eventID", eventID);
         eventData.put("eventName", eventName);
-        eventData.put("description", eventDescription); // 添加描述
-        eventData.put("startDate", startDate);
-        eventData.put("endDate", endDate);
+        eventData.put("description", eventDescription);
+        eventData.put("startDate", new com.google.firebase.Timestamp(startDate));  // Use Firebase Timestamp
+        eventData.put("endDate", new com.google.firebase.Timestamp(endDate));      // Use Firebase Timestamp
         eventData.put("facility", facility);
         eventData.put("capacity", capacity);
 
