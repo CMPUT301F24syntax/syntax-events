@@ -25,4 +25,4 @@ jobs:
       run: chmod +x gradlew
       
     - name: Run Unit Tests Only
-      run: ./gradlew assembleDebug testDebugUnitTest
+      run: ./gradlew assembleDebug testDebugUnitTest -x assembleRelease
