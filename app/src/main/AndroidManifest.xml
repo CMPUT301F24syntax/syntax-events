@@ -3,10 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.syntaxeventlottery">
 
+    <!-- Permissions -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET"/>
-
 
     <application
         android:allowBackup="true"
@@ -19,6 +19,7 @@
         android:theme="@style/Theme.SyntaxEventLottery"
         tools:targetApi="31">
 
+        <!-- MainActivity Declaration -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -28,12 +29,24 @@
             </intent-filter>
         </activity>
 
-        <!-- Register UserHomeActivity -->
+        <!-- Existing Activity Declarations -->
         <activity android:name=".UserHomeActivity" android:exported="true" />
         <activity android:name=".OrganizerActivity" android:exported="true" />
         <activity android:name=".OrganizerCreateEvent" android:exported="true" />
         <activity android:name=".EventDetailActivity" android:exported="true" />
 
+        <!-- New Activity Declaration: UserProfileActivity -->
+        <activity
+            android:name=".UserProfileActivity"
+            android:exported="true"
+            android:label="User Profile" />
+
+        <!-- Optional: If you have other activities like AdminActivity, declare them here -->
+        <!-- Example:
+        <activity android:name=".AdminActivity" android:exported="true" />
+        -->
+
     </application>
 
 </manifest>
+
