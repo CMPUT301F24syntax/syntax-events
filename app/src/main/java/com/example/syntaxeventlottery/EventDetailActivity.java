@@ -130,8 +130,20 @@ public class EventDetailActivity extends AppCompatActivity {
                     // Set data to TextViews
                     eventNameTextView.setText(eventName);
                     eventDescriptionTextView.setText(eventDescription); // Set description
-                    eventStartDateTextView.setText("Start Date: " + startDate);
-                    eventEndDateTextView.setText("End Date: " + endDate);
+
+                    // Convert Date to timestamp and display
+                    if (startDate != null) {
+                        eventStartDateTextView.setText("Start Date: " + startDate.getTime());
+                    } else {
+                        eventStartDateTextView.setText("Start Date: N/A");
+                    }
+
+                    if (endDate != null) {
+                        eventEndDateTextView.setText("End Date: " + endDate.getTime());
+                    } else {
+                        eventEndDateTextView.setText("End Date: N/A");
+                    }
+
                     eventFacilityTextView.setText("Location: " + facility);
                     eventCapacityTextView.setText("Capacity: " + (capacity != null ? capacity.toString() : "N/A"));
 
@@ -156,4 +168,5 @@ public class EventDetailActivity extends AppCompatActivity {
             }
         });
     }
+
 }
