@@ -1,4 +1,11 @@
 <resources>
     <string name="app_name">Syntax Event Lottery</string>
     <string name="login_as">Login As</string>
+    <string name="back">Back</string>
+    <string name="profile_image">Profile Image</string>
+    <string name="upload_image">Upload Profile Image</string>
+    <string name="name">Name</string>
+    <string name="email">Email</string>
+    <string name="phone">Phone Number</string>
+    <string name="save">Save</string>
 </resources>

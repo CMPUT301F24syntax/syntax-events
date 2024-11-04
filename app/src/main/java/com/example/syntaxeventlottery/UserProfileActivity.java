@@ -1,57 +1,90 @@
 package com.example.syntaxeventlottery;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import com.bumptech.glide.Glide;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
-/**
- * UserProfileActivity handles the display, editing, and saving of a user's profile information.
- * It uses Firebase through the UserRepository to load and update data.
- */
 public class UserProfileActivity extends AppCompatActivity {
 
-    // Initialize variables
-    private EditText edit_text_username, edit_text_email, edit_text_phone;
-    private Button save_button;
-    private UserRepository user_repository;
+    private Button backButton, editButton; // Change ImageButton to Button for backButton, and add editButton
+    private ImageView profileImageView;
+    private TextView nameTextView, emailTextView, phoneTextView;
 
-    // Will be replaced when user ID is set up
-    private String user_ID = "test_user";
+    // Firebase Firestore instance
+    private FirebaseFirestore db;
 
-    /**
-     * Called when the activity is first created. Initializes UI components, sets up the user repository,
-     * and loads the user data from firebase. Sets up a click listener for save button.
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.user_profile);
 
-        // Use user profile activity xml
-        setContentView(R.layout.user_profile_activity);
+        // Initialize UI components
+        backButton = findViewById(R.id.backButton);
+        editButton = findViewById(R.id.editButton); // Initialize editButton
+        profileImageView = findViewById(R.id.profileImageView);
+        nameTextView = findViewById(R.id.nameTextView);
+        emailTextView = findViewById(R.id.emailTextView);
+        phoneTextView = findViewById(R.id.phoneTextView);
 
-        // Initialize variables for UI components
-        edit_text_username = findViewById(R.id.edit_text_username);
-        edit_text_email = findViewById(R.id.edit_text_email);
-        edit_text_phone = findViewById(R.id.edit_text_phone);
-        save_button = findViewById(R.id.button_save);
+        // Initialize Firestore
+        db = FirebaseFirestore.getInstance();
 
-        // Create the users repository to store their profile
-        user_repository = new UserRepository();
+        // Load user profile from Firestore
+        loadUserProfile();
 
-        // Call load user data function
-        load_user_data();
+        // Set click listener for back button
+        backButton.setOnClickListener(v -> finish());
 
-        // Assign an onclick listener lambda expression to the save button
-        save_button.setOnClickListener(v -> save_user_data());
+        // Set click listener for edit button
+        editButton.setOnClickListener(v -> {
+            // Start an activity to edit user profile or show edit dialog
+            Intent intent = new Intent(UserProfileActivity.this, EditUserProfileActivity.class);
+            startActivity(intent);
+        });
     }
 
-    // Need to implement
-    private void load_user_data() {
-    }
+    private void loadUserProfile() {
+        // Assume "userId" is the unique ID of the user we want to load
+        String userId = "exampleUserId"; // Replace with actual user ID
 
-    // Need to implement
-    private void save_user_data() {
+        db.collection("users").document(userId).get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document.exists()) {
+                            // Retrieve and display user data
+                            String name = document.getString("name");
+                            String email = document.getString("email");
+                            String phone = document.getString("phone");
+                            String profileImageUrl = document.getString("profileImageUrl");
+
+                            // Set data to views
+                            nameTextView.setText(name);
+                            emailTextView.setText(email);
+                            phoneTextView.setText(phone);
+
+                            // Load profile image if URL exists
+                            if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                                Glide.with(this)
+                                        .load(profileImageUrl)
+                                        .into(profileImageView);
+                            }
+                        } else {
+                            Toast.makeText(UserProfileActivity.this, "User data not found", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(UserProfileActivity.this, "Failed to load user data", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }

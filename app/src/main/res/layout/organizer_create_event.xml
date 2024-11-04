@@ -104,6 +104,19 @@
                 android:padding="8dp"
                 android:layout_marginTop="8dp" />
 
+            <!-- Description Input -->
+            <EditText
+                android:id="@+id/eventDescriptionEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Event Description"
+                android:backgroundTint="@android:color/darker_gray"
+                android:padding="8dp"
+                android:layout_marginTop="8dp"
+                android:minHeight="100dp"
+                android:gravity="top"
+                android:inputType="textMultiLine" />
+
             <!-- Event Image View with "Upload the poster" button overlay -->
             <FrameLayout
                 android:layout_width="match_parent"
@@ -130,8 +143,6 @@
                     android:backgroundTint="@android:color/black"
                     android:textColor="@android:color/white" />
             </FrameLayout>
-
-
 
             <!-- Button to Create Event -->
             <Button
