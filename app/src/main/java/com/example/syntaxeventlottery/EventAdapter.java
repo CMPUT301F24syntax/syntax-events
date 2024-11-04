@@ -55,7 +55,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             intent.putExtra("event_description", event.getDescription()); // Pass description
             intent.putExtra("event_start_date", event.getStartDate().toString());
             intent.putExtra("event_end_date", event.getEndDate().toString());
-            intent.putExtra("event_facility", event.getFacility());
+            intent.putExtra("event_facility", event.getFacility().getLocation());
             intent.putExtra("event_capacity", event.getCapacity());
             context.startActivity(intent);
         });
