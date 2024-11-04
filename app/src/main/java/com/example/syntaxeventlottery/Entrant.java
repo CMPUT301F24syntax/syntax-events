@@ -149,6 +149,8 @@ public class Entrant extends User implements Serializable {
         this.geoLocation = geoLocation;
     }
 
+
+
     // -------------------------------------------------------------------------
     // Utility Methods
     // -------------------------------------------------------------------------
@@ -189,4 +191,29 @@ public class Entrant extends User implements Serializable {
                 ", geoLocation='" + geoLocation + '\'' +
                 '}';
     }
+
+    /**
+     * Adds the Entrant to the waiting list of the specified event.
+     *
+     * @param event The event to join.
+     */
+    public void joinEvent(Event event) {
+        if (!event.getWaitingList().contains(this)) {
+            event.getWaitingList().add(this); // Add this Entrant to the event's waiting list
+            addWaitingListEvent(event.getEventID()); // Add the event ID to this Entrant's waiting list
+        }
+    }
+
+    /**
+     * Removes the Entrant from the waiting list of the specified event.
+     *
+     * @param event The event to leave.
+     */
+    public void leaveEvent(Event event) {
+        if (event.getWaitingList().contains(this)) {
+            event.getWaitingList().remove(this); // Remove this Entrant from the event's waiting list
+            removeWaitingListEvent(event.getEventID()); // Remove the event ID from this Entrant's waiting list
+        }
+    }
+
 }
