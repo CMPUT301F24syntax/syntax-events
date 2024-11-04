@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
 
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -46,10 +47,6 @@
             android:exported="true"
             android:label="User Profile" />
 
-        <!-- Optional: If you have other activities like AdminActivity, declare them here -->
-        <!-- Example:
-        <activity android:name=".AdminActivity" android:exported="true" />
-        -->
 
     </application>
 
