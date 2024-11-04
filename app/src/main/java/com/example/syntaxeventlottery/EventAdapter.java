@@ -53,13 +53,21 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             intent.putExtra("qr_url", event.getQrCodeUrl()); // Pass QR code URL
             intent.putExtra("event_name", event.getEventName());
             intent.putExtra("event_description", event.getDescription()); // Pass description
-            intent.putExtra("event_start_date", event.getStartDate().toString());
-            intent.putExtra("event_end_date", event.getEndDate().toString());
-            intent.putExtra("event_facility", event.getFacility().getLocation());
+
+            // Pass start and end dates as timestamps
+            if (event.getStartDate() != null) {
+                intent.putExtra("event_start_date", event.getStartDate().getTime());
+            }
+            if (event.getEndDate() != null) {
+                intent.putExtra("event_end_date", event.getEndDate().getTime());
+            }
+
+            intent.putExtra("event_facility", event.getFacility());
             intent.putExtra("event_capacity", event.getCapacity());
             context.startActivity(intent);
         });
     }
+
 
     @Override
     public int getItemCount() {
