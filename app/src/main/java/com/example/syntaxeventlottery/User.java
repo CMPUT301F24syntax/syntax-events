@@ -1,14 +1,17 @@
 package com.example.syntaxeventlottery;
 
+/**
+ * Represents a general user within the Event Lottery System.
+ */
 public class User {
-    private String userID; // Unique identifier for the user
+    private String userID;
     private String deviceCode;
     private String email;
     private String phoneNumber;
     private String profilePhotoUrl;
     private String username;
 
-    // No-argument constructor (required for Firebase reflection)
+    // No-argument constructor required by Firebase
     public User() {}
 
     // Parameterized constructor
@@ -23,7 +26,6 @@ public class User {
 
     // Method to generate a unique, shorter userID
     private String generateUserID() {
-        // Combine the username and the last 4 digits of the current timestamp
         long timestamp = System.currentTimeMillis() % 10000;
         return username + "_" + timestamp;
     }
@@ -31,6 +33,11 @@ public class User {
     // Getters and Setters
     public String getUserID() {
         return userID;
+    }
+
+    // **New Setter for userID**
+    public void setUserID(String userID) {
+        this.userID = userID;
     }
 
     public String getDeviceCode() {
