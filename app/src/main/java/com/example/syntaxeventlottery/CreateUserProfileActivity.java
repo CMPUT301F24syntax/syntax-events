@@ -18,7 +18,7 @@ import com.bumptech.glide.Glide;
 /**
  * Handles the creation and updating of an Entrant's profile.
  */
-public class UserProfileActivity extends AppCompatActivity {
+public class CreateUserProfileActivity extends AppCompatActivity {
 
     // UI Components
     private EditText edit_text_username, edit_text_email, edit_text_phone;
@@ -82,15 +82,15 @@ public class UserProfileActivity extends AppCompatActivity {
                 if (exists && entrant != null) {
                     existingEntrant = entrant;
                     populateProfile(entrant);
-                    Toast.makeText(UserProfileActivity.this, "Existing profile found. You can update your information.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(CreateUserProfileActivity.this, "Existing profile found. You can update your information.", Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(UserProfileActivity.this, "No existing profile found. Please create a new profile.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(CreateUserProfileActivity.this, "No existing profile found. Please create a new profile.", Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
             public void onCheckError(Exception e) {
-                Toast.makeText(UserProfileActivity.this, "Error checking profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(CreateUserProfileActivity.this, "Error checking profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -99,7 +99,7 @@ public class UserProfileActivity extends AppCompatActivity {
             save_entrant_data();
 
             // Create an intent to navigate to UserHomeActivity after saving data
-            Intent jump_to_home = new Intent(UserProfileActivity.this, UserHomeActivity.class);
+            Intent jump_to_home = new Intent(CreateUserProfileActivity.this, UserHomeActivity.class);
             startActivity(jump_to_home); // Use the correct intent here
 
             finish();
@@ -129,7 +129,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
         // Load profile photo using Glide
         if (entrant.getProfilePhotoUrl() != null && !entrant.getProfilePhotoUrl().isEmpty()) {
-            Glide.with(UserProfileActivity.this)
+            Glide.with(CreateUserProfileActivity.this)
                     .load(entrant.getProfilePhotoUrl())
                     .into(image_view_avatar);
         } else {
@@ -172,20 +172,20 @@ public class UserProfileActivity extends AppCompatActivity {
                     user_repository.updateEntrant(userId, entrant, new UserRepository.OnEntrantUpdateListener() {
                         @Override
                         public void onEntrantUpdateSuccess() {
-                            Toast.makeText(UserProfileActivity.this, "Profile updated successfully.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(CreateUserProfileActivity.this, "Profile updated successfully.", Toast.LENGTH_SHORT).show();
                             finish();
                         }
 
                         @Override
                         public void onEntrantUpdateError(Exception e) {
-                            Toast.makeText(UserProfileActivity.this, "Error updating profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(CreateUserProfileActivity.this, "Error updating profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
 
                 @Override
                 public void onUploadFailure(Exception e) {
-                    Toast.makeText(UserProfileActivity.this, "Error uploading profile photo: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CreateUserProfileActivity.this, "Error uploading profile photo: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         } else {
@@ -200,13 +200,13 @@ public class UserProfileActivity extends AppCompatActivity {
             user_repository.updateEntrant(userId, entrant, new UserRepository.OnEntrantUpdateListener() {
                 @Override
                 public void onEntrantUpdateSuccess() {
-                    Toast.makeText(UserProfileActivity.this, "Profile saved successfully.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CreateUserProfileActivity.this, "Profile saved successfully.", Toast.LENGTH_SHORT).show();
                     finish();
                 }
 
                 @Override
                 public void onEntrantUpdateError(Exception e) {
-                    Toast.makeText(UserProfileActivity.this, "Error saving profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CreateUserProfileActivity.this, "Error saving profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         }

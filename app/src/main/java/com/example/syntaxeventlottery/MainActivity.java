@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         // Device ID does not exist, go to UserProfileActivity
                         Toast.makeText(MainActivity.this, "User Mode Selected", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(MainActivity.this, UserProfileActivity.class);
+                        Intent intent = new Intent(MainActivity.this, CreateUserProfileActivity.class);
                         intent.putExtra("DEVICE_ID", deviceId); // Pass the device ID to UserProfileActivity
                         startActivity(intent);
                     }
