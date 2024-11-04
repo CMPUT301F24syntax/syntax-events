@@ -79,6 +79,7 @@ public class EventRepository {
         data.put("startDate", event.getStartDate());
         data.put("endDate", event.getEndDate());
         data.put("capacity", event.getCapacity());
+        data.put("description", event.getDescription());
 
         eventsRef.document(event.getEventID()).set(data)
                 .addOnSuccessListener(aVoid -> Log.d("Firestore Events", "Event added successfully"))

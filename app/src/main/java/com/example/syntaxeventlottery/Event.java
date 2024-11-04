@@ -27,9 +27,10 @@ public class Event {
     private boolean isDrawed;
     private ArrayList<User> waitingList;
     private ArrayList<User> selectedList;
+    private String description; // New attribute for event description
 
     // Constructors
-    public Event(String eventName, User organizer, String facility, Date startDate, Date endDate, int capacity) {
+    public Event(String eventName, User organizer, String facility, Date startDate, Date endDate, int capacity, String description) {
         this.eventName = eventName;
         this.organizer = organizer;
         this.facility = facility;
@@ -40,6 +41,7 @@ public class Event {
         this.isDrawed = false;
         this.waitingList = new ArrayList<>();
         this.selectedList = new ArrayList<>();
+        this.description = description; // Initialize description
     }
 
     public Event() {
@@ -76,6 +78,10 @@ public class Event {
     public void setPosterUrl(String posterUrl) { this.posterUrl = posterUrl; }
     public String getQrCodeUrl() { return qrCodeUrl; }
     public void setQrCodeUrl(String qrCodeUrl) { this.qrCodeUrl = qrCodeUrl; }
+
+    // Getter and Setter for the new description attribute
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
     // Method to generate event ID
     public void generateEventID(String userId) {
@@ -115,4 +121,3 @@ public class Event {
         }
     }
 }
-

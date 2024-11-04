@@ -30,7 +30,7 @@ import java.util.UUID;
 
 public class OrganizerCreateEvent extends AppCompatActivity {
 
-    private EditText eventNameEditText, eventStartDateEditText, eventEndDateEditText, facilityEditText, capacityEditText;
+    private EditText eventNameEditText, eventStartDateEditText, eventEndDateEditText, facilityEditText, capacityEditText, eventDescriptionEditText;
     private Button createEventButton, backButton, uploadButton;
     private ImageView eventImageView;
     private FirebaseFirestore db;
@@ -60,6 +60,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         eventEndDateEditText = findViewById(R.id.eventEndDateEditText);
         facilityEditText = findViewById(R.id.facilityEditText);
         capacityEditText = findViewById(R.id.capacityEditText);
+        eventDescriptionEditText = findViewById(R.id.eventDescriptionEditText);
         createEventButton = findViewById(R.id.createEventButton);
         backButton = findViewById(R.id.backButton);
         uploadButton = findViewById(R.id.uploadButton);
@@ -102,12 +103,13 @@ public class OrganizerCreateEvent extends AppCompatActivity {
     private void saveEventToDatabase() {
         String eventID = UUID.randomUUID().toString();
         String eventName = eventNameEditText.getText().toString();
+        String eventDescription = eventDescriptionEditText.getText().toString(); // 获取描述
         String eventStartDate = eventStartDateEditText.getText().toString();
         String eventEndDate = eventEndDateEditText.getText().toString();
         String facility = facilityEditText.getText().toString();
         String capacityStr = capacityEditText.getText().toString();
 
-        if (eventName.isEmpty() || eventStartDate.isEmpty() || eventEndDate.isEmpty() || facility.isEmpty() || capacityStr.isEmpty()) {
+        if (eventName.isEmpty() || eventDescription.isEmpty() || eventStartDate.isEmpty() || eventEndDate.isEmpty() || facility.isEmpty() || capacityStr.isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -135,6 +137,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         Map<String, Object> eventData = new HashMap<>();
         eventData.put("eventID", eventID);
         eventData.put("eventName", eventName);
+        eventData.put("description", eventDescription); // 添加描述
         eventData.put("startDate", startDate);
         eventData.put("endDate", endDate);
         eventData.put("facility", facility);
@@ -196,6 +199,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
 
     private void clearInputFields() {
         eventNameEditText.setText("");
+        eventDescriptionEditText.setText("");
         eventStartDateEditText.setText("");
         eventEndDateEditText.setText("");
         facilityEditText.setText("");

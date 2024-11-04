@@ -28,6 +28,8 @@ public class UserHomeActivity extends AppCompatActivity {
 
         // Initialize the Organizer button
         ImageButton organizerButton = findViewById(R.id.organizerButton);
+        // Initialize the Profile button
+        ImageButton profileButton = findViewById(R.id.profileButton);
 
         // Set a click listener on the Organizer button
         organizerButton.setOnClickListener(new View.OnClickListener() {
@@ -35,6 +37,16 @@ public class UserHomeActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // Start the OrganizerActivity
                 Intent intent = new Intent(UserHomeActivity.this, OrganizerActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        // Set a click listener on the Profile button
+        profileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Start the UserProfileActivity
+                Intent intent = new Intent(UserHomeActivity.this, UserProfileActivity.class);
                 startActivity(intent);
             }
         });

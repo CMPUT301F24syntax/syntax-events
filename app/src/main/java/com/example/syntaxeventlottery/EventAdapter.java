@@ -36,8 +36,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         // Get the current event from the list
         Event event = eventList.get(position);
 
-        // Set the event name in the TextView
+        // Set the event name and description in the TextView
         holder.eventNameTextView.setText(event.getEventName());
+        holder.eventDescriptionTextView.setText(event.getDescription()); // Set description
 
         // Load event poster using Glide
         Glide.with(context)
@@ -51,6 +52,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             intent.putExtra("poster_url", event.getPosterUrl()); // Pass poster URL
             intent.putExtra("qr_url", event.getQrCodeUrl()); // Pass QR code URL
             intent.putExtra("event_name", event.getEventName());
+            intent.putExtra("event_description", event.getDescription()); // Pass description
             intent.putExtra("event_start_date", event.getStartDate().toString());
             intent.putExtra("event_end_date", event.getEndDate().toString());
             intent.putExtra("event_facility", event.getFacility());
@@ -69,12 +71,14 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     public static class EventViewHolder extends RecyclerView.ViewHolder {
         ImageView eventPosterImageView;
         TextView eventNameTextView;
+        TextView eventDescriptionTextView; // Added for description
 
         public EventViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Initialize the ImageView and TextView for event poster and name
+            // Initialize the ImageView and TextViews for event poster, name, and description
             eventPosterImageView = itemView.findViewById(R.id.eventPosterImageView);
             eventNameTextView = itemView.findViewById(R.id.eventNameTextView);
+            eventDescriptionTextView = itemView.findViewById(R.id.eventDescriptionTextView); // Initialize description view
         }
     }
 }
