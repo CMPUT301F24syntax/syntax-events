@@ -7,6 +7,10 @@ import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,8 +64,14 @@ public class EditEventActivity extends AppCompatActivity {
                         // Set existing data to EditTexts
                         editEventName.setText(document.getString("eventName"));
                         editEventDescription.setText(document.getString("description"));
-                        editStartDate.setText(document.getDate("startDate").toString());
-                        editEndDate.setText(document.getDate("endDate").toString());
+
+                        // Convert Timestamps to formatted Strings for the EditTexts
+                        Date startDate = document.getDate("startDate");
+                        Date endDate = document.getDate("endDate");
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                        editStartDate.setText(startDate != null ? dateFormat.format(startDate) : "");
+                        editEndDate.setText(endDate != null ? dateFormat.format(endDate) : "");
+
                         editFacility.setText(document.getString("facility"));
                         editCapacity.setText(String.valueOf(document.getLong("capacity")));
                     } else {
@@ -75,24 +85,35 @@ public class EditEventActivity extends AppCompatActivity {
     private void saveEventDetails() {
         String eventName = editEventName.getText().toString().trim();
         String eventDescription = editEventDescription.getText().toString().trim();
-        String startDate = editStartDate.getText().toString().trim();
-        String endDate = editEndDate.getText().toString().trim();
+        String startDateStr = editStartDate.getText().toString().trim();
+        String endDateStr = editEndDate.getText().toString().trim();
         String facility = editFacility.getText().toString().trim();
         String capacity = editCapacity.getText().toString().trim();
 
         // Validate fields
         if (TextUtils.isEmpty(eventName) || TextUtils.isEmpty(eventDescription) ||
-                TextUtils.isEmpty(startDate) || TextUtils.isEmpty(endDate) ||
+                TextUtils.isEmpty(startDateStr) || TextUtils.isEmpty(endDateStr) ||
                 TextUtils.isEmpty(facility) || TextUtils.isEmpty(capacity)) {
             Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Parse the startDate and endDate strings to Date objects
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        Date startDate, endDate;
+        try {
+            startDate = dateFormat.parse(startDateStr);
+            endDate = dateFormat.parse(endDateStr);
+        } catch (ParseException e) {
+            Toast.makeText(this, "Invalid date format. Use yyyy-MM-dd HH:mm", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // Create a map with the updated values
         Map<String, Object> eventUpdates = new HashMap<>();
         eventUpdates.put("eventName", eventName);
-        eventUpdates.put("description", eventDescription); // Add description to updates
-        eventUpdates.put("startDate", startDate); // You might need to parse this into a Date object
+        eventUpdates.put("description", eventDescription);
+        eventUpdates.put("startDate", startDate); // Store Date object, which Firestore converts to Timestamp
         eventUpdates.put("endDate", endDate);     // Same as above
         eventUpdates.put("facility", facility);
         eventUpdates.put("capacity", Long.parseLong(capacity));
