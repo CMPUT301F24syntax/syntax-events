@@ -59,7 +59,7 @@ public class EditEventActivity extends AppCompatActivity {
                     if (document.exists()) {
                         // Set existing data to EditTexts
                         editEventName.setText(document.getString("eventName"));
-                        editEventDescription.setText(document.getString("eventDescription"));
+                        editEventDescription.setText(document.getString("description"));
                         editStartDate.setText(document.getDate("startDate").toString());
                         editEndDate.setText(document.getDate("endDate").toString());
                         editFacility.setText(document.getString("facility"));
@@ -91,7 +91,7 @@ public class EditEventActivity extends AppCompatActivity {
         // Create a map with the updated values
         Map<String, Object> eventUpdates = new HashMap<>();
         eventUpdates.put("eventName", eventName);
-        eventUpdates.put("eventDescription", eventDescription); // Add description to updates
+        eventUpdates.put("description", eventDescription); // Add description to updates
         eventUpdates.put("startDate", startDate); // You might need to parse this into a Date object
         eventUpdates.put("endDate", endDate);     // Same as above
         eventUpdates.put("facility", facility);
