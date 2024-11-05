@@ -56,6 +56,18 @@
                 android:textColor="@android:color/white"
                 android:layout_marginBottom="16dp" />
 
+            <!-- Join Event Button (Added) -->
+            <Button
+                android:id="@+id/joinEventButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Join Event"
+                android:backgroundTint="@android:color/holo_green_dark"
+                android:textColor="@android:color/white"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone" /> <!-- Initially hidden -->
+
             <!-- Event Name -->
             <TextView
                 android:id="@+id/eventNameTextView"
