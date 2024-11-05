@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -113,6 +114,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         String eventEndDateText = eventEndDateEditText.getText().toString();
         String facility = facilityEditText.getText().toString();
         String capacityStr = capacityEditText.getText().toString();
+        String organizerId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
         if (eventName.isEmpty() || eventDescription.isEmpty() || eventStartDateText.isEmpty() || eventEndDateText.isEmpty() || facility.isEmpty() || capacityStr.isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
@@ -147,6 +149,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         eventData.put("endDate", new com.google.firebase.Timestamp(endDate));      // Use Firebase Timestamp
         eventData.put("facility", facility);
         eventData.put("capacity", capacity);
+        eventData.put("oragnizerId", organizerId);
 
         if (imageUri != null) {
             uploadImageAndSaveEventData(eventID, eventData);
