@@ -2,94 +2,273 @@ package com.example.syntaxeventlottery;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.util.Base64;
+
+import com.google.firebase.firestore.Exclude;
+import com.google.firebase.firestore.ServerTimestamp;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
-public class Event {
-    private String eventName;
+/**
+ * Represents an event in the Event Lottery System.
+ */
+public class Event implements Serializable {
+
+    // -------------------------------------------------------------------------
+    // Attributes
+    // -------------------------------------------------------------------------
+
     private String eventID;
-    private String qrCode;  // Base64-encoded QR code string
-    private String qrCodeUrl;  // URL for the QR code image in Firebase Storage
-    private String posterUrl;  // URL for the poster image in Firebase Storage
-    private User organizer;
+    private String eventName;
+    private String description;
     private String facility;
-    private Date startDate;
-    private Date endDate;
     private int capacity;
     private boolean isFull;
     private boolean isDrawed;
-    private ArrayList<User> waitingList;
-    private ArrayList<User> selectedList;
-    private String description; // New attribute for event description
 
+    @ServerTimestamp
+    private Date startDate;
+
+    @ServerTimestamp
+    private Date endDate;
+
+    private String organizerId;
+    private String posterUrl;
+    private String qrCodeUrl;
+
+    /**
+     * A list of participant IDs who have joined the event's waiting list.
+     */
+    private List<String> participants;
+
+    /**
+     * A list of participant IDs who have been selected for the event.
+     */
+    private List<String> selectedParticipants;
+
+    // -------------------------------------------------------------------------
     // Constructors
-    public Event(String eventName, User organizer, String facility, Date startDate, Date endDate, int capacity, String description) {
-        this.eventName = eventName;
-        this.organizer = organizer;
-        this.facility = facility;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.capacity = capacity;
+    // -------------------------------------------------------------------------
+
+    /**
+     * Default constructor required by Firebase.
+     */
+    public Event() {
+        this.participants = new ArrayList<>();
+        this.selectedParticipants = new ArrayList<>();
         this.isFull = false;
         this.isDrawed = false;
-        this.waitingList = new ArrayList<>();
-        this.selectedList = new ArrayList<>();
-        this.description = description; // Initialize description
     }
 
-    public Event() {
-        this.waitingList = new ArrayList<>();
-        this.selectedList = new ArrayList<>();
+    /**
+     * Parameterized constructor to create an Event with specific details.
+     *
+     * @param eventID       Unique identifier for the event.
+     * @param eventName     Name of the event.
+     * @param description   Description of the event.
+     * @param facility      Location or facility where the event is held.
+     * @param capacity      Maximum capacity of participants.
+     * @param startDate     Start date and time of the event.
+     * @param endDate       End date and time of the event.
+     * @param organizerId   ID of the organizer creating the event.
+     */
+    public Event(String eventID, String eventName, String description, String facility, int capacity,
+                 Date startDate, Date endDate, String organizerId) {
+        this.eventID = eventID;
+        this.eventName = eventName;
+        this.description = description;
+        this.facility = facility;
+        this.capacity = capacity;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.organizerId = organizerId;
+        this.participants = new ArrayList<>();
+        this.selectedParticipants = new ArrayList<>();
+        this.isFull = false;
+        this.isDrawed = false;
     }
 
-    // Getter and Setter methods
-    public String getEventName() { return eventName; }
-    public void setEventName(String eventName) { this.eventName = eventName; }
-    public String getQrCode() { return qrCode; }
-    public void setQrCode(String qrCode) { this.qrCode = qrCode; }
-    public String getEventID() { return eventID; }
-    public void setEventID(String eventID) { this.eventID = eventID; }
-    public User getOrganizer() { return organizer; }
-    public void setOrganizer(User organizer) { this.organizer = organizer; }
-    public String getFacility() { return facility; }
-    public void setFacility(String facility) { this.facility = facility; }
-    public Date getStartDate() { return startDate; }
-    public void setStartDate(Date startDate) { this.startDate = startDate; }
-    public Date getEndDate() { return endDate; }
-    public void setEndDate(Date endDate) { this.endDate = endDate; }
-    public int getCapacity() { return capacity; }
-    public void setCapacity(int capacity) { this.capacity = capacity; }
-    public boolean isDrawed() { return isDrawed; }
-    public void setDrawed(boolean drawed) { isDrawed = drawed; }
-    public boolean isFull() { return isFull; }
-    public void setFull(boolean full) { isFull = full; }
-    public ArrayList<User> getWaitingList() { return waitingList; }
-    public void setWaitingList(ArrayList<User> waitingList) { this.waitingList = waitingList; }
-    public ArrayList<User> getSelectedList() { return selectedList; }
-    public void setSelectedList(ArrayList<User> selectedList) { this.selectedList = selectedList; }
-    public String getPosterUrl() { return posterUrl; }
-    public void setPosterUrl(String posterUrl) { this.posterUrl = posterUrl; }
-    public String getQrCodeUrl() { return qrCodeUrl; }
-    public void setQrCodeUrl(String qrCodeUrl) { this.qrCodeUrl = qrCodeUrl; }
+    // -------------------------------------------------------------------------
+    // Getters and Setters
+    // -------------------------------------------------------------------------
 
-    // Getter and Setter for the new description attribute
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    // Method to generate event ID
-    public void generateEventID(String userId) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmm");
-        this.eventID = formatter.format(new Date()) + "||" + userId;
+    public String getEventID() {
+        return eventID;
     }
 
-    // QR Code Generation and Encoding
+    public void setEventID(String eventID) {
+        this.eventID = eventID;
+    }
+
+    public String getEventName() {
+        return eventName;
+    }
+
+    public void setEventName(String eventName) {
+        this.eventName = eventName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getFacility() {
+        return facility;
+    }
+
+    public void setFacility(String facility) {
+        this.facility = facility;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+
+    public boolean isFull() {
+        return isFull;
+    }
+
+    public void setFull(boolean full) {
+        isFull = full;
+    }
+
+    public boolean isDrawed() {
+        return isDrawed;
+    }
+
+    public void setDrawed(boolean drawed) {
+        isDrawed = drawed;
+    }
+
+    public Date getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
+    public String getOrganizerId() {
+        return organizerId;
+    }
+
+    public void setOrganizerId(String organizerId) {
+        this.organizerId = organizerId;
+    }
+
+    public String getPosterUrl() {
+        return posterUrl;
+    }
+
+    public void setPosterUrl(String posterUrl) {
+        this.posterUrl = posterUrl;
+    }
+
+    public String getQrCodeUrl() {
+        return qrCodeUrl;
+    }
+
+    public void setQrCodeUrl(String qrCodeUrl) {
+        this.qrCodeUrl = qrCodeUrl;
+    }
+
+    public List<String> getParticipants() {
+        return participants;
+    }
+
+    public void setParticipants(List<String> participants) {
+        this.participants = participants;
+    }
+
+    public List<String> getSelectedParticipants() {
+        return selectedParticipants;
+    }
+
+    public void setSelectedParticipants(List<String> selectedParticipants) {
+        this.selectedParticipants = selectedParticipants;
+    }
+
+    // -------------------------------------------------------------------------
+    // Participant Management Methods
+    // -------------------------------------------------------------------------
+
+    /**
+     * Adds a participant's ID to the event's participants list.
+     *
+     * @param participantId The ID of the participant to add.
+     */
+    public void addParticipant(String participantId) {
+        if (!this.participants.contains(participantId)) {
+            this.participants.add(participantId);
+            checkIfFull();
+        }
+    }
+
+    /**
+     * Removes a participant's ID from the event's participants list.
+     *
+     * @param participantId The ID of the participant to remove.
+     */
+    public void removeParticipant(String participantId) {
+        this.participants.remove(participantId);
+        checkIfFull();
+    }
+
+    /**
+     * Checks if the event is full based on capacity and updates the isFull flag.
+     */
+    private void checkIfFull() {
+        if (this.participants.size() >= this.capacity) {
+            this.isFull = true;
+        } else {
+            this.isFull = false;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Utility Methods
+    // -------------------------------------------------------------------------
+
+    /**
+     * Generates a unique event ID based on the current timestamp and organizer ID.
+     *
+     * @param organizerId The ID of the organizer.
+     */
+    public void generateEventID(String organizerId) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        this.eventID = formatter.format(new Date()) + "_" + organizerId;
+    }
+
+    /**
+     * Generates a QR code bitmap for the event ID.
+     *
+     * @param content The content to encode in the QR code.
+     * @return The generated QR code bitmap.
+     */
+    @Exclude
     public Bitmap generateQRCodeBitmap(String content) {
         QRCodeWriter writer = new QRCodeWriter();
         try {
@@ -107,17 +286,53 @@ public class Event {
         }
     }
 
-    public String encodeToBase64(Bitmap image) {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        image.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-        byte[] byteArray = byteArrayOutputStream.toByteArray();
-        return Base64.encodeToString(byteArray, Base64.DEFAULT);
+    /**
+     * Converts a bitmap image to a byte array.
+     *
+     * @param bitmap The bitmap image to convert.
+     * @return The byte array representation of the bitmap.
+     */
+    @Exclude
+    public byte[] bitmapToByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        return baos.toByteArray();
     }
 
-    public void generateAndSetQRCode() {
+    /**
+     * Generates and sets the QR code URL for the event.
+     */
+    @Exclude
+    public void generateAndSetQRCodeUrl() {
         Bitmap qrCodeBitmap = generateQRCodeBitmap(this.eventID);
         if (qrCodeBitmap != null) {
-            this.qrCode = encodeToBase64(qrCodeBitmap);
+            // Code to upload QR code bitmap to Firebase Storage and set qrCodeUrl
+            // This should be handled in your repository or storage management code
         }
+    }
+
+    /**
+     * String representation of the Event object.
+     *
+     * @return String detailing the event's attributes.
+     */
+    @Override
+    public String toString() {
+        return "Event{" +
+                "eventID='" + eventID + '\'' +
+                ", eventName='" + eventName + '\'' +
+                ", description='" + description + '\'' +
+                ", facility='" + facility + '\'' +
+                ", capacity=" + capacity +
+                ", isFull=" + isFull +
+                ", isDrawed=" + isDrawed +
+                ", startDate=" + startDate +
+                ", endDate=" + endDate +
+                ", organizerId='" + organizerId + '\'' +
+                ", posterUrl='" + posterUrl + '\'' +
+                ", qrCodeUrl='" + qrCodeUrl + '\'' +
+                ", participants=" + participants +
+                ", selectedParticipants=" + selectedParticipants +
+                '}';
     }
 }
