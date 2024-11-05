@@ -25,20 +25,17 @@ import com.bumptech.glide.Glide;
 public class CreateUserProfileActivity extends AppCompatActivity {
 
     // UI Components
-    private EditText edit_text_username, edit_text_email, edit_text_phone;
-    private Button button_save, button_back;
-    private ImageView image_view_avatar;
-    private ImageButton button_remove_photo;
+    private EditText editUsername, editEmail, editPhone;
+    private Button btnSave, btnBack;
+    private ImageView imgAvatar;
+    private ImageButton btnRemovePhoto;
 
     // Repository for data operations
-    private UserRepository user_repository;
+    private UserRepository userRepository;
 
-    // Device ID
+    // Device ID and Entrant data
     private String deviceId;
-
-    // Entrant data if exists
     private Entrant existingEntrant = null;
-
     private Uri selectedImageUri = null;
 
     // Image picker launcher
@@ -47,78 +44,91 @@ public class CreateUserProfileActivity extends AppCompatActivity {
             result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     selectedImageUri = result.getData().getData();
-                    image_view_avatar.setImageURI(selectedImageUri);
-                    button_remove_photo.setVisibility(View.VISIBLE); // Show remove button when image is selected
+                    imgAvatar.setImageURI(selectedImageUri);
+                    btnRemovePhoto.setVisibility(View.VISIBLE); // Show remove button when image is selected
                 }
             }
     );
 
-    /**
-     * Initializes the activity, sets up UI components, and checks for existing Entrant data.
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.create_user_profile); // Ensure correct layout name
+        setContentView(R.layout.create_user_profile);
 
         // Initialize UI components
-        edit_text_username = findViewById(R.id.edit_text_username);
-        edit_text_email = findViewById(R.id.edit_text_email);
-        edit_text_phone = findViewById(R.id.edit_text_phone);
-        button_save = findViewById(R.id.button_save);
-        button_back = findViewById(R.id.button_back);
-        image_view_avatar = findViewById(R.id.image_view_avatar);
-        button_remove_photo = findViewById(R.id.button_remove_photo);
-        button_remove_photo.setVisibility(View.GONE); // Initially hide remove button
+        initializeUI();
 
         // Initialize UserRepository
-        user_repository = new UserRepository();
+        userRepository = new UserRepository();
 
-        // Retrieve device ID from Intent
-        Intent intent = getIntent();
-        deviceId = intent.getStringExtra("DEVICE_ID");
+        // Retrieve or generate device ID
+        retrieveDeviceId();
 
+        // Check if user profile exists
+        checkExistingProfile();
+
+        // Set click listeners
+        setClickListeners();
+    }
+
+    /**
+     * Initialize UI components.
+     */
+    private void initializeUI() {
+        editUsername = findViewById(R.id.edit_text_username);
+        editEmail = findViewById(R.id.edit_text_email);
+        editPhone = findViewById(R.id.edit_text_phone);
+        btnSave = findViewById(R.id.button_save);
+        btnBack = findViewById(R.id.button_back);
+        imgAvatar = findViewById(R.id.image_view_avatar);
+        btnRemovePhoto = findViewById(R.id.button_remove_photo);
+        btnRemovePhoto.setVisibility(View.GONE); // Initially hide remove button
+    }
+
+    /**
+     * Retrieve the device ID, either from Intent or using Android ID.
+     */
+    private void retrieveDeviceId() {
+        deviceId = getIntent().getStringExtra("DEVICE_ID");
         if (deviceId == null || deviceId.isEmpty()) {
-            // Fallback to ANDROID_ID if not passed via Intent
             deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         }
+    }
 
-        user_repository.checkEntrantExists(deviceId, new UserRepository.OnCheckEntrantExistsListener() {
+    /**
+     * Check if there is an existing profile for the current device ID.
+     */
+    private void checkExistingProfile() {
+        userRepository.checkEntrantExists(deviceId, new UserRepository.OnCheckEntrantExistsListener() {
             @Override
             public void onCheckComplete(boolean exists, Entrant entrant) {
                 if (exists && entrant != null) {
                     existingEntrant = entrant;
                     populateProfile(entrant);
-                    Toast.makeText(CreateUserProfileActivity.this, "Profile exists, can edit.", Toast.LENGTH_LONG).show();
-                    Log.d("EntrantStatus", "Entrant loaded successfully: " + entrant.toString());
-                    button_remove_photo.setVisibility(View.VISIBLE); // 显示移除按钮
+                    Toast.makeText(CreateUserProfileActivity.this, "Profile exists. You can edit.", Toast.LENGTH_LONG).show();
+                    Log.d("EntrantStatus", "Entrant loaded successfully: " + entrant);
                 } else {
-                    Toast.makeText(CreateUserProfileActivity.this, "No profile, can't edit.", Toast.LENGTH_LONG).show();
-                    button_remove_photo.setVisibility(View.GONE); // 隐藏移除按钮
+                    Toast.makeText(CreateUserProfileActivity.this, "No profile found. Please create one.", Toast.LENGTH_LONG).show();
                     Log.d("EntrantStatus", "No existing entrant found.");
                 }
             }
 
             @Override
             public void onCheckError(Exception e) {
-                Toast.makeText(CreateUserProfileActivity.this, "profile check error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(CreateUserProfileActivity.this, "Error checking profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 Log.e("EntrantStatus", "Error checking entrant: " + e.getMessage());
             }
         });
+    }
 
-        // Set click listeners
-        button_save.setOnClickListener(v -> {
-            save_entrant_data();
-
-            // Create an intent to navigate to UserHomeActivity after saving data
-            Intent jump_to_home = new Intent(CreateUserProfileActivity.this, UserHomeActivity.class);
-            startActivity(jump_to_home);
-            finish();
-        });
-
-        image_view_avatar.setOnClickListener(v -> openImagePicker());
-        button_remove_photo.setOnClickListener(v -> confirmRemovePhoto());
-        button_back.setOnClickListener(v -> finish());
+    /**
+     * Set click listeners for buttons.
+     */
+    private void setClickListeners() {
+        btnSave.setOnClickListener(v -> saveEntrantData());
+        imgAvatar.setOnClickListener(v -> openImagePicker());
+        btnRemovePhoto.setOnClickListener(v -> confirmRemovePhoto());
+        btnBack.setOnClickListener(v -> finish());
     }
 
     /**
@@ -133,20 +143,21 @@ public class CreateUserProfileActivity extends AppCompatActivity {
      * Prompts the user with a confirmation dialog to remove the current profile photo.
      */
     private void confirmRemovePhoto() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Remove Profile Photo");
-        builder.setMessage("Are you sure you want to remove your profile photo?");
-        builder.setPositiveButton("Yes", (dialog, which) -> removeProfilePhoto());
-        builder.setNegativeButton("No", null);
-        builder.show();
+        new AlertDialog.Builder(this)
+                .setTitle("Remove Profile Photo")
+                .setMessage("Are you sure you want to remove your profile photo?")
+                .setPositiveButton("Yes", (dialog, which) -> removeProfilePhoto())
+                .setNegativeButton("No", null)
+                .show();
     }
-    /**
+
     /**
      * Removes the Entrant's profile photo.
      */
     private void removeProfilePhoto() {
-        image_view_avatar.setImageResource(R.drawable.ic_avatar_placeholder);
-        button_remove_photo.setVisibility(View.GONE); // Hide remove button
+        imgAvatar.setImageResource(R.drawable.ic_avatar_placeholder);
+        btnRemovePhoto.setVisibility(View.GONE); // Hide remove button
+        selectedImageUri = null; // Clear selected image URI
     }
 
     /**
@@ -155,37 +166,36 @@ public class CreateUserProfileActivity extends AppCompatActivity {
      * @param entrant The existing Entrant object.
      */
     private void populateProfile(Entrant entrant) {
-        edit_text_username.setText(entrant.getUsername());
-        edit_text_email.setText(entrant.getEmail());
-        edit_text_phone.setText(entrant.getPhoneNumber());
+        editUsername.setText(entrant.getUsername());
+        editEmail.setText(entrant.getEmail());
+        editPhone.setText(entrant.getPhoneNumber());
 
         // Load profile photo using Glide
         if (entrant.getProfilePhotoUrl() != null && !entrant.getProfilePhotoUrl().isEmpty()) {
-            Glide.with(CreateUserProfileActivity.this)
+            Glide.with(this)
                     .load(entrant.getProfilePhotoUrl())
-                    .into(image_view_avatar);
-            button_remove_photo.setVisibility(View.VISIBLE); // Show remove button if photo exists
+                    .into(imgAvatar);
+            btnRemovePhoto.setVisibility(View.VISIBLE);
         } else {
-            // Set default avatar if no photo URL
-            image_view_avatar.setImageResource(R.drawable.ic_avatar_placeholder);
-            button_remove_photo.setVisibility(View.GONE); // Hide remove button
+            imgAvatar.setImageResource(R.drawable.ic_avatar_placeholder);
+            btnRemovePhoto.setVisibility(View.GONE);
         }
     }
 
     /**
      * Saves the Entrant's profile data to Firebase, including uploading a new profile photo if selected.
      */
-    private void save_entrant_data() {
-        String username = edit_text_username.getText().toString().trim();
-        String email = edit_text_email.getText().toString().trim();
-        String phone = edit_text_phone.getText().toString().trim();
+    private void saveEntrantData() {
+        String username = editUsername.getText().toString().trim();
+        String email = editEmail.getText().toString().trim();
+        String phone = editPhone.getText().toString().trim();
 
         if (username.isEmpty() || email.isEmpty()) {
             Toast.makeText(this, "Username and Email are required.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String userId = existingEntrant != null ? existingEntrant.getUserID() : deviceId;
+        String userId = (existingEntrant != null) ? existingEntrant.getUserID() : deviceId;
 
         Entrant entrant = new Entrant();
         entrant.setUsername(username);
@@ -195,7 +205,7 @@ public class CreateUserProfileActivity extends AppCompatActivity {
         entrant.setUserID(userId);
 
         if (selectedImageUri != null) {
-            user_repository.uploadProfilePhoto(userId, selectedImageUri, new UserRepository.OnUploadCompleteListener() {
+            userRepository.uploadProfilePhoto(userId, selectedImageUri, new UserRepository.OnUploadCompleteListener() {
                 @Override
                 public void onUploadSuccess(Uri downloadUrl) {
                     entrant.setProfilePhotoUrl(downloadUrl.toString());
@@ -208,21 +218,16 @@ public class CreateUserProfileActivity extends AppCompatActivity {
                 }
             });
         } else {
-            // Retain existing photo URL if updating, or set to null if creating new
-            if (existingEntrant != null && existingEntrant.getProfilePhotoUrl() != null) {
-                entrant.setProfilePhotoUrl(existingEntrant.getProfilePhotoUrl());
-            } else {
-                entrant.setProfilePhotoUrl(null); // Or set to a default URL
-            }
+            entrant.setProfilePhotoUrl((existingEntrant != null) ? existingEntrant.getProfilePhotoUrl() : null);
             updateEntrantData(userId, entrant);
         }
     }
 
     /**
-     * Updates the Entrant's profile data to Firebase, including uploading a new profile photo if selected.
+     * Updates the Entrant's profile data in Firebase.
      */
     private void updateEntrantData(String userId, Entrant entrant) {
-        user_repository.updateEntrant(userId, entrant, new UserRepository.OnEntrantUpdateListener() {
+        userRepository.updateEntrant(userId, entrant, new UserRepository.OnEntrantUpdateListener() {
             @Override
             public void onEntrantUpdateSuccess() {
                 Toast.makeText(CreateUserProfileActivity.this, "Profile saved successfully.", Toast.LENGTH_SHORT).show();
@@ -240,8 +245,8 @@ public class CreateUserProfileActivity extends AppCompatActivity {
      * Navigates the user to the UserHomeActivity.
      */
     private void navigateToHome() {
-        Intent jump_to_home = new Intent(CreateUserProfileActivity.this, UserHomeActivity.class);
-        startActivity(jump_to_home);
+        Intent intent = new Intent(CreateUserProfileActivity.this, UserHomeActivity.class);
+        startActivity(intent);
         finish();
     }
 }

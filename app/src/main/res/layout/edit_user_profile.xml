@@ -17,6 +17,7 @@
         android:src="@android:drawable/ic_menu_revert" />
 
     <!-- Profile Image -->
+    <!-- 添加 ImageView 的 XML 属性 -->
     <ImageView
         android:id="@+id/profileImageView"
         android:layout_width="120dp"
@@ -24,6 +25,8 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="48dp"
         android:scaleType="centerCrop"
+        android:visibility="visible"
+        android:background="@android:color/transparent"
         android:contentDescription="@string/profile_image" />
 
     <!-- Upload Image Button -->
