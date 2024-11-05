@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
         // Retrieve the device ID
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        // Initialize user repository
+        // Initialize UserRepository
         userRepository = new UserRepository();
 
         // Initialize buttons
@@ -37,32 +37,58 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Set click listener for the User button
-        userButton.setOnClickListener(v -> {
-            // Check if the device ID exists in the Firestore database
-            userRepository.checkEntrantExists(deviceId, new UserRepository.OnCheckEntrantExistsListener() {
-                @Override
-                public void onCheckComplete(boolean exists, Entrant entrant) {
-                    if (exists) {
-                        // Device ID exists, go to UserHomeActivity
-                        Toast.makeText(MainActivity.this, "Welcome back!", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(MainActivity.this, UserHomeActivity.class);
-                        intent.putExtra("ENTRANT_DATA", entrant); // Pass the Entrant data if needed
-                        startActivity(intent);
-                    } else {
-                        // Device ID does not exist, go to UserProfileActivity
-                        Toast.makeText(MainActivity.this, "User Mode Selected", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(MainActivity.this, CreateUserProfileActivity.class);
-                        intent.putExtra("DEVICE_ID", deviceId); // Pass the device ID to UserProfileActivity
-                        startActivity(intent);
-                    }
-                }
+        userButton.setOnClickListener(v -> checkUserInDatabase());
+    }
 
-                @Override
-                public void onCheckError(Exception e) {
-                    // Handle the error (e.g., display a message)
-                    Toast.makeText(MainActivity.this, "Error checking device ID: " + e.getMessage(), Toast.LENGTH_LONG).show();
+    /**
+     * Checks if the user with the current device ID exists in the Firestore database.
+     */
+    private void checkUserInDatabase() {
+        userRepository.checkEntrantExists(deviceId, new UserRepository.OnCheckEntrantExistsListener() {
+            @Override
+            public void onCheckComplete(boolean exists, Entrant entrant) {
+                if (exists) {
+                    openUserHomeActivity(entrant.getUserID());
+                } else {
+                    openUserProfileActivity();
                 }
-            });
+            }
+
+            @Override
+            public void onCheckError(Exception e) {
+                handleDatabaseError(e);
+            }
         });
+    }
+
+    /**
+     * Opens UserHomeActivity with the given user ID.
+     *
+     * @param userId The user ID to pass to the activity.
+     */
+    private void openUserHomeActivity(String userId) {
+        Toast.makeText(this, "Welcome back!", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(MainActivity.this, UserHomeActivity.class);
+        intent.putExtra("USER_ID", userId);
+        startActivity(intent);
+    }
+
+    /**
+     * Opens UserProfileActivity and passes the device ID.
+     */
+    private void openUserProfileActivity() {
+        Toast.makeText(this, "User Mode Selected", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(MainActivity.this, UserProfileActivity.class);
+        intent.putExtra("DEVICE_ID", deviceId);
+        startActivity(intent);
+    }
+
+    /**
+     * Handles database errors by showing an error message.
+     *
+     * @param e The exception that occurred.
+     */
+    private void handleDatabaseError(Exception e) {
+        Toast.makeText(this, "Error checking device ID: " + e.getMessage(), Toast.LENGTH_LONG).show();
     }
 }

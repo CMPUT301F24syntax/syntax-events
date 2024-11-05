@@ -1,11 +1,12 @@
 package com.example.syntaxeventlottery;
 
-import com.google.firebase.firestore.FirebaseFirestore;
+import android.content.Context;
+import android.net.Uri;
+import android.provider.Settings;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-
-import android.net.Uri;
 
 /**
  * Manages data operations related to users, including Entrants.
@@ -29,44 +30,51 @@ public class UserRepository {
      * @param listener Callback to handle the result.
      */
     public void checkEntrantExists(String deviceId, OnCheckEntrantExistsListener listener) {
+        // Query Firestore to find any document in "Users" collection with deviceCode equal to deviceId
         db.collection("Users")
                 .whereEqualTo("deviceCode", deviceId)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if (!queryDocumentSnapshots.isEmpty()) {
-                        // Entrant exists
+                        // If a match is found, get the first document
                         DocumentSnapshot document = queryDocumentSnapshots.getDocuments().get(0);
                         Entrant existingEntrant = document.toObject(Entrant.class);
-                        // Set the userID from the document ID
+
                         if (existingEntrant != null) {
-                            existingEntrant.setUserID(document.getId());
+                            existingEntrant.setUserID(document.getId()); // Set the document ID as userID
                         }
+                        // Call onCheckComplete with exists = true and the found Entrant
                         listener.onCheckComplete(true, existingEntrant);
                     } else {
-                        // Entrant does not exist
+                        // If no match is found, call onCheckComplete with exists = false
                         listener.onCheckComplete(false, null);
                     }
                 })
-                .addOnFailureListener(e -> {
-                    listener.onCheckError(e);
-                });
+                .addOnFailureListener(listener::onCheckError);
     }
 
     /**
-     * Retrieves an Entrant's data from Firebase.
+     * Retrieves an Entrant's data from Firebase using the device ID.
      *
-     * @param userId   The unique ID of the entrant.
+     * @param context  The context to access system services.
      * @param listener Callback to handle the retrieved data or errors.
      */
-    public void getEntrant(String userId, OnEntrantDataFetchListener listener) {
-        db.collection("Users").document(userId)
+    public void getEntrantByDeviceId(Context context, OnEntrantDataFetchListener listener) {
+        // Retrieve the device ID
+        String deviceId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        // Query Firestore to find any document in "Users" collection with deviceCode equal to deviceId
+        db.collection("Users")
+                .whereEqualTo("deviceCode", deviceId)
                 .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        Entrant entrant = documentSnapshot.toObject(Entrant.class);
-                        // Set the userID from the document ID
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        // If a match is found, get the first document
+                        DocumentSnapshot document = queryDocumentSnapshots.getDocuments().get(0);
+                        Entrant entrant = document.toObject(Entrant.class);
+
                         if (entrant != null) {
-                            entrant.setUserID(documentSnapshot.getId());
+                            entrant.setUserID(document.getId()); // Set the document ID as userID
                         }
                         listener.onEntrantDataFetched(entrant);
                     } else {
@@ -103,16 +111,14 @@ public class UserRepository {
      * @param listener Callback to handle the upload result.
      */
     public void uploadProfilePhoto(String userId, Uri fileUri, OnUploadCompleteListener listener) {
-        // Define a fixed path for profile photos to easily manage uploads and deletions
         String fileName = "images/" + userId + "/profile.jpg";
         StorageReference fileRef = FirebaseStorage.getInstance().getReference().child(fileName);
 
         fileRef.putFile(fileUri)
                 .addOnSuccessListener(taskSnapshot -> fileRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                    // Update the ProfilePhotoUrl field in Firestore
                     db.collection("Users").document(userId)
                             .update("profilePhotoUrl", uri.toString())
-                            .addOnSuccessListener(aVoid1 -> listener.onUploadSuccess(uri))
+                            .addOnSuccessListener(aVoid -> listener.onUploadSuccess(uri))
                             .addOnFailureListener(listener::onUploadFailure);
                 }))
                 .addOnFailureListener(listener::onUploadFailure);
