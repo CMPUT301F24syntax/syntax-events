@@ -94,7 +94,7 @@ public class UserHomeActivity extends AppCompatActivity {
                                 int capacity = document.getLong("capacity").intValue();
 
                                 // Create and add the Event object to the list
-                                Event event = new Event(eventName, null, facility, startDate, endDate, capacity, description);
+                                Event event = new Event(eventID,eventName, null, facility,1, startDate, endDate,"123");
                                 event.setEventID(eventID);
                                 event.setQrCodeUrl(qrCodeUrl);
                                 event.setPosterUrl(posterUrl);
