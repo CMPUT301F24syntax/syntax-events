@@ -87,14 +87,14 @@ public class Entrant extends User implements Serializable {
         this.waitingListEvents = waitingListEvents;
     }
 
-    public void addWaitingListEvent(String eventId) {
-        if (!this.waitingListEvents.contains(eventId)) {
-            this.waitingListEvents.add(eventId);
+    public void addWaitingListEvent(String eventName) {
+        if (!this.waitingListEvents.contains(eventName)) {
+            this.waitingListEvents.add(eventName);
         }
     }
 
-    public void removeWaitingListEvent(String eventId) {
-        this.waitingListEvents.remove(eventId);
+    public void removeWaitingListEvent(String eventName) {
+        this.waitingListEvents.remove(eventName);
     }
 
     public List<String> getSelectedEvents() {
@@ -149,8 +149,6 @@ public class Entrant extends User implements Serializable {
         this.geoLocation = geoLocation;
     }
 
-
-
     // -------------------------------------------------------------------------
     // Utility Methods
     // -------------------------------------------------------------------------
@@ -198,9 +196,11 @@ public class Entrant extends User implements Serializable {
      * @param event The event to join.
      */
     public void joinEvent(Event event) {
-        if (!event.getWaitingList().contains(this)) {
-            event.getWaitingList().add(this); // Add this Entrant to the event's waiting list
-            addWaitingListEvent(event.getEventID()); // Add the event ID to this Entrant's waiting list
+        if (event != null) {
+            // Add this entrant's username to the event's participants list
+            event.addParticipant(this.getUsername());
+            // Add the event name to this entrant's waiting list events
+            addWaitingListEvent(event.getEventName());
         }
     }
 
@@ -210,10 +210,11 @@ public class Entrant extends User implements Serializable {
      * @param event The event to leave.
      */
     public void leaveEvent(Event event) {
-        if (event.getWaitingList().contains(this)) {
-            event.getWaitingList().remove(this); // Remove this Entrant from the event's waiting list
-            removeWaitingListEvent(event.getEventID()); // Remove the event ID from this Entrant's waiting list
+        if (event != null) {
+            // Remove this entrant's username from the event's participants list
+            event.removeParticipant(this.getUsername());
+            // Remove the event name from this entrant's waiting list events
+            removeWaitingListEvent(event.getEventName());
         }
     }
-
 }

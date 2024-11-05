@@ -149,7 +149,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         eventData.put("endDate", new com.google.firebase.Timestamp(endDate));      // Use Firebase Timestamp
         eventData.put("facility", facility);
         eventData.put("capacity", capacity);
-        eventData.put("oragnizerId", organizerId);
+        eventData.put("organizerId", organizerId);
 
         if (imageUri != null) {
             uploadImageAndSaveEventData(eventID, eventData);
