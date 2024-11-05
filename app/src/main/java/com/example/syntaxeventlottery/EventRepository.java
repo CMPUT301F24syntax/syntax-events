@@ -71,10 +71,9 @@ public class EventRepository {
     private void saveEventToFirestore(Event event) {
         HashMap<String, Object> data = new HashMap<>();
         data.put("eventID", event.getEventID());
-        data.put("qrCode", event.getQrCode());
         data.put("posterUrl", event.getPosterUrl());
         data.put("qrCodeUrl", event.getQrCodeUrl());
-        data.put("organizer", event.getOrganizer());
+        data.put("organizerId", event.getOrganizerId());
         data.put("facility", event.getFacility());
         data.put("startDate", event.getStartDate());
         data.put("endDate", event.getEndDate());
