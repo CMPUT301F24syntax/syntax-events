@@ -1,6 +1,7 @@
 package com.example.syntaxeventlottery;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -51,8 +52,20 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                     .into(holder.eventPosterImageView);
         }
 
-        // Optional log to debug binding of each event
-        Log.d("EventAdapter", "Binding event: " + event.getEventName());
+
+        // Set click listener for each event item to open EventDetailActivity
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, EventDetailActivity.class);
+            intent.putExtra("event_id", event.getEventID()); // Pass the event ID to the detail activity
+            intent.putExtra("poster_url", event.getPosterUrl()); // Pass poster URL
+            intent.putExtra("qr_url", event.getQrCodeUrl()); // Pass QR code URL
+            intent.putExtra("event_name", event.getEventName());
+            intent.putExtra("event_description", event.getDescription()); // Pass description
+            intent.putExtra("event_start_date", event.getStartDate().toString());
+            intent.putExtra("event_end_date", event.getEndDate().toString());
+            intent.putExtra("event_capacity", event.getCapacity());
+            context.startActivity(intent);
+        });
     }
 
     @Override
