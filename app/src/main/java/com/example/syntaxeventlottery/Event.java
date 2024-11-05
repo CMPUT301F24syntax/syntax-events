@@ -94,6 +94,7 @@ public class Event implements Serializable {
         this.isFull = false;
         this.isDrawed = false;
     }
+    
 
     // -------------------------------------------------------------------------
     // Getters and Setters
