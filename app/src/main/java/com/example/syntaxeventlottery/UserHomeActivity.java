@@ -1,3 +1,5 @@
+// UserHomeActivity.java
+
 package com.example.syntaxeventlottery;
 
 import android.content.Intent;
@@ -7,7 +9,6 @@ import android.provider.Settings;
 import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -26,6 +27,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
+/**
+ * Activity representing the user's home screen.
+ */
 public class UserHomeActivity extends AppCompatActivity {
 
     private TextView dateTextView;
@@ -35,6 +39,8 @@ public class UserHomeActivity extends AppCompatActivity {
     private EventAdapter eventAdapter;
     private List<Event> eventList;  // List to hold future events
     private FirebaseFirestore db;
+    private ImageButton organizerButton, profileButton, newsButton;
+    private String deviceId;
 
     // New variables for "Events I Attend"
     private RecyclerView attendedEventsRecyclerView;
@@ -50,9 +56,10 @@ public class UserHomeActivity extends AppCompatActivity {
         // Initialize the TextView for displaying the date and time
         dateTextView = findViewById(R.id.dateTextView);
 
-        // Initialize the Organizer and Profile buttons
-        ImageButton organizerButton = findViewById(R.id.organizerButton);
-        ImageButton profileButton = findViewById(R.id.profileButton);
+        // Initialize the buttons
+        organizerButton = findViewById(R.id.organizerButton);
+        profileButton = findViewById(R.id.profileButton);
+        newsButton = findViewById(R.id.newsButton);
 
         // Set up RecyclerView for Future Events
         futureEventsRecyclerView = findViewById(R.id.futureEventsRecyclerView);
@@ -76,19 +83,30 @@ public class UserHomeActivity extends AppCompatActivity {
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
 
+
         // Load future events and attended events from Firestore
+
+        // Get deviceId
+        deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        // Load events from Firestore
+
         loadEventsFromFirestore();
         loadAttendedEventsFromFirestore(); // Load events the user is attending
 
-        // Set click listener on Organizer and Profile buttons
+        // Set click listener on Organizer, Profile, and News buttons
         organizerButton.setOnClickListener(v -> startActivity(new Intent(UserHomeActivity.this, OrganizerActivity.class)));
         profileButton.setOnClickListener(v -> startActivity(new Intent(UserHomeActivity.this, UserProfileActivity.class)));
+        newsButton.setOnClickListener(v -> startActivity(new Intent(UserHomeActivity.this, NotificationCenterActivity.class)));
 
         // Set up the date and time updater
         updateDateTime();
     }
 
-    // Method to load future events from Firestore
+    /**
+     * Loads events from Firestore.
+     */
+
     private void loadEventsFromFirestore() {
         db.collection("events")
                 .get()
@@ -99,7 +117,7 @@ public class UserHomeActivity extends AppCompatActivity {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             // Parse document data into an Event object
                             String eventName = document.getString("eventName");
-                            String eventID = document.getString("eventID");
+                            String eventID = document.getId();
                             String description = document.getString("description");
                             String facility = document.getString("facility");
                             String qrCodeUrl = document.getString("qrCodeUrl");
@@ -113,7 +131,9 @@ public class UserHomeActivity extends AppCompatActivity {
                                 int capacity = document.getLong("capacity").intValue();
 
                                 // Create and add the Event object to the list
-                                Event event = new Event(eventID, eventName, null, facility, 1, startDate, endDate, "123");
+
+                                Event event = new Event(eventID, eventName, description, facility, capacity, startDate, endDate, qrCodeUrl);
+
                                 event.setEventID(eventID);
                                 event.setQrCodeUrl(qrCodeUrl);
                                 event.setPosterUrl(posterUrl);
@@ -126,7 +146,6 @@ public class UserHomeActivity extends AppCompatActivity {
                         eventAdapter.notifyDataSetChanged();  // Refresh adapter to display data
                         Log.d("RecyclerView", "Adapter updated with item count: " + eventAdapter.getItemCount());
                     } else {
-                        Toast.makeText(UserHomeActivity.this, "Failed to load events.", Toast.LENGTH_SHORT).show();
                         Log.e("Firestore", "Error loading events: ", task.getException());
                     }
                 });

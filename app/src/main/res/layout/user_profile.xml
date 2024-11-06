@@ -21,14 +21,14 @@
 
         <!-- Organizer Text -->
         <TextView
-            android:id="@+id/organizerText"
+            android:id="@+id/userText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:text="Organizer"
-            android:textSize="20sp"
-            android:textColor="@android:color/black" />
+            android:text="User"
+            android:textColor="@android:color/black"
+            android:textSize="20sp" />
 
         <!-- Back Button -->
         <Button

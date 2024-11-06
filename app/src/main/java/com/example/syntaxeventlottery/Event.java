@@ -232,7 +232,7 @@ public class Event implements Serializable {
      * @param participantId The ID of the participant to add.
      */
     public void addParticipant(String participantId) {
-        if (!this.participants.contains(participantId)) {
+        if (!this.participants.contains(participantId) && !this.isFull) {
             this.participants.add(participantId);
             checkIfFull();
         }

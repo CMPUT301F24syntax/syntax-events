@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void openUserProfileActivity() {
         Toast.makeText(this, "User Mode Selected", Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(MainActivity.this, UserProfileActivity.class);
+        Intent intent = new Intent(MainActivity.this, CreateUserProfileActivity.class);
         intent.putExtra("DEVICE_ID", deviceId);
         startActivity(intent);
     }
