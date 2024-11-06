@@ -1,7 +1,6 @@
 package com.example.syntaxeventlottery;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -15,7 +14,6 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.annotation.NonNull;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.DocumentReference;
@@ -28,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 public class EventDetailActivity extends AppCompatActivity {
 
@@ -77,32 +74,21 @@ public class EventDetailActivity extends AppCompatActivity {
             Toast.makeText(this, "Event ID is missing", Toast.LENGTH_SHORT).show();
         }
 
-        // Set click listener for the back button to return to the previous screen
+        // Set click listeners
         backButton.setOnClickListener(v -> finish());
-
-        // Set click listener for the update poster button to select and upload a new poster image
         updatePosterButton.setOnClickListener(v -> openImagePicker());
-
-        // Set click listener for the edit information button to open EditEventActivity
         editInfoButton.setOnClickListener(v -> {
             Intent intent = new Intent(EventDetailActivity.this, EditEventActivity.class);
-            intent.putExtra("event_id", eventId); // Pass event ID to the edit screen
+            intent.putExtra("event_id", eventId);
             startActivity(intent);
         });
-
-        // Set click listener for the join event button
         joinEventButton.setOnClickListener(v -> joinEvent());
-
-        // Set click listener for the leave event button
         leaveEventButton.setOnClickListener(v -> leaveEvent());
 
-        // Set click listener for the draw button
+        // Set click listener for drawButton
         drawButton.setOnClickListener(v -> drawParticipants());
     }
 
-    /**
-     * Opens the image picker to select a new event poster.
-     */
     private void openImagePicker() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, PICK_IMAGE_REQUEST);
@@ -112,7 +98,6 @@ public class EventDetailActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        // Handle image selection for poster update
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri imageUri = data.getData();
             uploadPosterImage(imageUri);
@@ -120,13 +105,12 @@ public class EventDetailActivity extends AppCompatActivity {
     }
 
     private void uploadPosterImage(Uri imageUri) {
-        // Your existing code for uploading the poster image
+        // Upload image to Firebase Storage and update Firestore URL
     }
 
     private void loadEventDetails(String eventId) {
         DocumentReference eventRef = db.collection("events").document(eventId);
 
-        // Fetch event details from Firestore
         eventRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful() && task.getResult() != null) {
                 DocumentSnapshot document = task.getResult();
@@ -145,29 +129,42 @@ public class EventDetailActivity extends AppCompatActivity {
                     // Set data to TextViews
                     eventNameTextView.setText(eventName);
                     eventDescriptionTextView.setText(eventDescription);
-
-                    // Format and set dates
                     SimpleDateFormat displayFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-                    if (startDate != null) {
-                        eventStartDateTextView.setText("Start Date: " + displayFormat.format(startDate));
-                    }
-                    if (endDate != null) {
-                        eventEndDateTextView.setText("End Date: " + displayFormat.format(endDate));
-                    }
-
+                    eventStartDateTextView.setText("Start Date: " + (startDate != null ? displayFormat.format(startDate) : "N/A"));
+                    eventEndDateTextView.setText("End Date: " + (endDate != null ? displayFormat.format(endDate) : "N/A"));
                     eventFacilityTextView.setText("Location: " + facility);
                     eventCapacityTextView.setText("Capacity: " + (capacity != null ? capacity.toString() : "N/A"));
 
-                    // Load images using Glide
                     if (eventPosterUrl != null) {
-                        Glide.with(EventDetailActivity.this)
-                                .load(eventPosterUrl)
-                                .into(eventPosterImageView);
+                        Glide.with(EventDetailActivity.this).load(eventPosterUrl).into(eventPosterImageView);
                     }
                     if (qrCodeUrl != null) {
-                        Glide.with(EventDetailActivity.this)
-                                .load(qrCodeUrl)
-                                .into(eventQRCodeImageView);
+                        Glide.with(EventDetailActivity.this).load(qrCodeUrl).into(eventQRCodeImageView);
+                    }
+
+                    // Check if current user is the organizer
+                    String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+                    if (organizerId != null && organizerId.equals(deviceId)) {
+                        // User is the organizer
+                        updatePosterButton.setVisibility(View.VISIBLE);
+                        drawButton.setVisibility(View.VISIBLE);
+                        joinEventButton.setVisibility(View.GONE);
+                        leaveEventButton.setVisibility(View.GONE);
+                        editInfoButton.setVisibility(View.VISIBLE);
+                    } else {
+                        // User is not the organizer
+                        updatePosterButton.setVisibility(View.GONE);
+                        drawButton.setVisibility(View.GONE);
+                        editInfoButton.setVisibility(View.GONE);
+
+                        List<String> participants = (List<String>) document.get("participants");
+                        if (participants != null && participants.contains(deviceId)) {
+                            joinEventButton.setVisibility(View.GONE);
+                            leaveEventButton.setVisibility(View.VISIBLE);
+                        } else {
+                            joinEventButton.setVisibility(View.VISIBLE);
+                            leaveEventButton.setVisibility(View.GONE);
+                        }
                     }
                 } else {
                     Toast.makeText(EventDetailActivity.this, "Event not found", Toast.LENGTH_SHORT).show();
@@ -199,7 +196,6 @@ public class EventDetailActivity extends AppCompatActivity {
                     return;
                 }
 
-                // Shuffle participants and split into chosen and unchosen lists
                 Collections.shuffle(participants);
                 ArrayList<String> ChosenList = new ArrayList<>();
                 ArrayList<String> UnChosenList = new ArrayList<>();
@@ -211,14 +207,12 @@ public class EventDetailActivity extends AppCompatActivity {
                     UnChosenList.addAll(participants.subList(capacity.intValue(), participants.size()));
                 }
 
-                // Update Firestore with chosen and unchosen lists
                 eventRef.update("ChosenList", ChosenList, "UnChosenList", UnChosenList)
                         .addOnSuccessListener(aVoid -> Toast.makeText(this, "Draw successful", Toast.LENGTH_SHORT).show())
                         .addOnFailureListener(e -> {
                             Toast.makeText(this, "Failed to save draw results", Toast.LENGTH_SHORT).show();
                             e.printStackTrace();
                         });
-
             } else {
                 Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
             }
@@ -229,10 +223,60 @@ public class EventDetailActivity extends AppCompatActivity {
     }
 
     private void joinEvent() {
-        // Your existing joinEvent method
+        if (eventId == null) {
+            Toast.makeText(this, "Invalid Event ID", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        DocumentReference eventRef = db.collection("events").document(eventId);
+        DocumentReference userRef = db.collection("Users").document(deviceId);
+
+        eventRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                List<String> participants = (List<String>) documentSnapshot.get("participants");
+                if (participants != null && participants.contains(deviceId)) {
+                    Toast.makeText(this, "You have already joined this event", Toast.LENGTH_SHORT).show();
+                } else {
+                    eventRef.update("participants", FieldValue.arrayUnion(deviceId))
+                            .addOnSuccessListener(aVoid -> userRef.update("waitingListEvents", FieldValue.arrayUnion(eventName))
+                                    .addOnSuccessListener(unused -> {
+                                        Toast.makeText(this, "Successfully joined the event", Toast.LENGTH_SHORT).show();
+                                        joinEventButton.setVisibility(View.GONE);
+                                        leaveEventButton.setVisibility(View.VISIBLE);
+                                    })
+                                    .addOnFailureListener(e -> Toast.makeText(this, "Failed to update user data", Toast.LENGTH_SHORT).show()));
+                }
+            }
+        }).addOnFailureListener(e -> Toast.makeText(this, "Failed to fetch event details", Toast.LENGTH_SHORT).show());
     }
 
     private void leaveEvent() {
-        // Your existing leaveEvent method
+        if (eventId == null) {
+            Toast.makeText(this, "Invalid Event ID", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        DocumentReference eventRef = db.collection("events").document(eventId);
+        DocumentReference userRef = db.collection("Users").document(deviceId);
+
+        eventRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                List<String> participants = (List<String>) documentSnapshot.get("participants");
+                if (participants != null && participants.contains(deviceId)) {
+                    eventRef.update("participants", FieldValue.arrayRemove(deviceId))
+                            .addOnSuccessListener(aVoid -> userRef.update("waitingListEvents", FieldValue.arrayRemove(eventName))
+                                    .addOnSuccessListener(unused -> {
+                                        Toast.makeText(this, "Successfully left the event", Toast.LENGTH_SHORT).show();
+                                        joinEventButton.setVisibility(View.VISIBLE);
+                                        leaveEventButton.setVisibility(View.GONE);
+                                    })
+                                    .addOnFailureListener(e -> Toast.makeText(this, "Failed to update user data", Toast.LENGTH_SHORT).show()));
+                } else {
+                    Toast.makeText(this, "You are not part of this event", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }).addOnFailureListener(e -> Toast.makeText(this, "Failed to fetch event details", Toast.LENGTH_SHORT).show());
     }
 }

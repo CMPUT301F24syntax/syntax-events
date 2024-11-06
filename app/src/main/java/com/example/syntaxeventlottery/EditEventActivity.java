@@ -1,5 +1,6 @@
 package com.example.syntaxeventlottery;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
@@ -113,8 +114,8 @@ public class EditEventActivity extends AppCompatActivity {
         Map<String, Object> eventUpdates = new HashMap<>();
         eventUpdates.put("eventName", eventName);
         eventUpdates.put("description", eventDescription);
-        eventUpdates.put("startDate", startDate); // Store Date object, which Firestore converts to Timestamp
-        eventUpdates.put("endDate", endDate);     // Same as above
+        eventUpdates.put("startDate", startDate);
+        eventUpdates.put("endDate", endDate);
         eventUpdates.put("facility", facility);
         eventUpdates.put("capacity", Long.parseLong(capacity));
 
@@ -122,7 +123,10 @@ public class EditEventActivity extends AppCompatActivity {
         db.collection("events").document(eventId).update(eventUpdates)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(EditEventActivity.this, "Event updated successfully", Toast.LENGTH_SHORT).show();
-                    finish(); // Automatically close activity after saving
+                    // Start UserHomeActivity and finish EditEventActivity
+                    Intent intent = new Intent(EditEventActivity.this, UserHomeActivity.class);
+                    startActivity(intent);
+                    finish();
                 })
                 .addOnFailureListener(e -> Toast.makeText(EditEventActivity.this, "Failed to update event", Toast.LENGTH_SHORT).show());
     }
