@@ -31,7 +31,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+
 import java.util.Map;
+
 
 /**
  * Activity to display event details and manage event actions.
@@ -43,10 +45,13 @@ public class EventDetailActivity extends AppCompatActivity {
     private ImageView eventPosterImageView, eventQRCodeImageView;
     private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView,
             eventEndDateTextView, eventFacilityTextView, eventCapacityTextView;
+
     private Button updatePosterButton, joinEventButton, leaveEventButton, editInfoButton,
-            drawButton, acceptButton, rejectButton;
+            drawButton, acceptButton, rejectButton,waitingListButton;
     private ImageButton backButton;
     private TextView drawEndedTextView;
+
+
 
     private FirebaseFirestore db;
     private String eventId;
@@ -71,11 +76,14 @@ public class EventDetailActivity extends AppCompatActivity {
         joinEventButton = findViewById(R.id.joinEventButton);
         leaveEventButton = findViewById(R.id.leaveEventButton);
         editInfoButton = findViewById(R.id.editInfoButton);
+
         ImageButton backButton = findViewById(R.id.backButton);
         drawButton = findViewById(R.id.drawButton);
         acceptButton = findViewById(R.id.acceptButton);
         rejectButton = findViewById(R.id.rejectButton);
         drawEndedTextView = findViewById(R.id.drawEndedTextView);
+        waitingListButton = findViewById(R.id.waitingListButton); // Initialize waitingListButton
+
 
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
@@ -104,11 +112,22 @@ public class EventDetailActivity extends AppCompatActivity {
         drawButton.setOnClickListener(v -> drawParticipants());
         acceptButton.setOnClickListener(v -> acceptDraw());
         rejectButton.setOnClickListener(v -> rejectDraw());
+
+        // Set click listener for waitingListButton
+        waitingListButton.setOnClickListener(v -> {
+            // Start EventWaitingListActivity
+            Intent intent = new Intent(EventDetailActivity.this, EventWaitingListActivity.class);
+            intent.putExtra("event_id", eventId); // Pass event ID to the waiting list activity
+            startActivity(intent);
+        });
+
     }
+
 
     /**
      * Opens the image picker to select an image for the event poster.
      */
+
     private void openImagePicker() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, PICK_IMAGE_REQUEST);
@@ -118,7 +137,9 @@ public class EventDetailActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+
         // Handle the result from the image picker
+
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri imageUri = data.getData();
             uploadPosterImage(imageUri);
@@ -131,6 +152,7 @@ public class EventDetailActivity extends AppCompatActivity {
      * @param imageUri The URI of the selected image.
      */
     private void uploadPosterImage(Uri imageUri) {
+
         // Implement the upload logic here
         String fileName = "images/" + eventId + "/poster.jpg";
         StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(fileName);
@@ -207,6 +229,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
                     if (isOrganizer) {
                         // User is the organizer
+>
                         updatePosterButton.setVisibility(View.VISIBLE);
                         drawButton.setVisibility(View.VISIBLE);
                         joinEventButton.setVisibility(View.GONE);
@@ -216,10 +239,11 @@ public class EventDetailActivity extends AppCompatActivity {
                         rejectButton.setVisibility(View.GONE);
                         drawEndedTextView.setVisibility(View.GONE);
                     } else {
-                        // User is not the organizer
+
                         updatePosterButton.setVisibility(View.GONE);
                         drawButton.setVisibility(View.GONE);
                         editInfoButton.setVisibility(View.GONE);
+
 
                         if (isChosen) {
                             // User is chosen
@@ -230,6 +254,7 @@ public class EventDetailActivity extends AppCompatActivity {
                             drawEndedTextView.setVisibility(View.GONE);
                         } else if (isJoined) {
                             // User has accepted the draw
+
                             joinEventButton.setVisibility(View.GONE);
                             leaveEventButton.setVisibility(View.VISIBLE);
                             acceptButton.setVisibility(View.GONE);
@@ -369,6 +394,7 @@ public class EventDetailActivity extends AppCompatActivity {
             Toast.makeText(this, "Failed to fetch event details", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         });
+
     }
 
     /**
@@ -427,6 +453,7 @@ public class EventDetailActivity extends AppCompatActivity {
      * Allows the user to join the event.
      */
     private void joinEvent() {
+
         if (eventId == null) {
             Toast.makeText(this, "Invalid Event ID", Toast.LENGTH_SHORT).show();
             return;
@@ -453,12 +480,14 @@ public class EventDetailActivity extends AppCompatActivity {
                 }
             }
         }).addOnFailureListener(e -> Toast.makeText(this, "Failed to fetch event details", Toast.LENGTH_SHORT).show());
+
     }
 
     /**
      * Allows the user to leave the event.
      */
     private void leaveEvent() {
+
         if (eventId == null) {
             Toast.makeText(this, "Invalid Event ID", Toast.LENGTH_SHORT).show();
             return;

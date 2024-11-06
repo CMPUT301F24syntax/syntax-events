@@ -94,7 +94,17 @@ public class Event implements Serializable {
         this.isFull = false;
         this.isDrawed = false;
     }
-    
+
+    public Event(String eventID, String eventName, String description, String facility, Date startDate, Date endDate) {
+        this.eventID = eventID;
+        this.eventName = eventName;
+        this.description = description;
+        this.facility = facility;
+        this.startDate = startDate;
+        this.endDate = endDate;
+
+    }
+
 
     // -------------------------------------------------------------------------
     // Getters and Setters
@@ -222,7 +232,7 @@ public class Event implements Serializable {
      * @param participantId The ID of the participant to add.
      */
     public void addParticipant(String participantId) {
-        if (!this.participants.contains(participantId)) {
+        if (!this.participants.contains(participantId) && !this.isFull) {
             this.participants.add(participantId);
             checkIfFull();
         }
