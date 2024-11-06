@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@android:color/white">
+
+    <!-- Back Button -->
+    <ImageButton
+        android:id="@+id/backButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:contentDescription="@string/back"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="16dp"
+        android:src="@android:drawable/ic_menu_revert" />
+
+    <!-- Profile Image -->
+    <!-- 添加 ImageView 的 XML 属性 -->
+    <ImageView
+        android:id="@+id/profileImageView"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="48dp"
+        android:scaleType="centerCrop"
+        android:visibility="visible"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/profile_image" />
+
+    <!-- Upload Image Button -->
+    <ImageButton
+        android:id="@+id/uploadImageButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_below="@id/profileImageView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="8dp"
+        android:src="@android:drawable/ic_menu_camera"
+        android:contentDescription="@string/upload_image"
+        android:background="?android:attr/selectableItemBackgroundBorderless" />
+
+    <!-- Name Edit Text -->
+    <EditText
+        android:id="@+id/editName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/name"
+        android:inputType="textPersonName"
+        android:autofillHints="name"
+        android:padding="12dp"
+        android:layout_below="@id/uploadImageButton"
+        android:layout_marginTop="16dp" />
+
+    <!-- Email Edit Text -->
+    <EditText
+        android:id="@+id/editEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/email"
+        android:inputType="textEmailAddress"
+        android:autofillHints="emailAddress"
+        android:padding="12dp"
+        android:layout_below="@id/editName"
+        android:layout_marginTop="8dp" />
+
+    <!-- Phone Edit Text -->
+    <EditText
+        android:id="@+id/editPhone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/phone"
+        android:inputType="phone"
+        android:autofillHints="phone"
+        android:padding="12dp"
+        android:layout_below="@id/editEmail"
+        android:layout_marginTop="8dp" />
+
+    <!-- Save Button -->
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/save"
+        android:textColor="@android:color/white"
+        android:backgroundTint="@android:color/black"
+        android:layout_below="@id/editPhone"
+        android:layout_marginTop="16dp" />
+
+</RelativeLayout>

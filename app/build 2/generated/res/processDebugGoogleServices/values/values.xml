@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="gcm_defaultSenderId" translatable="false">775573962605</string>
+    <string name="google_api_key" translatable="false">AIzaSyCpBFFgMsLS0AYIsfddX7xAtPylToEsY9w</string>
+    <string name="google_app_id" translatable="false">1:775573962605:android:b8e8e81688e370e651e464</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyCpBFFgMsLS0AYIsfddX7xAtPylToEsY9w</string>
+    <string name="google_storage_bucket" translatable="false">scanapp-7e377.appspot.com</string>
+    <string name="project_id" translatable="false">scanapp-7e377</string>
+</resources>

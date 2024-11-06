@@ -1,0 +1,5 @@
+com.example.syntaxeventlottery.test.app-core-1.6.1-0 /Users/lwl/.gradle/caches/transforms-4/2b2200e9c44d816cbbe79dde7d808fd5/transformed/core-1.6.1/res
+com.example.syntaxeventlottery.test.app-androidTest-1 /Users/lwl/Desktop/syntax-events/app/build/generated/res/resValues/androidTest/debug
+com.example.syntaxeventlottery.test.app-mergeDebugAndroidTestResources-2 /Users/lwl/Desktop/syntax-events/app/build/intermediates/incremental/debugAndroidTest/mergeDebugAndroidTestResources/merged.dir
+com.example.syntaxeventlottery.test.app-mergeDebugAndroidTestResources-3 /Users/lwl/Desktop/syntax-events/app/build/intermediates/incremental/debugAndroidTest/mergeDebugAndroidTestResources/stripped.dir
+com.example.syntaxeventlottery.test.app-debugAndroidTest-4 /Users/lwl/Desktop/syntax-events/app/build/intermediates/merged_res/debugAndroidTest/mergeDebugAndroidTestResources

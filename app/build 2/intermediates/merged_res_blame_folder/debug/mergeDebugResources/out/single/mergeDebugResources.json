@@ -1,0 +1,174 @@
+[
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/layout_organizer_create_event.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/layout/organizer_create_event.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/mipmap-xxxhdpi_ic_launcher_round.webp.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/mipmap-xxxhdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/mipmap-mdpi_ic_launcher_round.webp.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/mipmap-mdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/drawable_placeholder.jpg.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/drawable/placeholder.jpg"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/mipmap-xxhdpi_ic_launcher_round.webp.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/mipmap-xxhdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/drawable_ic_accepted_event.jpg.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/drawable/ic_accepted_event.jpg"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/mipmap-anydpi-v26/ic_launcher.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/mipmap-xhdpi_ic_launcher_round.webp.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/mipmap-xhdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/layout_edit_user_profile.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/layout/edit_user_profile.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/drawable/ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/xml_data_extraction_rules.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/layout_activity_notification_center.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/layout/activity_notification_center.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/mipmap-mdpi_ic_launcher.webp.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/mipmap-mdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/layout_activity_event_detail.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/layout/activity_event_detail.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/drawable_ic_back_arrow.png.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/drawable/ic_back_arrow.png"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/drawable_ic_location.jpg.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/drawable/ic_location.jpg"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/drawable_ic_profile.jpg.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/drawable/ic_profile.jpg"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/layout_user_home_page.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/layout/user_home_page.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/drawable_ic_home.png.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/drawable/ic_home.png"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/mipmap-xxhdpi_ic_launcher.webp.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/mipmap-xxhdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/mipmap-xxxhdpi_ic_launcher.webp.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/mipmap-xxxhdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/layout_item_event.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/layout/item_event.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/font_poppins.ttf.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/font/poppins.ttf"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/drawable_ic_remove_photo.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/drawable/ic_remove_photo.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/layout_user_profile.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/layout/user_profile.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/drawable_ic_qr_code.jpg.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/drawable/ic_qr_code.jpg"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/drawable_ic_launcher_background.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/drawable/ic_launcher_background.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/mipmap-hdpi_ic_launcher_round.webp.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/mipmap-hdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/layout_user_navigation_bar.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/layout/user_navigation_bar.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/layout_activity_edit_event.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/layout/activity_edit_event.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/layout_event_list_item.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/layout/event_list_item.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/layout_activity_main.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/drawable_ic_avatar_placeholder.png.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/drawable/ic_avatar_placeholder.png"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/drawable_ic_organizer.png.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/drawable/ic_organizer.png"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/layout_user_mode.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/layout/user_mode.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/layout_activity_organizer.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/layout/activity_organizer.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/layout_create_user_profile.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/layout/create_user_profile.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/layout_notification_item.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/layout/notification_item.xml"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/mipmap-hdpi_ic_launcher.webp.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/mipmap-hdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/drawable_ic_news.jpg.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/drawable/ic_news.jpg"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/mipmap-xhdpi_ic_launcher.webp.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/mipmap-xhdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.example.syntaxeventlottery.app-debug-36:/xml_backup_rules.xml.flat",
+        "source": "com.example.syntaxeventlottery.app-main-38:/xml/backup_rules.xml"
+    }
+]

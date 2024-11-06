@@ -1,0 +1,3 @@
+com.example.syntaxeventlottery.test
+style WhiteBackgroundDialogTheme
+style WhiteBackgroundTheme
