@@ -94,7 +94,17 @@ public class Event implements Serializable {
         this.isFull = false;
         this.isDrawed = false;
     }
-    
+
+    public Event(String eventID, String eventName, String description, String facility, Date startDate, Date endDate) {
+        this.eventID = eventID;
+        this.eventName = eventName;
+        this.description = description;
+        this.facility = facility;
+        this.startDate = startDate;
+        this.endDate = endDate;
+
+    }
+
 
     // -------------------------------------------------------------------------
     // Getters and Setters

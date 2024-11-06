@@ -30,7 +30,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+
 import java.util.Map;
+
 
 /**
  * Activity to display event details and manage event actions.
@@ -42,7 +44,8 @@ public class EventDetailActivity extends AppCompatActivity {
     private ImageView eventPosterImageView, eventQRCodeImageView;
     private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView,
             eventEndDateTextView, eventFacilityTextView, eventCapacityTextView;
-    private Button updatePosterButton, joinEventButton, leaveEventButton, editInfoButton, backButton, drawButton;
+
+    private Button updatePosterButton, joinEventButton, leaveEventButton, editInfoButton, backButton, drawButton, waitingListButton;
 
     private FirebaseFirestore db;
     private String eventId;
@@ -68,7 +71,8 @@ public class EventDetailActivity extends AppCompatActivity {
         leaveEventButton = findViewById(R.id.leaveEventButton);
         editInfoButton = findViewById(R.id.editInfoButton);
         backButton = findViewById(R.id.backButton);
-        drawButton = findViewById(R.id.drawButton); // Initialize drawButton
+        drawButton = findViewById(R.id.drawButton);
+        waitingListButton = findViewById(R.id.waitingListButton); // Initialize waitingListButton
 
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
@@ -96,12 +100,23 @@ public class EventDetailActivity extends AppCompatActivity {
         leaveEventButton.setOnClickListener(v -> leaveEvent());
 
         // Set click listener for drawButton
+
         drawButton.setOnClickListener(v -> drawParticipants());
+
+        // Set click listener for waitingListButton
+        waitingListButton.setOnClickListener(v -> {
+            // Start EventWaitingListActivity
+            Intent intent = new Intent(EventDetailActivity.this, EventWaitingListActivity.class);
+            intent.putExtra("event_id", eventId); // Pass event ID to the waiting list activity
+            startActivity(intent);
+        });
     }
+
 
     /**
      * Opens the image picker to select an image for the event poster.
      */
+
     private void openImagePicker() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, PICK_IMAGE_REQUEST);
@@ -111,7 +126,9 @@ public class EventDetailActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+
         // Handle the result from the image picker
+
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri imageUri = data.getData();
             uploadPosterImage(imageUri);
@@ -124,6 +141,7 @@ public class EventDetailActivity extends AppCompatActivity {
      * @param imageUri The URI of the selected image.
      */
     private void uploadPosterImage(Uri imageUri) {
+
         // Implement the upload logic here
         String fileName = "images/" + eventId + "/poster.jpg";
         StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(fileName);
@@ -190,19 +208,22 @@ public class EventDetailActivity extends AppCompatActivity {
                     String currentDeviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
                     if (organizerId != null && organizerId.equals(currentDeviceId)) {
                         // User is the organizer
+>
                         updatePosterButton.setVisibility(View.VISIBLE);
                         drawButton.setVisibility(View.VISIBLE);
                         joinEventButton.setVisibility(View.GONE);
                         leaveEventButton.setVisibility(View.GONE);
                         editInfoButton.setVisibility(View.VISIBLE);
                     } else {
-                        // User is not the organizer
+
                         updatePosterButton.setVisibility(View.GONE);
                         drawButton.setVisibility(View.GONE);
                         editInfoButton.setVisibility(View.GONE);
 
                         List<String> participants = (List<String>) document.get("participants");
+
                         if (participants != null && participants.contains(currentDeviceId)) {
+
                             joinEventButton.setVisibility(View.GONE);
                             leaveEventButton.setVisibility(View.VISIBLE);
                         } else {
@@ -320,12 +341,14 @@ public class EventDetailActivity extends AppCompatActivity {
             Toast.makeText(this, "Failed to fetch event details", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         });
+
     }
 
     /**
      * Allows the user to join the event.
      */
     private void joinEvent() {
+
         if (eventId == null) {
             Toast.makeText(this, "Invalid Event ID", Toast.LENGTH_SHORT).show();
             return;
@@ -352,12 +375,14 @@ public class EventDetailActivity extends AppCompatActivity {
                 }
             }
         }).addOnFailureListener(e -> Toast.makeText(this, "Failed to fetch event details", Toast.LENGTH_SHORT).show());
+
     }
 
     /**
      * Allows the user to leave the event.
      */
     private void leaveEvent() {
+
         if (eventId == null) {
             Toast.makeText(this, "Invalid Event ID", Toast.LENGTH_SHORT).show();
             return;
