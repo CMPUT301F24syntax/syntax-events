@@ -12,7 +12,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
 import com.bumptech.glide.Glide;
@@ -33,38 +32,28 @@ public class AdminUserAdapter extends ArrayAdapter<User> {
 
     @NonNull
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+    public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.item_admin_user, parent, false);
         }
 
-        // Retrieve the current user from the list
         User user = userList.get(position);
 
-        // Locate the views in the item layout
+        // Find and set views
         TextView userName = convertView.findViewById(R.id.userName);
         ImageView userImage = convertView.findViewById(R.id.userImage);
         Button deleteButton = convertView.findViewById(R.id.deleteButton);
 
-        // Set username
-        if (user.getUsername() != null && !user.getUsername().isEmpty()) {
-            userName.setText(user.getUsername());
-        } else {
-            userName.setText("Unknown User"); // Fallback if username is null
-        }
+        userName.setText(user.getUsername());
 
-        // Load profile photo using Glide, add a placeholder and error image for feedback
-        if (user.getProfilePhotoUrl() != null && !user.getProfilePhotoUrl().isEmpty()) {
-            Glide.with(context)
-                    .load(user.getProfilePhotoUrl())
-                    .placeholder(R.drawable.placeholder) // Placeholder while loading
-                    .error(R.drawable.error)             // Error image if loading fails
-                    .into(userImage);
-        } else {
-            userImage.setImageResource(R.drawable.placeholder); // Set a default placeholder if URL is null
-        }
+        // Load user profile image using Glide
+        Glide.with(context)
+                .load(user.getProfilePhotoUrl())
+                .placeholder(R.drawable.placeholder) // Optional placeholder
+                .error(R.drawable.error)             // Optional error image
+                .into(userImage);
 
-        // Click listener for detailed view
+        // Set click listener to view user details
         convertView.setOnClickListener(v -> {
             Intent intent = new Intent(context, AdminUserDetailActivity.class);
             intent.putExtra("userID", user.getUserID());
@@ -75,7 +64,7 @@ public class AdminUserAdapter extends ArrayAdapter<User> {
             context.startActivity(intent);
         });
 
-        // Delete button with confirmation dialog
+        // Delete button functionality
         deleteButton.setOnClickListener(v -> {
             new AlertDialog.Builder(context)
                     .setTitle("Delete Profile")
@@ -88,14 +77,12 @@ public class AdminUserAdapter extends ArrayAdapter<User> {
         return convertView;
     }
 
-    // Method to delete a user profile from Firestore and update the list
     private void deleteUserProfile(String userID) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Users").document(userID)
                 .delete()
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(context, "Profile deleted", Toast.LENGTH_SHORT).show();
-                    // Remove the user from the list and notify adapter
                     userList.removeIf(user -> user.getUserID().equals(userID));
                     notifyDataSetChanged();
                 })

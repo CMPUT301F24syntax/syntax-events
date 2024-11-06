@@ -5,6 +5,7 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.firestore.CollectionReference;
@@ -28,15 +29,15 @@ public class AdminUsersActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_users_main);
 
-        // Initialize views and Firestore instance
+        // Initialize ListView, Back button, and Firestore
         listViewUsers = findViewById(R.id.listViewUsers);
         backButton = findViewById(R.id.backButton);
         db = FirebaseFirestore.getInstance();
 
-        // Back button to close the activity
+        // Set up Back button to close the activity
         backButton.setOnClickListener(v -> finish());
 
-        // Set up user list and adapter
+        // Initialize user list and adapter
         userList = new ArrayList<>();
         userAdapter = new AdminUserAdapter(this, userList);
         listViewUsers.setAdapter(userAdapter);
@@ -46,7 +47,7 @@ public class AdminUsersActivity extends AppCompatActivity {
     }
 
     private void loadUsersFromDatabase() {
-        // Reference to the "Users" collection in Firestore
+        // Reference to the "Users" collection
         CollectionReference usersRef = db.collection("Users");
 
         usersRef.get()
@@ -54,23 +55,23 @@ public class AdminUsersActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         QuerySnapshot querySnapshot = task.getResult();
                         if (querySnapshot != null && !querySnapshot.isEmpty()) {
-                            // Clear existing list to avoid duplicates
+                            // Clear the existing list to avoid duplicates
                             userList.clear();
                             for (DocumentSnapshot document : querySnapshot.getDocuments()) {
-                                // Retrieve data and create User object
-                                String username = document.getString("username");
+                                // Retrieve data from each document and create User object
                                 String userID = document.getString("userID");
+                                String username = document.getString("username");
                                 String email = document.getString("email");
                                 String phoneNumber = document.getString("phoneNumber");
                                 String profilePhotoUrl = document.getString("profilePhotoUrl");
 
-                                // Ensure required fields are present before creating a User
+                                // Make sure all required fields are present
                                 if (userID != null && username != null) {
                                     User user = new User(userID, username, email, phoneNumber, profilePhotoUrl);
                                     userList.add(user);
                                 }
                             }
-                            // Notify adapter about data changes
+                            // Notify adapter that data has changed
                             userAdapter.notifyDataSetChanged();
                         } else {
                             Toast.makeText(this, "No users found in the database.", Toast.LENGTH_SHORT).show();
