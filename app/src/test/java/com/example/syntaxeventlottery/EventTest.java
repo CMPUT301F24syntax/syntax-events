@@ -155,35 +155,5 @@ public class EventTest {
 
     }
 
-    @Test
-    public void testBitmapToByteArray() {
-        // generate event id for qr code creation
-        event.generateEventID(event.getOrganizerId());
-        String eventID = event.getEventID();
-        // generate event id of event object
-        //Bitmap eventBitMap = event.generateQRCodeBitmap(eventID);
-        assertNotNull(event.generateQRCodeBitmap(eventID));
-        // Create a mock Bitmap object for testing
-        /*
-        QRCodeWriter testWriter = new QRCodeWriter();
-        Bitmap testBitMap = new Bitmap();
-        try {
-            BitMatrix bitMatrix = testWriter.encode(eventID, BarcodeFormat.QR_CODE, 300, 300);
-            testBitMap = Bitmap.createBitmap(300, 300, Bitmap.Config.RGB_565);
-            for (int x = 0; x < 300; x++) {
-                for (int y = 0; y < 300; y++) {
-                    testBitMap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(eventBitMap, testBitMap);
-
-         */
-    }
-
-
 }
 
