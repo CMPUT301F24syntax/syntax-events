@@ -40,6 +40,8 @@
         <activity android:name=".UserProfileActivity" android:exported="true" />
         <activity android:name=".EditUserProfileActivity" android:exported="true" />
         <activity android:name=".EditEventActivity" />
+        <activity android:name=".EventWaitingListActivity" />
+
 
         <!-- New Activity Declaration: UserProfileActivity -->
         <activity
