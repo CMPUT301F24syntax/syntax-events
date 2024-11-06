@@ -7,6 +7,12 @@ android {
     namespace = "com.example.syntaxeventlottery"
     compileSdk = 34
 
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+        }
+    }
+
     defaultConfig {
         applicationId = "com.example.syntaxeventlottery"
         minSdk = 24
@@ -62,4 +68,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
+    // Mock Testing dependencies
+    testImplementation (libs.mockito.core)
+    testImplementation (libs.mockito.inline)
 }
