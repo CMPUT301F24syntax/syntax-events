@@ -39,6 +39,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
     private EditText eventNameEditText, eventStartDateEditText, eventEndDateEditText, facilityEditText, capacityEditText, eventDescriptionEditText;
     private Button createEventButton, backButton, uploadButton;
     private ImageView eventImageView;
+    private EventRepository eventRepository;
     private EventController eventController;
     private Uri imageUri;
     private Bitmap qrCodeBitmap;
@@ -59,7 +60,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.organizer_create_event);
 
-        // Initialize UI and Firebase
+        // Initialize UI components
         eventNameEditText = findViewById(R.id.eventNameEditText);
         eventStartDateEditText = findViewById(R.id.eventStartDateEditText);
         eventEndDateEditText = findViewById(R.id.eventEndDateEditText);
@@ -69,6 +70,10 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         backButton = findViewById(R.id.backButton);
         uploadButton = findViewById(R.id.uploadButton);
         eventImageView = findViewById(R.id.eventImageView);
+
+        // initialize controller and repository
+        EventRepository eventRepository = new EventRepository();
+        eventController = new EventController(eventRepository);
 
         // Back button click listener
         backButton.setOnClickListener(v -> finish());
@@ -80,7 +85,10 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         });
 
         // Create event button click listener
-        createEventButton.setOnClickListener(v -> saveEvent());
+        createEventButton.setOnClickListener(v -> {
+            saveEvent();
+            clearInputFields();
+        });
     }
 
 
@@ -94,7 +102,6 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         String organizerId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
 
-
         // format date texts
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         Date startDate, endDate;
@@ -106,6 +113,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
             return;
         }
 
+        // get capacity to an integer
         int capacity;
         try {
             capacity = Integer.parseInt(capacityStr);
@@ -131,23 +139,6 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         }
     }
 
-
-
-
-
-    // Save event data to Firestore
-    private void saveEventData(String eventID, Map<String, Object> eventData, String imageUrl) {
-        if (imageUrl != null) {
-            eventData.put("posterUrl", imageUrl);
-        }
-        db.collection("events").document(eventID)
-                .set(eventData)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Event Created and Saved to Database", Toast.LENGTH_SHORT).show();
-                    clearInputFields();
-                })
-                .addOnFailureListener(e -> Toast.makeText(this, "Failed to save event", Toast.LENGTH_SHORT).show());
-    }
 
     private void clearInputFields() {
         eventNameEditText.setText("");

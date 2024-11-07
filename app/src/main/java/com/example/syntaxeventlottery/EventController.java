@@ -20,12 +20,6 @@ public class EventController {
         this.repository = repository;
     }
 
-    // define a callback interface for success and failure
-    public interface EventCallback {
-        void onSuccess(String eventID, String imageUrl);
-        void onFailure(Exception e);
-    }
-
     /**
      * Get all events from local list
      */
@@ -58,6 +52,21 @@ public class EventController {
             }
         }
         return null;
+    }
+
+
+    /**
+     * Get Organizer events by organizer id
+     */
+    public ArrayList<Event> getOrganizerEvents(String organizerID) {
+        ArrayList<Event> organizerEvents = new ArrayList<>();
+        for (Event event : repository.getAllEventsList()) {
+            if (event.getOrganizerId().equals(organizerID)) {
+                organizerEvents.add(event);
+            }
+        }
+
+        return organizerEvents;
     }
 
     /**

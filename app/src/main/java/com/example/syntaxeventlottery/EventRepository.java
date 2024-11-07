@@ -25,7 +25,7 @@ public class EventRepository implements EventRepositoryInterface {
     public EventRepository() {
         this.db = FirebaseFirestore.getInstance();
         this.imageDb = FirebaseStorage.getInstance();
-        this.eventsRef = db.collection("Events");
+        this.eventsRef = db.collection("events");
         this.eventsImageRef = imageDb.getReference();
         this.eventsDataList = new ArrayList<>();
 
@@ -110,6 +110,7 @@ public class EventRepository implements EventRepositoryInterface {
                     posterRef.getDownloadUrl()
                     .addOnSuccessListener(url -> {
                         data.put("posterUrl", url.toString());
+                        event.setPosterUrl(url.toString());
                         uploadQrCode(event, data, qrCodeBitmap);
                     })
                     .addOnFailureListener(e -> {
@@ -127,6 +128,7 @@ public class EventRepository implements EventRepositoryInterface {
                     qrCodeRef.getDownloadUrl()
                     .addOnSuccessListener(url -> {
                         data.put("qrCodeUrl", url.toString());
+                        event.setQrCodeUrl(url.toString());
                         uploadEventData(event, data);
                     });
                 })
@@ -156,6 +158,7 @@ public class EventRepository implements EventRepositoryInterface {
         HashMap<String, Object> data = new HashMap<>(); // initialize hashmap
         data.put("eventID", event.getEventID());
         data.put("eventName", event.getEventName());
+        data.put("facility", event.getFacility());
         data.put("description", event.getDescription());
         data.put("capacity", event.getCapacity());
         data.put("startDate", new com.google.firebase.Timestamp(event.getStartDate()));  // Use Firebase Timestamp
@@ -165,7 +168,6 @@ public class EventRepository implements EventRepositoryInterface {
         data.put("selectedParticipants", event.getSelectedParticipants());
         data.put("isFull", event.isFull());
         data.put("isDrawed", event.isDrawed());
-
         return data;
     }
 }

@@ -27,6 +27,7 @@ public class Event implements Serializable {
 
     private String eventID;
     private String eventName;
+    private String facility;
     private String description;
     private int capacity;
     private boolean isFull;
@@ -82,6 +83,7 @@ public class Event implements Serializable {
                  Date startDate, Date endDate, String organizerId) {
         this.eventID = eventID;
         this.eventName = eventName;
+        this.facility = facility;
         this.description = description;
         this.capacity = capacity;
         this.startDate = startDate;
@@ -91,6 +93,8 @@ public class Event implements Serializable {
         this.selectedParticipants = new ArrayList<>();
         this.isFull = false;
         this.isDrawed = false;
+        this.posterUrl = null;
+        this.qrCodeUrl = null;
     }
 
     public Event(String eventName, String description, int capacity, Date startDate, Date endDate, String organizerId) {
@@ -214,6 +218,14 @@ public class Event implements Serializable {
 
     public void setSelectedParticipants(List<String> selectedParticipants) {
         this.selectedParticipants = selectedParticipants;
+    }
+
+    public void setFacility(String facility) {
+        this.facility = facility;
+    }
+
+    public String getFacility() {
+        return facility;
     }
 
     // -------------------------------------------------------------------------
