@@ -13,7 +13,9 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class EventRepository implements EventRepositoryInterface{
+import javax.annotation.Nullable;
+
+public class EventRepository implements EventRepositoryInterface {
     private FirebaseFirestore db;
     private FirebaseStorage imageDb;
     private CollectionReference eventsRef;
@@ -54,20 +56,50 @@ public class EventRepository implements EventRepositoryInterface{
     }
 
     // add event
-    public void addEventToRepo(Event event, Uri imageUri, Bitmap qrCodeBitmap) {
+    public void addEventToRepo(Event event, @Nullable Uri imageUri, Bitmap qrCodeBitmap) {
         eventsDataList.add(event); // add to local list
         // create event data hashmap
         HashMap<String, Object> data = eventToHashData(event);
 
         // start upload process by saving event poster
         // this will start the upload chain: poster image -> qrcode image -> event data
-        uploadImage(event, data, imageUri, qrCodeBitmap);
+        if (imageUri != null) {
+            uploadImage(event, data, imageUri, qrCodeBitmap);
+        } else {
+            // if an upload image was not uploaded
+            uploadQrCode(event, data, qrCodeBitmap);
+        }
     }
+
     // delete an event
     public void deleteEventFromRepo(Event event) {}
 
     // update and event
-    public void updateEventDetails(Event event) {}
+    public void updateEventDetails(Event event, @Nullable Uri imageUri, @Nullable Bitmap qrCodeBitmap) {
+        // Update local list
+        for (int i = 0; i < eventsDataList.size(); i++) {
+            if (eventsDataList.get(i).getEventID().equals(event.getEventID())) {
+                eventsDataList.set(i, event);
+                break;
+            }
+        }
+
+        // Create event data hashmap
+        HashMap<String, Object> data = eventToHashData(event);
+
+        if (imageUri != null || qrCodeBitmap != null) {
+            // If there is new image or QR code, start upload chain
+            if (imageUri != null) {
+                uploadImage(event, data, imageUri, qrCodeBitmap);
+            } else {
+                // If only QR code is updated skip image upload
+                uploadQrCode(event, data, qrCodeBitmap);
+            }
+        } else {
+            // If no new images, just update the event data
+            uploadEventData(event, data);
+        }
+    }
 
     // upload image to firebase storage
     private void uploadImage(Event event, HashMap<String,Object> data, Uri imageUri, Bitmap qrCodeBitmap) {
@@ -111,6 +143,7 @@ public class EventRepository implements EventRepositoryInterface{
 
 
     // Convert Bitmap to ByteArray
+    // helper function
     private byte[] bitmapToByteArray(Bitmap bitmap) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
