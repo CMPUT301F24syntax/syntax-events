@@ -15,12 +15,8 @@ public class UserRepository {
 
     private FirebaseFirestore db;
 
-    // Initialize storage for testing
-    private FirebaseStorage storage;
-
     public UserRepository() {
         db = FirebaseFirestore.getInstance();
-        storage = FirebaseStorage.getInstance();
     }
 
     // -------------------------------------------------------------------------
