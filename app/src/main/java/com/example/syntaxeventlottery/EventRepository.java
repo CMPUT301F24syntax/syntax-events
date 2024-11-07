@@ -75,6 +75,8 @@ public class EventRepository {
                     .addOnSuccessListener(url -> {
                         data.put("posterUrl", url.toString());
                         uploadQrCode(event, data, qrCodeBitmap);
+                    })
+                    .addOnFailureListener(e -> {
                     });
                 })
                 .addOnFailureListener(e -> Log.e("Firestore Event Repository", "Failed to save Event to Firestore"));
