@@ -8,6 +8,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,7 +46,12 @@ public class EventDetailActivity extends AppCompatActivity {
     private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView,
             eventEndDateTextView, eventFacilityTextView, eventCapacityTextView;
 
-    private Button updatePosterButton, joinEventButton, leaveEventButton, editInfoButton, backButton, drawButton, waitingListButton;
+    private Button updatePosterButton, joinEventButton, leaveEventButton, editInfoButton,
+            drawButton, acceptButton, rejectButton,waitingListButton;
+    private ImageButton backButton;
+    private TextView drawEndedTextView;
+
+
 
     private FirebaseFirestore db;
     private String eventId;
@@ -70,9 +76,14 @@ public class EventDetailActivity extends AppCompatActivity {
         joinEventButton = findViewById(R.id.joinEventButton);
         leaveEventButton = findViewById(R.id.leaveEventButton);
         editInfoButton = findViewById(R.id.editInfoButton);
-        backButton = findViewById(R.id.backButton);
+
+        ImageButton backButton = findViewById(R.id.backButton);
         drawButton = findViewById(R.id.drawButton);
+        acceptButton = findViewById(R.id.acceptButton);
+        rejectButton = findViewById(R.id.rejectButton);
+        drawEndedTextView = findViewById(R.id.drawEndedTextView);
         waitingListButton = findViewById(R.id.waitingListButton); // Initialize waitingListButton
+
 
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
@@ -98,10 +109,9 @@ public class EventDetailActivity extends AppCompatActivity {
         });
         joinEventButton.setOnClickListener(v -> joinEvent());
         leaveEventButton.setOnClickListener(v -> leaveEvent());
-
-        // Set click listener for drawButton
-
         drawButton.setOnClickListener(v -> drawParticipants());
+        acceptButton.setOnClickListener(v -> acceptDraw());
+        rejectButton.setOnClickListener(v -> rejectDraw());
 
         // Set click listener for waitingListButton
         waitingListButton.setOnClickListener(v -> {
@@ -110,6 +120,7 @@ public class EventDetailActivity extends AppCompatActivity {
             intent.putExtra("event_id", eventId); // Pass event ID to the waiting list activity
             startActivity(intent);
         });
+
     }
 
 
@@ -204,9 +215,19 @@ public class EventDetailActivity extends AppCompatActivity {
                         Glide.with(this).load(qrCodeUrl).into(eventQRCodeImageView);
                     }
 
-                    // Check if current user is the organizer
+                    // Get current device ID
                     String currentDeviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-                    if (organizerId != null && organizerId.equals(currentDeviceId)) {
+
+                    // Retrieve ChosenList and joinEventList
+                    List<String> chosenList = (List<String>) document.get("ChosenList");
+                    List<String> joinEventList = (List<String>) document.get("joinEventList");
+
+                    boolean isOrganizer = organizerId != null && organizerId.equals(currentDeviceId);
+                    boolean isParticipant = (List<String>) document.get("participants") != null && ((List<String>) document.get("participants")).contains(currentDeviceId);
+                    boolean isChosen = chosenList != null && chosenList.contains(currentDeviceId);
+                    boolean isJoined = joinEventList != null && joinEventList.contains(currentDeviceId);
+
+                    if (isOrganizer) {
                         // User is the organizer
 
                         updatePosterButton.setVisibility(View.VISIBLE);
@@ -214,21 +235,53 @@ public class EventDetailActivity extends AppCompatActivity {
                         joinEventButton.setVisibility(View.GONE);
                         leaveEventButton.setVisibility(View.GONE);
                         editInfoButton.setVisibility(View.VISIBLE);
+                        acceptButton.setVisibility(View.GONE);
+                        rejectButton.setVisibility(View.GONE);
+                        drawEndedTextView.setVisibility(View.GONE);
                     } else {
 
                         updatePosterButton.setVisibility(View.GONE);
                         drawButton.setVisibility(View.GONE);
                         editInfoButton.setVisibility(View.GONE);
 
-                        List<String> participants = (List<String>) document.get("participants");
 
-                        if (participants != null && participants.contains(currentDeviceId)) {
+                        if (isChosen) {
+                            // User is chosen
+                            joinEventButton.setVisibility(View.GONE);
+                            leaveEventButton.setVisibility(View.GONE);
+                            acceptButton.setVisibility(View.VISIBLE);
+                            rejectButton.setVisibility(View.VISIBLE);
+                            drawEndedTextView.setVisibility(View.GONE);
+                        } else if (isJoined) {
+                            // User has accepted the draw
 
                             joinEventButton.setVisibility(View.GONE);
                             leaveEventButton.setVisibility(View.VISIBLE);
+                            acceptButton.setVisibility(View.GONE);
+                            rejectButton.setVisibility(View.GONE);
+                            drawEndedTextView.setVisibility(View.GONE);
                         } else {
-                            joinEventButton.setVisibility(View.VISIBLE);
-                            leaveEventButton.setVisibility(View.GONE);
+                            // Check if draw has ended
+                            if (chosenList != null && !chosenList.isEmpty()) {
+                                // User is not chosen and draw has ended
+                                joinEventButton.setVisibility(View.GONE);
+                                leaveEventButton.setVisibility(View.GONE);
+                                acceptButton.setVisibility(View.GONE);
+                                rejectButton.setVisibility(View.GONE);
+                                drawEndedTextView.setVisibility(View.VISIBLE);
+                            } else {
+                                // Draw has not been performed yet
+                                if (isParticipant) {
+                                    joinEventButton.setVisibility(View.GONE);
+                                    leaveEventButton.setVisibility(View.VISIBLE);
+                                } else {
+                                    joinEventButton.setVisibility(View.VISIBLE);
+                                    leaveEventButton.setVisibility(View.GONE);
+                                }
+                                acceptButton.setVisibility(View.GONE);
+                                rejectButton.setVisibility(View.GONE);
+                                drawEndedTextView.setVisibility(View.GONE);
+                            }
                         }
                     }
                 } else {
@@ -342,6 +395,58 @@ public class EventDetailActivity extends AppCompatActivity {
             e.printStackTrace();
         });
 
+    }
+
+    /**
+     * Accepts the draw and adds the user to joinEventList.
+     */
+    private void acceptDraw() {
+        if (eventId == null) {
+            Toast.makeText(this, "Invalid Event ID", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String currentDeviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        DocumentReference eventRef = db.collection("events").document(eventId);
+
+        // Add to joinEventList
+        eventRef.update("joinEventList", FieldValue.arrayUnion(currentDeviceId))
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "You have accepted the invitation", Toast.LENGTH_SHORT).show();
+                    acceptButton.setVisibility(View.GONE);
+                    rejectButton.setVisibility(View.GONE);
+                    leaveEventButton.setVisibility(View.VISIBLE);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to accept invitation", Toast.LENGTH_SHORT).show();
+                    Log.e("AcceptDraw", "Failed to add to joinEventList", e);
+                });
+    }
+
+    /**
+     * Rejects the draw and removes the user from ChosenList.
+     */
+    private void rejectDraw() {
+        if (eventId == null) {
+            Toast.makeText(this, "Invalid Event ID", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String currentDeviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        DocumentReference eventRef = db.collection("events").document(eventId);
+
+        // Remove from ChosenList
+        eventRef.update("ChosenList", FieldValue.arrayRemove(currentDeviceId))
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "You have rejected the invitation", Toast.LENGTH_SHORT).show();
+                    acceptButton.setVisibility(View.GONE);
+                    rejectButton.setVisibility(View.GONE);
+                    // Optionally, keep the user in participants
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to reject invitation", Toast.LENGTH_SHORT).show();
+                    Log.e("RejectDraw", "Failed to remove from ChosenList", e);
+                });
     }
 
     /**
