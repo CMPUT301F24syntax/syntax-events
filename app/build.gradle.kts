@@ -38,6 +38,7 @@ dependencies {
 
     // Glide for updating the pictures
     implementation("com.github.bumptech.glide:glide:4.12.0")
+    implementation(libs.recyclerview)
     annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
 
 
@@ -59,6 +60,7 @@ dependencies {
 
     implementation ("com.github.bumptech.glide:glide:4.12.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
+    implementation("androidx.recyclerview:recyclerview:1.2.1")
 
     // Testing dependencies
     testImplementation(libs.junit)

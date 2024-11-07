@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
         // Set click listener for the Admin button
         adminButton.setOnClickListener(v -> {
             Toast.makeText(MainActivity.this, "Admin Mode Selected", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(MainActivity.this, AdminActivity.class);
+            Intent intent = new Intent(MainActivity.this, AdminActivity.class); // This launches AdminActivity
             startActivity(intent);
         });
 
