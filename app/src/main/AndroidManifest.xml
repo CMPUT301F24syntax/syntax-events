@@ -40,7 +40,18 @@
         <activity android:name=".UserProfileActivity" android:exported="true" />
         <activity android:name=".EditUserProfileActivity" android:exported="true" />
         <activity android:name=".EditEventActivity" />
+
         <activity android:name=".FacilityProfileActivity" android:exported="true" />
+
+        <activity android:name=".AdminActivity"></activity>
+        <activity android:name=".AdminEventsActivity"></activity>
+        <activity android:name=".AdminUsersActivity"></activity>
+        <activity android:name=".AdminUserDetailActivity"></activity>
+        <activity android:name=".AdminEventDetailActivity"></activity>
+
+
+
+
 
         <activity android:name=".EventWaitingListActivity" />
 
