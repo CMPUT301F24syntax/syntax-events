@@ -13,7 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class EventRepository {
+public class EventRepository implements EventRepositoryInterface{
     private FirebaseFirestore db;
     private FirebaseStorage imageDb;
     private CollectionReference eventsRef;
@@ -32,7 +32,7 @@ public class EventRepository {
     }
 
     // getter for local datalist
-    public ArrayList<Event> getEventsList() {
+    public ArrayList<Event> getAllEventsList() {
         return eventsDataList;
     }
 
@@ -63,7 +63,11 @@ public class EventRepository {
         // this will start the upload chain: poster image -> qrcode image -> event data
         uploadImage(event, data, imageUri, qrCodeBitmap);
     }
+    // delete an event
+    public void deleteEventFromRepo(Event event) {}
 
+    // update and event
+    public void updateEventDetails(Event event) {}
 
     // upload image to firebase storage
     private void uploadImage(Event event, HashMap<String,Object> data, Uri imageUri, Bitmap qrCodeBitmap) {
