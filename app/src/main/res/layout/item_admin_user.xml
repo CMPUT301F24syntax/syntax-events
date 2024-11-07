@@ -1,0 +1,39 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:background="?android:attr/selectableItemBackground">
+
+    <!-- User Profile Image on the Left -->
+    <ImageView
+        android:id="@+id/userImage"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginEnd="8dp"
+        android:scaleType="centerCrop"
+        android:contentDescription="User Profile Image"
+        android:background="#E0E0E0" />
+
+    <!-- User Name in the Center -->
+    <TextView
+        android:id="@+id/userName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Username"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:gravity="center_vertical"
+        android:textColor="#000000" />
+
+    <!-- Delete Button on the Right -->
+    <Button
+        android:id="@+id/deleteButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Delete"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#FF0000"
+        android:padding="4dp" />
+</LinearLayout>
