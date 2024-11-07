@@ -86,6 +86,18 @@
         android:textColor="@android:color/black"
         android:layout_marginTop="8dp" />
 
+    <!-- Facility -->
+    <TextView
+        android:id="@+id/facilityTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/phoneTextView"
+        android:layout_centerHorizontal="true"
+        android:text="Facility Name"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:layout_marginTop="8dp" />
+
     <!-- Edit Button -->
     <Button
         android:id="@+id/editButton"
@@ -94,7 +106,7 @@
         android:text="Edit"
         android:backgroundTint="@android:color/darker_gray"
         android:textColor="@android:color/black"
-        android:layout_below="@id/phoneTextView"
+        android:layout_below="@id/facilityTextView"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp" />
 

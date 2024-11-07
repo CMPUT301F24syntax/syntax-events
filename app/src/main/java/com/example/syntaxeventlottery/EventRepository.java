@@ -74,7 +74,6 @@ public class EventRepository {
         data.put("posterUrl", event.getPosterUrl());
         data.put("qrCodeUrl", event.getQrCodeUrl());
         data.put("organizerId", event.getOrganizerId());
-        data.put("facility", event.getFacility());
         data.put("startDate", event.getStartDate());
         data.put("endDate", event.getEndDate());
         data.put("capacity", event.getCapacity());

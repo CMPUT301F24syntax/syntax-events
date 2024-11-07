@@ -4,7 +4,6 @@ package com.example.syntaxeventlottery;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
 import android.widget.ImageButton;
@@ -15,9 +14,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.syntaxeventlottery.EventAdapter;
-import com.example.syntaxeventlottery.OrganizerActivity;
-import com.example.syntaxeventlottery.UserProfileActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -28,86 +24,92 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-/**
- * Activity representing the user's home screen.
- */
 public class UserHomeActivity extends AppCompatActivity {
 
     private TextView dateTextView;
-    private Handler handler;
-    private Runnable updateTimeRunnable;
     private RecyclerView futureEventsRecyclerView;
     private EventAdapter eventAdapter;
-    private List<Event> eventList;  // List to hold future events
+    private List<Event> eventList;
     private FirebaseFirestore db;
     private ImageButton organizerButton, profileButton, newsButton;
     private String deviceId;
-
-    // New variables for "Events I Attend"
-    private RecyclerView attendedEventsRecyclerView;
-    private EventAdapter attendedEventAdapter;
-    private List<Event> attendedEventList; // List to hold attended events
-    private String deviceID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_home_page);
 
-        // Initialize the TextView for displaying the date and time
+        // Initialize views
         dateTextView = findViewById(R.id.dateTextView);
-
-        // Initialize the buttons
         organizerButton = findViewById(R.id.organizerButton);
         profileButton = findViewById(R.id.profileButton);
         newsButton = findViewById(R.id.newsButton);
 
-        // Set up RecyclerView for Future Events
-        futureEventsRecyclerView = findViewById(R.id.futureEventsRecyclerView);
-        futureEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        // Initialize event list and adapter for future events
-        eventList = new ArrayList<>();
-        eventAdapter = new EventAdapter(eventList, this);
-        futureEventsRecyclerView.setAdapter(eventAdapter);
-        Log.d("RecyclerView", "Adapter set for RecyclerView with initial item count: " + eventAdapter.getItemCount());
-
-        // Set up RecyclerView for "Events I Attend"
-        attendedEventsRecyclerView = findViewById(R.id.attendingEventsRecyclerView);
-        attendedEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-
-        // Initialize event list and adapter for attended events
-        attendedEventList = new ArrayList<>();
-        attendedEventAdapter = new EventAdapter(attendedEventList, this);
-        attendedEventsRecyclerView.setAdapter(attendedEventAdapter);
-
-        // Initialize Firestore
+        // Initialize Firebase Firestore
         db = FirebaseFirestore.getInstance();
-
-
-        // Load future events and attended events from Firestore
 
         // Get deviceId
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
+        // Set up RecyclerView for Future Events
+        futureEventsRecyclerView = findViewById(R.id.futureEventsRecyclerView);
+        futureEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        eventList = new ArrayList<>();
+        eventAdapter = new EventAdapter(eventList, this);
+        futureEventsRecyclerView.setAdapter(eventAdapter);
+
         // Load events from Firestore
-
         loadEventsFromFirestore();
-        loadAttendedEventsFromFirestore(); // Load events the user is attending
 
-        // Set click listener on Organizer, Profile, and News buttons
-        organizerButton.setOnClickListener(v -> startActivity(new Intent(UserHomeActivity.this, OrganizerActivity.class)));
-        profileButton.setOnClickListener(v -> startActivity(new Intent(UserHomeActivity.this, UserProfileActivity.class)));
-        newsButton.setOnClickListener(v -> startActivity(new Intent(UserHomeActivity.this, NotificationCenterActivity.class)));
+        // Set click listener for Organizer button
+        organizerButton.setOnClickListener(v -> checkUserAndNavigate());
 
-        // Set up the date and time updater
+        // Set click listener for Profile button
+        profileButton.setOnClickListener(v -> {
+            // Navigate to UserProfileActivity
+            startActivity(new Intent(UserHomeActivity.this, UserProfileActivity.class));
+        });
+
+        // Set click listener for News button
+        newsButton.setOnClickListener(v -> {
+            // Navigate to NotificationCenterActivity
+            startActivity(new Intent(UserHomeActivity.this, NotificationCenterActivity.class));
+        });
+
+        // Set up date and time updater
         updateDateTime();
     }
 
     /**
-     * Loads events from Firestore.
+     * Checks the user's facility attribute and navigates accordingly.
      */
+    private void checkUserAndNavigate() {
+        db.collection("Users").document(deviceId).get()
+                .addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        String facility = document.getString("facility");
 
+                        if (facility == null || facility.isEmpty()) {
+                            // Facility is empty, navigate to FacilityProfileActivity
+                            startActivity(new Intent(UserHomeActivity.this, FacilityProfileActivity.class));
+                        } else {
+                            // Facility is set, navigate to OrganizerActivity
+                            startActivity(new Intent(UserHomeActivity.this, OrganizerActivity.class));
+                        }
+                    } else {
+                        Log.d("Firestore", "No user found with device ID " + deviceId);
+                        Toast.makeText(UserHomeActivity.this, "User not found.", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore", "Error checking user", e);
+                    Toast.makeText(UserHomeActivity.this, "Failed to check user information.", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    /**
+     * Loads events from Firestore and populates the future events list.
+     */
     private void loadEventsFromFirestore() {
         db.collection("events")
                 .get()
@@ -132,9 +134,7 @@ public class UserHomeActivity extends AppCompatActivity {
                                 int capacity = document.getLong("capacity").intValue();
 
                                 // Create and add the Event object to the list
-
                                 Event event = new Event(eventID, eventName, description, facility, capacity, startDate, endDate, qrCodeUrl);
-
                                 event.setEventID(eventID);
                                 event.setQrCodeUrl(qrCodeUrl);
                                 event.setPosterUrl(posterUrl);
@@ -152,76 +152,26 @@ public class UserHomeActivity extends AppCompatActivity {
                 });
     }
 
-    // New method: Load the events the user is attending
-    private void loadAttendedEventsFromFirestore() {
-        // Get device's unique ID
-        deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-
-        db.collection("Users").document(deviceID).get()
-                .addOnSuccessListener(document -> {
-                    if (document.exists()) {
-                        List<String> waitingListEvents = (List<String>) document.get("waitingListEvents");
-                        if (waitingListEvents != null && !waitingListEvents.isEmpty()) {
-                            // Fetch each event in the waitingListEvents list
-                            for (String eventID : waitingListEvents) {
-                                db.collection("events").document(eventID).get()
-                                        .addOnSuccessListener(eventDoc -> {
-                                            if (eventDoc.exists()) {
-                                                String eventName = eventDoc.getString("eventName");
-                                                String facility = eventDoc.getString("facility");
-                                                Date startDate = eventDoc.getDate("startDate");
-                                                Date endDate = eventDoc.getDate("endDate");
-
-                                                if (startDate != null && endDate != null) {
-                                                    Event attendedEvent = new Event(eventID, eventName, null, facility, 1, startDate, endDate, "123");
-                                                    attendedEventList.add(attendedEvent);
-                                                    attendedEventAdapter.notifyDataSetChanged();
-                                                }
-                                            }
-                                        })
-                                        .addOnFailureListener(e -> Log.e("Firestore", "Error fetching event " + eventID, e));
-                            }
-                        } else {
-                            Log.d("Firestore", "No events found in waitingListEvents for this user.");
-                        }
-                    } else {
-                        Log.d("Firestore", "User document not found.");
-                    }
-                })
-                .addOnFailureListener(e -> Toast.makeText(UserHomeActivity.this, "Failed to load attended events.", Toast.LENGTH_SHORT).show());
-    }
-
-    // Method to update the date and time every second
+    /**
+     * Updates the date and time in the TextView every second.
+     */
     private void updateDateTime() {
-        handler = new Handler();
-        updateTimeRunnable = new Runnable() {
-            @Override
-            public void run() {
-                // Set up the date format and timezone for Edmonton
-                SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.getDefault());
-                dateFormat.setTimeZone(TimeZone.getTimeZone("America/Edmonton"));
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.getDefault());
+        dateFormat.setTimeZone(TimeZone.getTimeZone("America/Edmonton"));
 
-                // Get the current date and time in Edmonton
-                String currentDateTime = dateFormat.format(new Date());
-
-                // Set the current date and time to the TextView
-                dateTextView.setText(currentDateTime);
-
-                // Schedule the next update after 1 second
-                handler.postDelayed(this, 1000);
+        // Update the time every second
+        new Thread(() -> {
+            while (!isFinishing()) {
+                runOnUiThread(() -> {
+                    String currentDateTime = dateFormat.format(new Date());
+                    dateTextView.setText(currentDateTime);
+                });
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-        };
-
-        // Start the update process
-        handler.post(updateTimeRunnable);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // Remove callbacks to avoid memory leaks
-        if (handler != null && updateTimeRunnable != null) {
-            handler.removeCallbacks(updateTimeRunnable);
-        }
+        }).start();
     }
 }

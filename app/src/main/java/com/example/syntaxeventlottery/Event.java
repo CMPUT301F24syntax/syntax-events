@@ -28,7 +28,6 @@ public class Event implements Serializable {
     private String eventID;
     private String eventName;
     private String description;
-    private String facility;
     private int capacity;
     private boolean isFull;
     private boolean isDrawed;
@@ -84,7 +83,6 @@ public class Event implements Serializable {
         this.eventID = eventID;
         this.eventName = eventName;
         this.description = description;
-        this.facility = facility;
         this.capacity = capacity;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -99,7 +97,6 @@ public class Event implements Serializable {
         this.eventID = eventID;
         this.eventName = eventName;
         this.description = description;
-        this.facility = facility;
         this.startDate = startDate;
         this.endDate = endDate;
 
@@ -132,14 +129,6 @@ public class Event implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getFacility() {
-        return facility;
-    }
-
-    public void setFacility(String facility) {
-        this.facility = facility;
     }
 
     public int getCapacity() {
@@ -333,7 +322,6 @@ public class Event implements Serializable {
                 "eventID='" + eventID + '\'' +
                 ", eventName='" + eventName + '\'' +
                 ", description='" + description + '\'' +
-                ", facility='" + facility + '\'' +
                 ", capacity=" + capacity +
                 ", isFull=" + isFull +
                 ", isDrawed=" + isDrawed +
