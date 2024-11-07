@@ -95,7 +95,7 @@ public class User {
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", profilePhotoUrl='" + profilePhotoUrl + '\'' +
                 ", username='" + username + '\'' +
-                ", facility='" + username+
+                ", facility='" + facility+
                 '}';
     }
 }

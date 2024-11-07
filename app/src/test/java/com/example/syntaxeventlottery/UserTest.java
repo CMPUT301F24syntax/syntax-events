@@ -74,7 +74,7 @@ public class UserTest {
 
     @Test
     public void testToString() {
-        String string = "User{userID='" + user.getUserID() + "', deviceCode='device1', email='test_email@example.com', phoneNumber='1234', profilePhotoUrl='http://example.com', username='test'}";
+        String string = "User{userID='" + user.getUserID() + "', deviceCode='device1', email='test_email@example.com', phoneNumber='1234', profilePhotoUrl='http://example.com', username='test', facility='VVC'}";
         assertEquals(string, user.toString());
     }
 }
