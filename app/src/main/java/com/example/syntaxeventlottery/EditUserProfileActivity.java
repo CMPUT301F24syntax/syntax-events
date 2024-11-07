@@ -28,7 +28,7 @@ import com.google.firebase.storage.StorageReference;
 
 public class EditUserProfileActivity extends AppCompatActivity {
 
-    private EditText nameEditText, emailEditText, phoneEditText;
+    private EditText nameEditText, emailEditText, phoneEditText, facilityEditText; // Add facilityEditText
     private Button saveButton;
     private ImageButton backButton, uploadImageButton;
     private ImageView profileImageView;
@@ -50,13 +50,14 @@ public class EditUserProfileActivity extends AppCompatActivity {
         nameEditText = findViewById(R.id.editName);
         emailEditText = findViewById(R.id.editEmail);
         phoneEditText = findViewById(R.id.editPhone);
+        facilityEditText = findViewById(R.id.editFacility); // Initialize facilityEditText
         saveButton = findViewById(R.id.saveButton);
 
         // Initialize Firestore and Firebase Storage
         db = FirebaseFirestore.getInstance();
         storageRef = FirebaseStorage.getInstance().getReference();
 
-        // Retrieve deviceID from Intent or generate it
+        // Retrieve deviceID from system
         deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
         if (deviceID != null && !deviceID.isEmpty()) {
@@ -107,12 +108,14 @@ public class EditUserProfileActivity extends AppCompatActivity {
                             String name = document.getString("username");
                             String email = document.getString("email");
                             String phone = document.getString("phoneNumber");
+                            String facility = document.getString("facility"); // Load facility
                             String profileImageUrl = document.getString("profilePhotoUrl");
 
                             // Set user information to UI components
                             nameEditText.setText(name);
                             emailEditText.setText(email);
                             phoneEditText.setText(phone);
+                            facilityEditText.setText(facility); // Set facility to facilityEditText
 
                             // Load profile image with Glide
                             if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
@@ -187,15 +190,16 @@ public class EditUserProfileActivity extends AppCompatActivity {
     }
 
     /**
-     * Saves the user profile information to Firestore and navigates to UserHomeActivity upon success.
+     * Saves the user profile information to Firestore.
      */
     private void saveUserProfile() {
         String name = nameEditText.getText().toString();
         String email = emailEditText.getText().toString();
         String phone = phoneEditText.getText().toString();
+        String facility = facilityEditText.getText().toString(); // Get facility input
 
         db.collection("Users").document(deviceID)
-                .update("username", name, "email", email, "phoneNumber", phone)
+                .update("username", name, "email", email, "phoneNumber", phone, "facility", facility) // Update facility
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(EditUserProfileActivity.this, "Profile updated successfully.", Toast.LENGTH_SHORT).show();
 

@@ -64,10 +64,11 @@ public class AdminUsersActivity extends AppCompatActivity {
                                 String email = document.getString("email");
                                 String phoneNumber = document.getString("phoneNumber");
                                 String profilePhotoUrl = document.getString("profilePhotoUrl");
+                                String facility = document.getString("facility");
 
                                 // Make sure all required fields are present
                                 if (userID != null && username != null) {
-                                    User user = new User(userID, username, email, phoneNumber, profilePhotoUrl);
+                                    User user = new User(userID, username, email, phoneNumber, profilePhotoUrl,facility);
                                     userList.add(user);
                                 }
                             }

@@ -66,13 +66,13 @@ public class Entrant extends User implements Serializable {
      * @param profilePhotoUrl URL to the entrant's profile photo.
      * @param username        Entrant's chosen username.
      */
-    public Entrant(String deviceCode, String email, String phoneNumber, String profilePhotoUrl, String username) {
-        super(deviceCode, email, phoneNumber, profilePhotoUrl, username); // Calls the parameterized constructor of User
+    public Entrant(String deviceCode, String email, String phoneNumber, String profilePhotoUrl, String username,String facility) {
+        super(deviceCode, email, phoneNumber, profilePhotoUrl, username,facility); // Calls the parameterized constructor of User
         this.waitingListEvents = new ArrayList<>();
         this.selectedEvents = new ArrayList<>();
         this.invitations = new ArrayList<>();
         this.receiveNotifications = true; // Default to receiving notifications
-        this.geoLocation = null; // Default to no geolocation
+        this.geoLocation = null;// Default to no geolocation
     }
 
     // -------------------------------------------------------------------------

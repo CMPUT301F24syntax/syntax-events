@@ -10,18 +10,20 @@ public class User {
     private String phoneNumber;
     private String profilePhotoUrl;
     private String username;
+    private String facility;
 
     // No-argument constructor required by Firebase
     public User() {}
 
     // Parameterized constructor
-    public User(String deviceCode, String email, String phoneNumber, String profilePhotoUrl, String username) {
+    public User(String deviceCode, String email, String phoneNumber, String profilePhotoUrl, String username, String facility) {
         this.deviceCode = deviceCode;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.profilePhotoUrl = profilePhotoUrl;
         this.username = username;
-        this.userID = generateUserID(); // Automatically generate userID
+        this.userID = generateUserID();
+        this.facility = facility; // Automatically generate userID
     }
 
     // Method to generate a unique, shorter userID
@@ -80,6 +82,10 @@ public class User {
         this.username = username;
     }
 
+    public String getFacility(){ return facility;
+    }
+
+    public void setFacility(String facility){this.facility = facility;}
     @Override
     public String toString() {
         return "User{" +
@@ -89,6 +95,7 @@ public class User {
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", profilePhotoUrl='" + profilePhotoUrl + '\'' +
                 ", username='" + username + '\'' +
+                ", facility='" + facility+
                 '}';
     }
 }

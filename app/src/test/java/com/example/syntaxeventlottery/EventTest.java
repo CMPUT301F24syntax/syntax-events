@@ -51,7 +51,6 @@ public class EventTest {
         // Check attributes passed as arguments to constructor
         assertEquals("event_1", event.getEventName());
         assertEquals("this is a test event", event.getDescription());
-        assertEquals("testFacility123", event.getFacility());
         assertEquals(100, event.getCapacity());
         assertEquals("testOrganizer123", event.getOrganizerId());
 

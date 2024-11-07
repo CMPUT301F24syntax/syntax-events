@@ -59,13 +59,6 @@
                 android:hint="End Date (YYYY-MM-DD HH:MM)"
                 android:layout_marginTop="16dp" />
 
-            <!-- Facility/Location -->
-            <EditText
-                android:id="@+id/editFacility"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Location"
-                android:layout_marginTop="16dp" />
 
             <!-- Capacity -->
             <EditText

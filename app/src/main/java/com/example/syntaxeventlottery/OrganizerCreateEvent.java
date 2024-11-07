@@ -64,7 +64,6 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         eventNameEditText = findViewById(R.id.eventNameEditText);
         eventStartDateEditText = findViewById(R.id.eventStartDateEditText);
         eventEndDateEditText = findViewById(R.id.eventEndDateEditText);
-        facilityEditText = findViewById(R.id.facilityEditText);
         capacityEditText = findViewById(R.id.capacityEditText);
         eventDescriptionEditText = findViewById(R.id.eventDescriptionEditText);
         createEventButton = findViewById(R.id.createEventButton);
@@ -112,11 +111,10 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         String eventDescription = eventDescriptionEditText.getText().toString();
         String eventStartDateText = eventStartDateEditText.getText().toString();
         String eventEndDateText = eventEndDateEditText.getText().toString();
-        String facility = facilityEditText.getText().toString();
         String capacityStr = capacityEditText.getText().toString();
         String organizerId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        if (eventName.isEmpty() || eventDescription.isEmpty() || eventStartDateText.isEmpty() || eventEndDateText.isEmpty() || facility.isEmpty() || capacityStr.isEmpty()) {
+        if (eventName.isEmpty() || eventDescription.isEmpty() || eventStartDateText.isEmpty() || eventEndDateText.isEmpty() ||  capacityStr.isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -147,7 +145,6 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         eventData.put("description", eventDescription);
         eventData.put("startDate", new com.google.firebase.Timestamp(startDate));  // Use Firebase Timestamp
         eventData.put("endDate", new com.google.firebase.Timestamp(endDate));      // Use Firebase Timestamp
-        eventData.put("facility", facility);
         eventData.put("capacity", capacity);
         eventData.put("organizerId", organizerId);
 
@@ -210,7 +207,6 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         eventDescriptionEditText.setText("");
         eventStartDateEditText.setText("");
         eventEndDateEditText.setText("");
-        facilityEditText.setText("");
         capacityEditText.setText("");
         eventImageView.setImageURI(null);
         uploadButton.setVisibility(View.VISIBLE);

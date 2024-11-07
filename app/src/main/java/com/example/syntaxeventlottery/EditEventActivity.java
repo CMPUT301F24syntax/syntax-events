@@ -32,7 +32,6 @@ public class EditEventActivity extends AppCompatActivity {
         editEventDescription = findViewById(R.id.editEventDescription);
         editStartDate = findViewById(R.id.editStartDate);
         editEndDate = findViewById(R.id.editEndDate);
-        editFacility = findViewById(R.id.editFacility);
         editCapacity = findViewById(R.id.editCapacity);
         saveEventButton = findViewById(R.id.saveEventButton);
         backButton = findViewById(R.id.backButton);
@@ -73,7 +72,6 @@ public class EditEventActivity extends AppCompatActivity {
                         editStartDate.setText(startDate != null ? dateFormat.format(startDate) : "");
                         editEndDate.setText(endDate != null ? dateFormat.format(endDate) : "");
 
-                        editFacility.setText(document.getString("facility"));
                         editCapacity.setText(String.valueOf(document.getLong("capacity")));
                     } else {
                         Toast.makeText(EditEventActivity.this, "Event not found", Toast.LENGTH_SHORT).show();
@@ -116,7 +114,6 @@ public class EditEventActivity extends AppCompatActivity {
         eventUpdates.put("description", eventDescription);
         eventUpdates.put("startDate", startDate);
         eventUpdates.put("endDate", endDate);
-        eventUpdates.put("facility", facility);
         eventUpdates.put("capacity", Long.parseLong(capacity));
 
         // Update Firestore with new details

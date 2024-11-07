@@ -83,15 +83,6 @@
                 android:padding="8dp"
                 android:layout_marginTop="8dp" />
 
-            <!-- Facility Input -->
-            <EditText
-                android:id="@+id/facilityEditText"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:hint="Facility"
-                android:backgroundTint="@android:color/darker_gray"
-                android:padding="8dp"
-                android:layout_marginTop="8dp" />
 
             <!-- Capacity Input -->
             <EditText

@@ -1,3 +1,5 @@
+// UserProfileActivity.java
+
 package com.example.syntaxeventlottery;
 
 import android.content.Intent;
@@ -29,7 +31,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
     private Button backButton, editButton;
     private ImageView profileImageView;
-    private TextView nameTextView, emailTextView, phoneTextView;
+    private TextView nameTextView, emailTextView, phoneTextView, facilityTextView; // Added facilityTextView
     private Uri selectedImageUri;
 
     private FirebaseFirestore db;
@@ -60,6 +62,7 @@ public class UserProfileActivity extends AppCompatActivity {
         nameTextView = findViewById(R.id.nameTextView);
         emailTextView = findViewById(R.id.emailTextView);
         phoneTextView = findViewById(R.id.phoneTextView);
+        facilityTextView = findViewById(R.id.facilityTextView); // Initialize facilityTextView
 
         // Initialize Firestore and UserRepository
         db = FirebaseFirestore.getInstance();
@@ -149,11 +152,13 @@ public class UserProfileActivity extends AppCompatActivity {
                             String email = document.getString("email");
                             String phoneNumber = document.getString("phoneNumber");
                             String profileImageUrl = document.getString("profilePhotoUrl");
+                            String facility = document.getString("facility"); // Retrieve facility information
 
                             // Set retrieved data to TextViews
                             nameTextView.setText(username);
                             emailTextView.setText(email);
                             phoneTextView.setText(phoneNumber);
+                            facilityTextView.setText(facility); // Display facility information
 
                             // Log profileImageUrl for debugging
                             Log.d("UserProfile", "Fetched profileImageUrl: " + profileImageUrl);
