@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -76,28 +77,28 @@ public class NotificationCenterActivity extends AppCompatActivity {
         db.collection("notifications")
                 .whereEqualTo("deviceId", deviceId)
                 .whereEqualTo("isRead", false)
-                .orderBy("timestamp", Query.Direction.DESCENDING) // Order by timestamp descending
-                .addSnapshotListener((snapshots, e) -> {
-                    if (e != null) {
-                        Log.w("NotificationCenter", "Listen failed.", e);
-                        return;
-                    }
-
-                    if (snapshots != null) {
-                        notificationMessages.clear();
-                        notificationIds.clear();
-                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                            if (dc.getType() == DocumentChange.Type.ADDED) {
-                                String message = dc.getDocument().getString("message");
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        QuerySnapshot snapshots = task.getResult();
+                        if (snapshots != null && !snapshots.isEmpty()) {
+                            notificationMessages.clear();
+                            notificationIds.clear();
+                            for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                                String message = doc.getString("message");
                                 notificationMessages.add(message);
-                                notificationIds.add(dc.getDocument().getId());
+                                notificationIds.add(doc.getId());
+                                Log.d("NotificationCenter", "Loaded notification: " + message);
                             }
-                        }
-                        adapter.notifyDataSetChanged();
-
-                        if (notificationMessages.isEmpty()) {
+                            adapter.notifyDataSetChanged();
+                        } else {
                             Toast.makeText(NotificationCenterActivity.this, "No new notifications", Toast.LENGTH_SHORT).show();
+                            Log.d("NotificationCenter", "No notifications found for deviceId: " + deviceId);
                         }
+                    } else {
+                        Log.w("NotificationCenter", "Error getting documents.", task.getException());
+                        Toast.makeText(NotificationCenterActivity.this, "Failed to load notifications", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
