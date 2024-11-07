@@ -14,7 +14,7 @@ public class UserTest {
     @Before
     public void setUp() {
         // Initialize User with sample data
-        user = new User("device1", "test_email@example.com", "1234", "http://example.com", "test");
+        user = new User("device1", "test_email@example.com", "1234", "http://example.com", "test","VVC");
     }
 
     @Test
@@ -25,6 +25,8 @@ public class UserTest {
         assertEquals("1234", user.getPhoneNumber());
         assertEquals("http://example.com", user.getProfilePhotoUrl());
         assertEquals("test", user.getUsername());
+        assertEquals("VVC", user.getFacility());
+
     }
 
     @Test
