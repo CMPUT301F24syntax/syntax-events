@@ -7,6 +7,12 @@ android {
     namespace = "com.example.syntaxeventlottery"
     compileSdk = 34
 
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+        }
+    }
+
     defaultConfig {
         applicationId = "com.example.syntaxeventlottery"
         minSdk = 24
@@ -41,6 +47,8 @@ dependencies {
     implementation(libs.recyclerview)
     annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
 
+
+
     // Firestore and Firebase dependencies
     implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
     implementation("com.google.firebase:firebase-storage")
@@ -64,4 +72,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
+    // Mock Testing dependencies
+    testImplementation (libs.mockito.core)
+    testImplementation (libs.mockito.inline)
 }
