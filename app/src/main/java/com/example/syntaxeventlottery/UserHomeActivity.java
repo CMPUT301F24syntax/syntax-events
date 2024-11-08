@@ -27,6 +27,7 @@ public class UserHomeActivity extends AppCompatActivity {
     private String deviceId;
     private UserController userController;
     private EventRepository eventRepository;
+    private EventController eventController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,15 +43,10 @@ public class UserHomeActivity extends AppCompatActivity {
         // Initialize UserController
         userController = new UserController(this);
 
-        // Initialize EventRepository
+        // Initialize EventRepository and controller
         eventRepository = new EventRepository();
+        eventController = new EventController(eventRepository);
 
-        // Set listener to update adapter when data changes
-        eventRepository.setOnEventsDataChangeListener(() -> {
-            runOnUiThread(() -> {
-                eventAdapter.notifyDataSetChanged();
-            });
-        });
 
         // Get deviceId from UserController
         deviceId = userController.getDeviceId();
@@ -58,9 +54,18 @@ public class UserHomeActivity extends AppCompatActivity {
         // Set up RecyclerView for Future Events
         futureEventsRecyclerView = findViewById(R.id.futureEventsRecyclerView);
         futureEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        eventList = eventRepository.getAllEventsList();
-        eventAdapter = new EventAdapter(eventList, this);
-        futureEventsRecyclerView.setAdapter(eventAdapter);
+        eventController.getAllEvents(new DataCallback<List<Event>>() {
+            @Override
+            public void onSuccess(List<Event> result) {
+                eventAdapter = new EventAdapter(result, UserHomeActivity.this);
+                futureEventsRecyclerView.setAdapter(eventAdapter);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(UserHomeActivity.this, "Error Displaying Events", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         // Set click listener for Organizer button
         organizerButton.setOnClickListener(v -> checkUserAndNavigate());

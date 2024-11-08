@@ -3,6 +3,7 @@ package com.example.syntaxeventlottery;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -13,13 +14,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class EditEventActivity extends AppCompatActivity {
 
     private EditText editEventName, editEventDescription, editStartDate, editEndDate, editFacility, editCapacity;
     private Button saveEventButton, backButton;
-    //private FirebaseFirestore db;
     private String eventId;
     private EventController eventController;
     private EventRepository eventRepository;
@@ -39,9 +40,6 @@ public class EditEventActivity extends AppCompatActivity {
         saveEventButton = findViewById(R.id.saveEventButton);
         backButton = findViewById(R.id.backButton);
 
-        // Initialize Firestore
-        //db = FirebaseFirestore.getInstance();
-
         // initialize controller and firebase
         eventRepository = new EventRepository();
         eventController = new EventController(eventRepository);
@@ -49,10 +47,21 @@ public class EditEventActivity extends AppCompatActivity {
         // Get event ID from Intent
         eventId = getIntent().getStringExtra("event_id");
 
-        // Load event details if event ID is available
         if (eventId != null) {
-            event = eventController.getEventById(eventId);
-            loadEventDetails(event);
+            eventController.getAllEvents(new DataCallback<List<Event>>() {
+                @Override
+                public void onSuccess(List<Event> result) {
+                    Event event = eventController.getEventById(eventId);
+                    loadEventDetails(event);
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Toast.makeText(EditEventActivity.this, "Error fetching events", Toast.LENGTH_SHORT).show();
+                    Log.e("EditEventActivity", e.toString());
+                }
+            });
+
         } else {
             Toast.makeText(this, "Event ID is missing", Toast.LENGTH_SHORT).show();
             finish();
@@ -62,7 +71,12 @@ public class EditEventActivity extends AppCompatActivity {
         backButton.setOnClickListener(v -> finish());
 
         // Set click listener for save button
-        saveEventButton.setOnClickListener(v -> saveEventDetails());
+        saveEventButton.setOnClickListener(v -> {
+            saveEventDetails();
+            Intent intent = new Intent(EditEventActivity.this, UserHomeActivity.class);
+            startActivity(intent);
+            finish();
+        });
     }
 
     private void loadEventDetails(Event eventToDisplay) {
@@ -77,9 +91,9 @@ public class EditEventActivity extends AppCompatActivity {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
             editStartDate.setText(startDate != null ? dateFormat.format(startDate) : "");
             editEndDate.setText(endDate != null ? dateFormat.format(endDate) : "");
-            } else {
-                Toast.makeText(EditEventActivity.this, "Event not found", Toast.LENGTH_SHORT).show();
-                finish();
+        } else {
+            Toast.makeText(EditEventActivity.this, "Event not found", Toast.LENGTH_SHORT).show();
+            finish();
         }
     }
 
@@ -118,22 +132,16 @@ public class EditEventActivity extends AppCompatActivity {
         event.setFacility(facility);
         event.setCapacity(Integer.parseInt(capacity));
 
-        eventController.updateEvent(event, null, null);
-        Intent intent = new Intent(EditEventActivity.this, UserHomeActivity.class);
-        startActivity(intent);
-        finish();
+        eventController.updateEvent(event, null, null, new DataCallback<Event>() {
+            @Override
+            public void onSuccess(Event result) {
+                Log.d("EditEventActivity", "Event update success");
+            }
 
-        /*
-        // Update Firestore with new details
-        db.collection("events").document(eventId).update(eventUpdates)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(EditEventActivity.this, "Event updated successfully", Toast.LENGTH_SHORT).show();
-                    // Start UserHomeActivity and finish EditEventActivity
-                    Intent intent = new Intent(EditEventActivity.this, UserHomeActivity.class);
-                    startActivity(intent);
-                    finish();
-                })
-                .addOnFailureListener(e -> Toast.makeText(EditEventActivity.this, "Failed to update event", Toast.LENGTH_SHORT).show());
-    }*/
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(EditEventActivity.this, "Event saving error", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

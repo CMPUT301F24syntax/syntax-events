@@ -3,12 +3,15 @@ package com.example.syntaxeventlottery;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +24,8 @@ public class OrganizerActivity extends AppCompatActivity {
     private Button backButton;         // Button to go back to the previous screen
     private RecyclerView eventRecyclerView; // RecyclerView to display events
     private EventAdapter eventAdapter; // Adapter for managing event list display
-    private EventRepository eventRepository; // event repository
-    private EventController eventController; // event controller
+    private EventRepository eventRepository; // Event repository
+    private EventController eventController; // Event controller
     private List<Event> eventList = new ArrayList<>(); // List to hold events
     private String deviceID;           // Device ID to identify the user
 
@@ -36,7 +39,7 @@ public class OrganizerActivity extends AppCompatActivity {
         backButton = findViewById(R.id.backButton);
         eventRecyclerView = findViewById(R.id.eventRecyclerView);
 
-        // initialize repository and controller
+        // Initialize repository and controller
         eventRepository = new EventRepository();
         eventController = new EventController(eventRepository);
 
@@ -77,18 +80,22 @@ public class OrganizerActivity extends AppCompatActivity {
     }
 
     /**
-     * Load events
-     * retrieved from eventController
+     * Load events retrieved from eventController
      */
     private void loadEvents() {
-        ArrayList<Event> events = eventController.getOrganizerEvents(deviceID);
+        eventController.getAllEvents(new DataCallback<List<Event>>() {
+            @Override
+            public void onSuccess(List<Event> result) {
+                eventList.clear(); // clear any previous events
+                eventList.addAll(result);
+                eventAdapter.notifyDataSetChanged();
+            }
 
-        if (events != null && !events.isEmpty()) {
-            eventList.clear(); // clear any previous events
-            eventList.addAll(events);
-            eventAdapter.notifyDataSetChanged();
-        } else {
-            Toast.makeText(OrganizerActivity.this, "No events found, try creating an event!", Toast.LENGTH_SHORT).show();
-        }
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(OrganizerActivity.this, "No events found, try creating an event!", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
 }

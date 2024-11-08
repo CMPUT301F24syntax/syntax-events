@@ -10,142 +10,55 @@ import com.google.zxing.qrcode.QRCodeWriter;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
 public class EventController {
-    private EventRepositoryInterface repository;
+    private EventRepository repository;
 
-    public EventController(EventRepositoryInterface repository) {
+    public EventController(EventRepository repository) {
         this.repository = repository;
     }
 
-    /**
-     * Get all events from local list
-     */
-    private ArrayList<Event> getAllEvents() {
-        return repository.getAllEventsList();
+    public void getAllEvents(DataCallback<List<Event>> callback) {
+        repository.fetchAllEvents(callback);
     }
 
-    /**
-     * Add a new event with validation
-     */
-    public void addEvent(Event event, @Nullable Uri imageUri) {
-        // generate event ID
-        event.generateEventID(event.getOrganizerId());
-        // Validate event data
-        validateEvent(event);
-        // generate the bitmap of the event
-        Bitmap qrCodeBitmap = generateQRCodeBitmap(event.getEventID());
-        // Add to repository
-        repository.addEventToRepo(event, imageUri, qrCodeBitmap);
+    public void addEvent(Event event, @Nullable Uri imageUri, DataCallback<Event> callback) {
+        try {
+            validateEvent(event);
+            event.generateEventID(event.getOrganizerId());
+            Bitmap qrCodeBitmap = generateQRCodeBitmap(event.getEventID());
+            repository.addEventToRepo(event, imageUri, qrCodeBitmap, callback);
+        } catch (IllegalArgumentException e) {
+            callback.onError(e);
+        }
     }
 
-    /**
-     * Update an existing event
-     */
-    public void updateEvent(Event event, @Nullable Uri imageUri, @Nullable Bitmap qrCodeBitmap) {
-        // call repository to update event
-        repository.updateEventDetails(event, imageUri, qrCodeBitmap);
+    public void updateEvent(Event event, @Nullable Uri imageUri,
+                            @Nullable Bitmap qrCodeBitmap, DataCallback<Event> callback) {
+        try {
+            validateEvent(event);
+            repository.updateEventDetails(event, imageUri, qrCodeBitmap, callback);
+        } catch (IllegalArgumentException e) {
+            callback.onError(e);
+        }
     }
 
+    public void deleteEvent(Event event, DataCallback<Void> callback) {
+        repository.deleteEventFromRepo(event, callback);
+    }
 
-    /**
-     * Get event by ID
-     */
+    // Synchronous method to get event by ID from local cache
     public Event getEventById(String eventId) {
-        for (Event event : repository.getAllEventsList()) {
+        List<Event> events = repository.getLocalEventsList();
+        for (Event event : events) {
             if (event.getEventID().equals(eventId)) {
                 return event;
             }
         }
         return null;
-    }
-
-
-    /**
-     * Get Organizer events by organizer id
-     */
-    public ArrayList<Event> getOrganizerEvents(String organizerID) {
-        ArrayList<Event> organizerEvents = new ArrayList<>();
-        for (Event event : repository.getAllEventsList()) {
-            if (event.getOrganizerId().equals(organizerID)) {
-                organizerEvents.add(event);
-            }
-        }
-
-        return organizerEvents;
-    }
-
-    /**
-     * Get list of events where Entrant is in waiting list
-     */
-    public ArrayList<Event> getEntrantWaitingListEvents(String entrantID) {
-        ArrayList<Event> entrantWaitingList = new ArrayList<>();
-        for (Event event : repository.getAllEventsList()) {
-            if (event.getParticipants().contains(entrantID)) {
-                entrantWaitingList.add(event);
-            }
-        }
-        return entrantWaitingList;
-    }
-
-    /**
-     * Get list of events where Entrant is in selected list
-     */
-    public ArrayList<Event> getEntrantSelectedListEvents(String entrantID) {
-        ArrayList<Event> entrantSelectedList = new ArrayList<>();
-        for (Event event : repository.getAllEventsList()) {
-            if (event.getSelectedParticipants().contains(entrantID)) {
-                entrantSelectedList.add(event);
-            }
-        }
-        return entrantSelectedList;
-    }
-
-    /**
-     * Check if event is full
-     */
-    public boolean isEventFull(String eventId) {
-        Event event = getEventById(eventId);
-        if (event == null) return false;
-        return event.getParticipants().size() >= event.getCapacity();
-    }
-
-    /**
-     * Add participant to event
-     * Returns true if success, false otherwise
-     */
-    public boolean addParticipant(String eventId, String participantId) {
-        Event event = getEventById(eventId);
-        if (event == null) return false;
-
-        // Check if event is full
-        if (isEventFull(eventId)) {
-            return false;
-        }
-
-        // Check if participant is already registered
-        if (event.getParticipants().contains(participantId)) {
-            return false;
-        }
-
-        // Add participant
-        event.addParticipant(participantId);
-        repository.updateEventDetails(event, null, null); // Update in repository
-        return true;
-    }
-
-    /**
-     * Remove participant from event
-     */
-    public boolean removeParticipant(String eventId, String participantId) {
-        Event event = getEventById(eventId);
-        if (event == null) return false;
-
-        event.removeParticipant(participantId);
-        repository.updateEventDetails(event, null, null); // Update in repository
-        return true;
     }
 
     /**
@@ -173,33 +86,15 @@ public class EventController {
     }
 
     /**
-     * Get list of winners for an event
+     * Generates a QR Code bitmap for the given event ID.
+     *
+     * @param eventId The ID of the event.
+     * @return The generated QR Code bitmap.
      */
-    /*
-    public ArrayList<String> getEventWinners(String eventId) {
-        Event event = getEventById(eventId);
-        if (event == null) return new ArrayList<>();
-        return event.getSelectedParticipants();
-    }*/
-
-    /**
-     * Check if user is registered for event
-     */
-    public boolean isUserRegistered(String eventId, String userId) {
-        Event event = getEventById(eventId);
-        if (event == null) return false;
-        return event.getParticipants().contains(userId);
-    }
-
-    /**
-     * This method creates and returns a bitmap for the event's qr code
-     * @param eventID The id of the event to generate a bitmap for
-     * @return The generated bitmap
-     */
-    private Bitmap generateQRCodeBitmap(String eventID) {
+    public Bitmap generateQRCodeBitmap(String eventId) {
         QRCodeWriter writer = new QRCodeWriter();
         try {
-            BitMatrix bitMatrix = writer.encode(eventID, BarcodeFormat.QR_CODE, 300, 300);
+            BitMatrix bitMatrix = writer.encode(eventId, BarcodeFormat.QR_CODE, 300, 300);
             Bitmap bmp = Bitmap.createBitmap(300, 300, Bitmap.Config.RGB_565);
             for (int x = 0; x < 300; x++) {
                 for (int y = 0; y < 300; y++) {
