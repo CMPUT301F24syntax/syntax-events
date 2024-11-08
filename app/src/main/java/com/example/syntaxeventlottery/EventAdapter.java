@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,7 +27,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     private List<Event> eventsList;
 
     /** Context from which the adapter is created, used for inflating layouts and starting activities. */
-    private Context context;
+    private static Context context;
 
     /**
      * Constructs a new {@code EventAdapter}.
@@ -35,8 +36,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
      * @param context    The context in which the adapter is operating.
      */
     public EventAdapter(List<Event> eventsList, Context context) {
-        this.eventsList = eventsList;
         this.context = context;
+        this.eventsList = (eventsList != null) ? eventsList : new ArrayList<>();
     }
 
     /**
@@ -99,7 +100,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
      */
     @Override
     public int getItemCount() {
-        return eventsList.size();
+        return (eventsList != null) ? eventsList.size() : 0;
     }
 
     /**
@@ -108,8 +109,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
      * @param newEvents A new list of {@link Event} objects to replace the current list.
      */
     public void updateEvents(List<Event> newEvents) {
-        this.eventsList.clear();
-        this.eventsList.addAll(newEvents);
+        if (newEvents != null) {
+            this.eventsList.clear();
+            this.eventsList.addAll(newEvents);
+        } else {
+            this.eventsList.clear();
+        }
         notifyDataSetChanged();
     }
 
@@ -154,6 +159,30 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             super(itemView);
             eventNameTextView = itemView.findViewById(R.id.eventNameTextView);
             eventPosterImageView = itemView.findViewById(R.id.eventPosterImageView);
+
+        }
+
+        public void bind(Event event) {
+            eventNameTextView.setText(event.getEventName());
+
+            // Load poster image using Glide
+            if (event.getPosterUrl() != null && !event.getPosterUrl().isEmpty()) {
+                Glide.with(context)
+                        .load(event.getPosterUrl())
+                        .into(eventPosterImageView);
+            } else {
+                // Use a placeholder image if posterUrl is null or empty
+                Glide.with(context)
+                        .load(R.drawable.ic_avatar_placeholder)
+                        .into(eventPosterImageView);
+            }
+
+            // Set click listener to delegate to the EventController
+            itemView.setOnClickListener(v -> {
+                EventController.handleEventItemClick(event);
+            });
         }
     }
 }
+
+

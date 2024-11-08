@@ -1,3 +1,4 @@
+// EditEventActivity.java
 package com.example.syntaxeventlottery;
 
 import android.content.Intent;
@@ -8,14 +9,17 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
-public class EditEventActivity extends AppCompatActivity {
+/**
+ * The EditEventActivity class allows organizers to edit event details.
+ * It uses the EventController to handle business logic.
+ */
+public class EditEventActivity extends AppCompatActivity implements EventController.EventControllerListener {
 
     private static final String TAG = "EditEventActivity";
 
@@ -26,107 +30,89 @@ public class EditEventActivity extends AppCompatActivity {
     private EditText editCapacity;
     private Button saveEventButton;
     private Button backButton;
-    private FirebaseFirestore db;
+
+    private EventController eventController;
     private String eventId;
+    private Event currentEvent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_event);
 
-        // Initialize UI components and check for nulls
+        // Initialize UI components
         editEventName = findViewById(R.id.editEventName);
-        checkNull(editEventName, "editEventName");
-
         editEventDescription = findViewById(R.id.editEventDescription);
-        checkNull(editEventDescription, "editEventDescription");
-
         editStartDate = findViewById(R.id.editStartDate);
-        checkNull(editStartDate, "editStartDate");
-
         editEndDate = findViewById(R.id.editEndDate);
-        checkNull(editEndDate, "editEndDate");
-
-
         editCapacity = findViewById(R.id.editCapacity);
-        checkNull(editCapacity, "editCapacity");
-
         saveEventButton = findViewById(R.id.saveEventButton);
-        checkNull(saveEventButton, "saveEventButton");
-
         backButton = findViewById(R.id.backButton);
-        checkNull(backButton, "backButton");
 
-        // Initialize Firestore
-        db = FirebaseFirestore.getInstance();
+        // Initialize EventController
+        eventController = new EventController(this);
 
-        // Get event ID from Intent and check for null
+        // Get event ID from Intent
         eventId = getIntent().getStringExtra("event_id");
         Log.d(TAG, "Event ID received: " + eventId);
 
-        if (eventId != null) {
-            loadEventDetails();
+        if (eventId != null && !eventId.isEmpty()) {
+            eventController.loadEventDetails(eventId);
         } else {
             Toast.makeText(this, "Event ID is missing", Toast.LENGTH_SHORT).show();
             finish();
         }
 
+        // Disable the save button until the event is loaded
+        saveEventButton.setEnabled(false);
+
+        // Set up button listeners
         backButton.setOnClickListener(v -> finish());
         saveEventButton.setOnClickListener(v -> saveEventDetails());
     }
 
-    private void checkNull(Object view, String viewName) {
-        if (view == null) {
-            Log.e(TAG, viewName + " is null. Check the ID or layout XML.");
-            Toast.makeText(this, "Error: " + viewName + " is missing in layout.", Toast.LENGTH_SHORT).show();
-        }
+    /**
+     * Populates the UI fields with the event details.
+     *
+     * @param event The event object containing details.
+     */
+    private void populateEventDetails(Event event) {
+        currentEvent = event;
+        editEventName.setText(event.getEventName());
+        editEventDescription.setText(event.getDescription());
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        String startDateStr = (event.getStartDate() != null) ? dateFormat.format(event.getStartDate()) : "";
+        String endDateStr = (event.getEndDate() != null) ? dateFormat.format(event.getEndDate()) : "";
+        editStartDate.setText(startDateStr);
+        editEndDate.setText(endDateStr);
+        editCapacity.setText(String.valueOf(event.getCapacity()));
     }
 
-    private void loadEventDetails() {
-        db.collection("events").document(eventId).get()
-                .addOnSuccessListener(document -> {
-                    if (document.exists()) {
-                        Log.d(TAG, "Event document found. Populating data.");
-                        try {
-                            editEventName.setText(document.getString("eventName"));
-                            editEventDescription.setText(document.getString("description"));
-
-                            Date startDate = document.getDate("startDate");
-                            Date endDate = document.getDate("endDate");
-                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-                            editStartDate.setText(startDate != null ? dateFormat.format(startDate) : "");
-                            editEndDate.setText(endDate != null ? dateFormat.format(endDate) : "");
-                            editCapacity.setText(String.valueOf(document.getLong("capacity")));
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error parsing event data", e);
-                            Toast.makeText(this, "Failed to load event data.", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        Log.d(TAG, "Event document does not exist.");
-                        Toast.makeText(EditEventActivity.this, "Event not found", Toast.LENGTH_SHORT).show();
-                        finish();
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error loading event details", e);
-                    Toast.makeText(EditEventActivity.this, "Failed to load event details", Toast.LENGTH_SHORT).show();
-                });
-    }
-
+    /**
+     * Saves the updated event details.
+     */
     private void saveEventDetails() {
+        if (currentEvent == null) {
+            Toast.makeText(this, "Event data is not loaded. Cannot save changes.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String eventName = editEventName.getText().toString().trim();
         String eventDescription = editEventDescription.getText().toString().trim();
         String startDateStr = editStartDate.getText().toString().trim();
         String endDateStr = editEndDate.getText().toString().trim();
-        String capacity = editCapacity.getText().toString().trim();
+        String capacityStr = editCapacity.getText().toString().trim();
 
+        // Validate input fields
         if (TextUtils.isEmpty(eventName) || TextUtils.isEmpty(eventDescription) ||
                 TextUtils.isEmpty(startDateStr) || TextUtils.isEmpty(endDateStr) ||
-              TextUtils.isEmpty(capacity)) {
+                TextUtils.isEmpty(capacityStr)) {
             Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Parse dates
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         Date startDate, endDate;
         try {
@@ -138,24 +124,99 @@ public class EditEventActivity extends AppCompatActivity {
             return;
         }
 
-        Map<String, Object> eventUpdates = new HashMap<>();
-        eventUpdates.put("eventName", eventName);
-        eventUpdates.put("description", eventDescription);
-        eventUpdates.put("startDate", startDate);
-        eventUpdates.put("endDate", endDate);
-        eventUpdates.put("capacity", Long.parseLong(capacity));
+        // Parse capacity
+        int capacity;
+        try {
+            capacity = Integer.parseInt(capacityStr);
+            if (capacity <= 0) {
+                throw new NumberFormatException("Capacity must be positive");
+            }
+        } catch (NumberFormatException e) {
+            Log.e(TAG, "Capacity parsing error", e);
+            Toast.makeText(this, "Invalid capacity. It must be a positive number.", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        db.collection("events").document(eventId).update(eventUpdates)
-                .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "Event updated successfully");
-                    Toast.makeText(EditEventActivity.this, "Event updated successfully", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(EditEventActivity.this, UserHomeActivity.class);
-                    startActivity(intent);
-                    finish();
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Failed to update event", e);
-                    Toast.makeText(EditEventActivity.this, "Failed to update event", Toast.LENGTH_SHORT).show();
-                });
+        // Update the currentEvent object
+        currentEvent.setEventName(eventName);
+        currentEvent.setDescription(eventDescription);
+        currentEvent.setStartDate(startDate);
+        currentEvent.setEndDate(endDate);
+        currentEvent.setCapacity(capacity);
+
+        // Save the event via controller
+        eventController.saveEventDetails(currentEvent);
+    }
+
+    // EventControllerListener methods
+
+    @Override
+    public void onEventLoaded(Event event) {
+        runOnUiThread(() -> {
+            if (event != null) {
+                populateEventDetails(event);
+                saveEventButton.setEnabled(true); // Enable save button after loading
+            } else {
+                Toast.makeText(EditEventActivity.this, "Failed to load event details.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void onEventSaved() {
+        runOnUiThread(() -> {
+            Toast.makeText(EditEventActivity.this, "Event updated successfully", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(EditEventActivity.this, UserHomeActivity.class);
+            startActivity(intent);
+            finish();
+        });
+    }
+
+    @Override
+    public void onError(String errorMessage) {
+        runOnUiThread(() -> {
+            Toast.makeText(EditEventActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+            saveEventButton.setEnabled(false);
+        });
+    }
+
+    @Override
+    public void onPosterUpdated() {
+
+    }
+
+    @Override
+    public void onEventListLoaded(List<Event> eventList) {
+        // Since EditEventActivity doesn't need to handle event lists,  leave this empty
+    }
+
+    @Override
+    public void onParticipantStatusChecked(boolean isInWaitingList, boolean isSelected, Event event) {
+
+    }
+
+    @Override
+    public void onWaitingListJoined() {
+
+    }
+
+    @Override
+    public void onWaitingListLeft() {
+
+    }
+
+    @Override
+    public void onInvitationAccepted() {
+
+    }
+
+    @Override
+    public void onInvitationDeclined() {
+
+    }
+
+    @Override
+    public void onDrawPerformed() {
+
     }
 }

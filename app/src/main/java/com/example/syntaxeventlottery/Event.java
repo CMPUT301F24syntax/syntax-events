@@ -52,6 +52,8 @@ public class Event implements Serializable {
      */
     private List<String> selectedParticipants;
 
+    private List<String> confirmedParticipants;
+
     // -------------------------------------------------------------------------
     // Constructors
     // -------------------------------------------------------------------------
@@ -91,6 +93,7 @@ public class Event implements Serializable {
         this.selectedParticipants = new ArrayList<>();
         this.isFull = false;
         this.isDrawed = false;
+        this.confirmedParticipants = new ArrayList<>();
     }
 
     public Event(String eventID, String eventName, String description, String facility, Date startDate, Date endDate) {
@@ -99,7 +102,7 @@ public class Event implements Serializable {
         this.description = description;
         this.startDate = startDate;
         this.endDate = endDate;
-
+        this.confirmedParticipants = new ArrayList<>();
     }
 
 
@@ -309,6 +312,14 @@ public class Event implements Serializable {
             // Code to upload QR code bitmap to Firebase Storage and set qrCodeUrl
             // This should be handled in your repository or storage management code
         }
+    }
+
+    public List<String> getConfirmedParticipants() {
+        return confirmedParticipants;
+    }
+
+    public void setConfirmedParticipants(List<String> confirmedParticipants) {
+        this.confirmedParticipants = confirmedParticipants;
     }
 
     /**

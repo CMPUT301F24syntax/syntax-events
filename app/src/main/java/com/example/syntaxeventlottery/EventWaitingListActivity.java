@@ -123,4 +123,6 @@ public class EventWaitingListActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> Log.e("EventWaitingList", "Error loading user info for deviceCode: " + deviceCode, e));
     }
+
+    
 }
