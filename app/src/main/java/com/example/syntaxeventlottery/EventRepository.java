@@ -21,6 +21,8 @@ public class EventRepository implements EventRepositoryInterface {
     private CollectionReference eventsRef;
     private StorageReference eventsImageRef;
     private ArrayList<Event> eventsDataList;
+    private OnEventsDataChangeListener dataChangeListener;
+
 
     public EventRepository() {
         this.db = FirebaseFirestore.getInstance();
@@ -53,6 +55,16 @@ public class EventRepository implements EventRepositoryInterface {
                 }
             }
         });
+    }
+
+    // Add this interface
+    public interface OnEventsDataChangeListener {
+        void onEventsDataChanged();
+    }
+
+    // Add this method
+    public void setOnEventsDataChangeListener(OnEventsDataChangeListener listener) {
+        this.dataChangeListener = listener;
     }
 
     // add event

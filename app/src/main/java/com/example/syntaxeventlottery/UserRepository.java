@@ -14,9 +14,11 @@ import com.google.firebase.storage.StorageReference;
 public class UserRepository {
 
     private FirebaseFirestore db;
+    private FirebaseStorage storage;
 
-    public UserRepository() {
-        db = FirebaseFirestore.getInstance();
+    public UserRepository(FirebaseFirestore db, FirebaseStorage storage) {
+        this.db = db;
+        this.storage = storage;
     }
 
     // -------------------------------------------------------------------------
@@ -88,17 +90,17 @@ public class UserRepository {
      * Updates or creates an Entrant's data in Firebase.
      *
      * @param userId   The unique ID of the entrant.
-     * @param entrant  The Entrant object containing updated data.
+     * @param field  The Entrant object containing updated data.
      * @param listener Callback to handle success or errors.
      */
-    public void updateEntrant(String userId, Entrant entrant, OnEntrantUpdateListener listener) {
+    public void updateEntrant(String userId, String field, Object value, OnEntrantUpdateListener listener) {
         if (userId == null || userId.isEmpty()) {
             listener.onEntrantUpdateError(new Exception("User ID is null or empty"));
             return;
         }
 
         db.collection("Users").document(userId)
-                .set(entrant)
+                .update(field, value)
                 .addOnSuccessListener(aVoid -> listener.onEntrantUpdateSuccess())
                 .addOnFailureListener(listener::onEntrantUpdateError);
     }

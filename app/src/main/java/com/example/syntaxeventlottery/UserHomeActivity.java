@@ -4,8 +4,6 @@ package com.example.syntaxeventlottery;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -14,11 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -30,9 +24,10 @@ public class UserHomeActivity extends AppCompatActivity {
     private RecyclerView futureEventsRecyclerView;
     private EventAdapter eventAdapter;
     private List<Event> eventList;
-    private FirebaseFirestore db;
     private ImageButton organizerButton, profileButton, newsButton;
     private String deviceId;
+    private UserController userController;
+    private EventRepository eventRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,21 +40,28 @@ public class UserHomeActivity extends AppCompatActivity {
         profileButton = findViewById(R.id.profileButton);
         newsButton = findViewById(R.id.newsButton);
 
-        // Initialize Firebase Firestore
-        db = FirebaseFirestore.getInstance();
+        // Initialize UserController
+        userController = new UserController(this);
 
-        // Get deviceId
-        deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        // Initialize EventRepository
+        eventRepository = new EventRepository();
+
+        // Set listener to update adapter when data changes
+        eventRepository.setOnEventsDataChangeListener(() -> {
+            runOnUiThread(() -> {
+                eventAdapter.notifyDataSetChanged();
+            });
+        });
+
+        // Get deviceId from UserController
+        deviceId = userController.getDeviceId();
 
         // Set up RecyclerView for Future Events
         futureEventsRecyclerView = findViewById(R.id.futureEventsRecyclerView);
         futureEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        eventList = new ArrayList<>();
+        eventList = eventRepository.getAllEventsList();
         eventAdapter = new EventAdapter(eventList, this);
         futureEventsRecyclerView.setAdapter(eventAdapter);
-
-        // Load events from Firestore
-        loadEventsFromFirestore();
 
         // Set click listener for Organizer button
         organizerButton.setOnClickListener(v -> checkUserAndNavigate());
@@ -81,75 +83,31 @@ public class UserHomeActivity extends AppCompatActivity {
     }
 
     /**
-     * Checks the user's facility attribute and navigates accordingly.
+     * Checks the user's facility attribute and navigates accordingly using UserController.
      */
     private void checkUserAndNavigate() {
-        db.collection("Users").document(deviceId).get()
-                .addOnSuccessListener(document -> {
-                    if (document.exists()) {
-                        String facility = document.getString("facility");
-
-                        if (facility == null || facility.isEmpty()) {
-                            // Facility is empty, navigate to FacilityProfileActivity
-                            startActivity(new Intent(UserHomeActivity.this, FacilityProfileActivity.class));
-                        } else {
-                            // Facility is set, navigate to OrganizerActivity
-                            startActivity(new Intent(UserHomeActivity.this, OrganizerActivity.class));
-                        }
+        userController.getUserFacility(new UserRepository.OnEntrantDataFetchListener() {
+            @Override
+            public void onEntrantDataFetched(Entrant entrant) {
+                if (entrant != null) {
+                    String facility = entrant.getFacility();
+                    if (facility == null || facility.isEmpty()) {
+                        // Facility is empty, navigate to FacilityProfileActivity
+                        startActivity(new Intent(UserHomeActivity.this, FacilityProfileActivity.class));
                     } else {
-                        Log.d("Firestore", "No user found with device ID " + deviceId);
-                        Toast.makeText(UserHomeActivity.this, "User not found.", Toast.LENGTH_SHORT).show();
+                        // Facility is set, navigate to OrganizerActivity
+                        startActivity(new Intent(UserHomeActivity.this, OrganizerActivity.class));
                     }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Firestore", "Error checking user", e);
-                    Toast.makeText(UserHomeActivity.this, "Failed to check user information.", Toast.LENGTH_SHORT).show();
-                });
-    }
+                } else {
+                    Toast.makeText(UserHomeActivity.this, "User not found.", Toast.LENGTH_SHORT).show();
+                }
+            }
 
-    /**
-     * Loads events from Firestore and populates the future events list.
-     */
-    private void loadEventsFromFirestore() {
-        db.collection("events")
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful() && task.getResult() != null) {
-                        eventList.clear(); // Clear the list to avoid duplication
-                        Log.d("Firestore", "Fetched " + task.getResult().size() + " events from Firestore.");
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            // Parse document data into an Event object
-                            String eventName = document.getString("eventName");
-                            String eventID = document.getId();
-                            String description = document.getString("description");
-                            String facility = document.getString("facility");
-                            String qrCodeUrl = document.getString("qrCodeUrl");
-                            String posterUrl = document.getString("posterUrl");
-
-                            // Get startDate and endDate as Date objects
-                            Date startDate = document.getDate("startDate");
-                            Date endDate = document.getDate("endDate");
-
-                            if (startDate != null && endDate != null) {
-                                int capacity = document.getLong("capacity").intValue();
-
-                                // Create and add the Event object to the list
-                                Event event = new Event(eventID, eventName, description, facility, capacity, startDate, endDate, qrCodeUrl);
-                                event.setEventID(eventID);
-                                event.setQrCodeUrl(qrCodeUrl);
-                                event.setPosterUrl(posterUrl);
-                                eventList.add(event);
-                                Log.d("Firestore", "Added event: " + eventName);
-                            } else {
-                                Log.e("Firestore", "startDate or endDate is null for event: " + eventName);
-                            }
-                        }
-                        eventAdapter.notifyDataSetChanged();  // Refresh adapter to display data
-                        Log.d("RecyclerView", "Adapter updated with item count: " + eventAdapter.getItemCount());
-                    } else {
-                        Log.e("Firestore", "Error loading events: ", task.getException());
-                    }
-                });
+            @Override
+            public void onEntrantDataFetchError(Exception e) {
+                Toast.makeText(UserHomeActivity.this, "Failed to check user information.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     /**
