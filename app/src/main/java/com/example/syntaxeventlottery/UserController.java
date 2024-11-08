@@ -15,9 +15,7 @@ public class UserController {
 
     public UserController(Context context) {
         this.context = context;
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        FirebaseStorage storage = FirebaseStorage.getInstance();
-        userRepository = new UserRepository(db, storage);
+        userRepository = new UserRepository(); // Use default constructor
         this.deviceId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
