@@ -7,13 +7,32 @@ import android.widget.Button;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
+/**
+ * The {@code MainActivity} class serves as the entry point of the application.
+ * It provides options for the user to select either Admin or User mode.
+ * Depending on the selection, it navigates to the appropriate activity.
+ */
 public class MainActivity extends AppCompatActivity {
 
+    /** Button to select Admin mode. */
     private Button adminButton;
-    private Button userButton;
-    private String deviceId; // Variable to store the device ID
-    private UserRepository userRepository; // User repository instance
 
+    /** Button to select User mode. */
+    private Button userButton;
+
+    /** Variable to store the device ID. */
+    private String deviceId;
+
+    /** User repository instance for database operations. */
+    private UserRepository userRepository;
+
+    /**
+     * Called when the activity is first created.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously being shut down,
+     *                           then this Bundle contains the data it most recently supplied in
+     *                           {@link #onSaveInstanceState}. Note: Otherwise, it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         // Set click listener for the Admin button
         adminButton.setOnClickListener(v -> {
             Toast.makeText(MainActivity.this, "Admin Mode Selected", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(MainActivity.this, AdminActivity.class); // This launches AdminActivity
+            Intent intent = new Intent(MainActivity.this, AdminActivity.class); // Launches AdminActivity
             startActivity(intent);
         });
 
@@ -62,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Opens UserHomeActivity with the given user ID.
+     * Opens the {@link UserHomeActivity} with the given user ID.
      *
      * @param userId The user ID to pass to the activity.
      */
@@ -74,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Opens UserProfileActivity and passes the device ID.
+     * Opens the {@link CreateUserProfileActivity} and passes the device ID.
      */
     private void openUserProfileActivity() {
         Toast.makeText(this, "User Mode Selected", Toast.LENGTH_SHORT).show();

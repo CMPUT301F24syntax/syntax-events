@@ -33,18 +33,56 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * The {@code OrganizerCreateEvent} class allows event organizers to create new events.
+ * It provides functionality to input event details, upload an event image, generate a QR code,
+ * and save the event data to Firebase Firestore and Firebase Storage.
+ */
 public class OrganizerCreateEvent extends AppCompatActivity {
 
-    // Declare variables for the UI components
-    private EditText eventNameEditText, eventStartDateEditText, eventEndDateEditText, facilityEditText, capacityEditText, eventDescriptionEditText;
-    private Button createEventButton, backButton, uploadButton;
+    /** EditText for entering the event name. */
+    private EditText eventNameEditText;
+
+    /** EditText for entering the event start date. */
+    private EditText eventStartDateEditText;
+
+    /** EditText for entering the event end date. */
+    private EditText eventEndDateEditText;
+
+    /** EditText for entering the event facility. */
+    private EditText facilityEditText;
+
+    /** EditText for entering the event capacity. */
+    private EditText capacityEditText;
+
+    /** EditText for entering the event description. */
+    private EditText eventDescriptionEditText;
+
+    /** Button to create the event. */
+    private Button createEventButton;
+
+    /** Button to go back to the previous screen. */
+    private Button backButton;
+
+    /** Button to upload an image for the event. */
+    private Button uploadButton;
+
+    /** ImageView to display the event image. */
     private ImageView eventImageView;
+
+    /** Firebase Firestore instance for database operations. */
     private FirebaseFirestore db;
+
+    /** Firebase Storage instance for storing images and files. */
     private FirebaseStorage storage;
+
+    /** URI of the selected image from the image picker. */
     private Uri imageUri;
+
+    /** Bitmap of the generated QR code. */
     private Bitmap qrCodeBitmap;
 
-    // Image picker launcher
+    /** ActivityResultLauncher for the image picker intent. */
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -55,6 +93,13 @@ public class OrganizerCreateEvent extends AppCompatActivity {
             }
     );
 
+    /**
+     * Called when the activity is first created.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously being shut down,
+     *                           then this Bundle contains the data it most recently supplied in
+     *                           {@link #onSaveInstanceState}. <b>Note: Otherwise, it is null.</b>
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,7 +131,12 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         createEventButton.setOnClickListener(v -> saveEventToDatabase());
     }
 
-    // Generate QR Code
+    /**
+     * Generates a QR code bitmap from the given content string.
+     *
+     * @param content The content to encode in the QR code.
+     * @return A Bitmap representing the QR code, or null if an error occurs.
+     */
     private Bitmap generateQRCodeBitmap(String content) {
         QRCodeWriter writer = new QRCodeWriter();
         try {
@@ -104,7 +154,10 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         }
     }
 
-    // Save event data to Firestore
+    /**
+     * Collects event data from input fields, validates them, generates a QR code,
+     * and initiates the process to save the event data to the database.
+     */
     private void saveEventToDatabase() {
         String eventID = UUID.randomUUID().toString();
         String eventName = eventNameEditText.getText().toString();
@@ -114,7 +167,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         String capacityStr = capacityEditText.getText().toString();
         String organizerId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        if (eventName.isEmpty() || eventDescription.isEmpty() || eventStartDateText.isEmpty() || eventEndDateText.isEmpty() ||  capacityStr.isEmpty()) {
+        if (eventName.isEmpty() || eventDescription.isEmpty() || eventStartDateText.isEmpty() || eventEndDateText.isEmpty() || capacityStr.isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -155,7 +208,12 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         }
     }
 
-    // Upload QR code to Firebase Storage
+    /**
+     * Uploads the generated QR code to Firebase Storage and saves event data to Firestore.
+     *
+     * @param eventID   The unique identifier for the event.
+     * @param eventData A map containing event data to be saved.
+     */
     private void uploadQRCodeAndSaveEventData(String eventID, Map<String, Object> eventData) {
         StorageReference qrCodeRef = storage.getReference().child("qrcodes/" + eventID + ".png");
         qrCodeRef.putBytes(bitmapToByteArray(qrCodeBitmap))
@@ -168,14 +226,24 @@ public class OrganizerCreateEvent extends AppCompatActivity {
                 .addOnFailureListener(e -> Toast.makeText(this, "QR Code upload failed", Toast.LENGTH_SHORT).show());
     }
 
-    // Convert Bitmap to ByteArray
+    /**
+     * Converts a Bitmap object to a byte array.
+     *
+     * @param bitmap The Bitmap to convert.
+     * @return A byte array representing the Bitmap.
+     */
     private byte[] bitmapToByteArray(Bitmap bitmap) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
         return baos.toByteArray();
     }
 
-    // Upload event poster image and save event data
+    /**
+     * Uploads the event image to Firebase Storage, then uploads the QR code and saves event data.
+     *
+     * @param eventID   The unique identifier for the event.
+     * @param eventData A map containing event data to be saved.
+     */
     private void uploadImageAndSaveEventData(String eventID, Map<String, Object> eventData) {
         StorageReference storageRef = storage.getReference().child("event_images/" + eventID);
         storageRef.putFile(imageUri)
@@ -188,7 +256,13 @@ public class OrganizerCreateEvent extends AppCompatActivity {
                 .addOnFailureListener(e -> Toast.makeText(this, "Image upload failed", Toast.LENGTH_SHORT).show());
     }
 
-    // Save event data to Firestore
+    /**
+     * Saves the event data to Firebase Firestore.
+     *
+     * @param eventID   The unique identifier for the event.
+     * @param eventData A map containing event data to be saved.
+     * @param imageUrl  The URL of the uploaded image, if available.
+     */
     private void saveEventData(String eventID, Map<String, Object> eventData, String imageUrl) {
         if (imageUrl != null) {
             eventData.put("posterUrl", imageUrl);
@@ -202,6 +276,9 @@ public class OrganizerCreateEvent extends AppCompatActivity {
                 .addOnFailureListener(e -> Toast.makeText(this, "Failed to save event", Toast.LENGTH_SHORT).show());
     }
 
+    /**
+     * Clears all input fields and resets the UI components.
+     */
     private void clearInputFields() {
         eventNameEditText.setText("");
         eventDescriptionEditText.setText("");

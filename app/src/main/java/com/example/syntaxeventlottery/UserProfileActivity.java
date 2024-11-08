@@ -27,18 +27,50 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
+/**
+ * The {@code UserProfileActivity} class displays the user's profile information, including
+ * name, email, phone number, facility, and profile picture. Users can edit their profile
+ * or update their profile picture by selecting a new image from their device.
+ */
 public class UserProfileActivity extends AppCompatActivity {
 
-    private Button backButton, editButton;
+    /** Button to navigate back to the previous screen. */
+    private Button backButton;
+
+    /** Button to navigate to the edit profile screen. */
+    private Button editButton;
+
+    /** ImageView to display the user's profile picture. */
     private ImageView profileImageView;
-    private TextView nameTextView, emailTextView, phoneTextView, facilityTextView; // Added facilityTextView
+
+    /** TextView to display the user's name. */
+    private TextView nameTextView;
+
+    /** TextView to display the user's email address. */
+    private TextView emailTextView;
+
+    /** TextView to display the user's phone number. */
+    private TextView phoneTextView;
+
+    /** TextView to display the user's facility information. */
+    private TextView facilityTextView;
+
+    /** URI of the selected image from the image picker. */
     private Uri selectedImageUri;
 
+    /** Firebase Firestore instance for database operations. */
     private FirebaseFirestore db;
+
+    /** UserRepository instance for handling user-related database operations. */
     private UserRepository userRepository;
+
+    /** Unique device ID used to identify the user. */
     private String deviceId;
 
-    // Image picker launcher
+    /**
+     * ActivityResultLauncher for the image picker intent.
+     * Allows the user to select a new profile picture from the device's gallery.
+     */
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -50,6 +82,13 @@ public class UserProfileActivity extends AppCompatActivity {
             }
     );
 
+    /**
+     * Called when the activity is first created.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously
+     *                           being shut down, then this Bundle contains the data it most
+     *                           recently supplied in {@link #onSaveInstanceState}. Otherwise, it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -198,7 +237,8 @@ public class UserProfileActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, com.bumptech.glide.load.DataSource dataSource, boolean isFirstResource) {
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target,
+                                                   com.bumptech.glide.load.DataSource dataSource, boolean isFirstResource) {
                         Log.d("GlideSuccess", "Image loaded successfully for URL: " + imageUrl);
                         return false;
                     }
