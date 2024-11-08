@@ -10,6 +10,7 @@ import com.google.zxing.qrcode.QRCodeWriter;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -21,95 +22,77 @@ public class EventController {
     }
 
     /**
-     * Get all events from local list
+     * Get all events from the repository
      */
-    private ArrayList<Event> getAllEvents() {
+    public ArrayList<Event> getAllEvents() {
         return repository.getAllEventsList();
     }
 
     /**
-     * Add a new event with validation
+     * Add a new event with validation and QR code generation
      */
-    public void addEvent(Event event, @Nullable Uri imageUri) {
-        // generate event ID
+    public void addEvent(Event event, @Nullable Uri imageUri, Bitmap qrCodeBitmap) {
+        // Generate event ID
         event.generateEventID(event.getOrganizerId());
         // Validate event data
         validateEvent(event);
-        // generate the bitmap of the event
-        Bitmap qrCodeBitmap = generateQRCodeBitmap(event.getEventID());
         // Add to repository
         repository.addEventToRepo(event, imageUri, qrCodeBitmap);
+    }
+
+    /**
+     * Overloaded addEvent method that generates QR code internally
+     */
+    public void addEvent(Event event, @Nullable Uri imageUri) {
+        Bitmap qrCodeBitmap = generateQRCodeBitmap(event.getEventID());
+        if (qrCodeBitmap != null) {
+            addEvent(event, imageUri, qrCodeBitmap);
+        } else {
+            // Handle QR code generation failure
+            // For example, you might throw an exception or notify the user
+        }
     }
 
     /**
      * Update an existing event
      */
     public void updateEvent(Event event, @Nullable Uri imageUri, @Nullable Bitmap qrCodeBitmap) {
-        // call repository to update event
         repository.updateEventDetails(event, imageUri, qrCodeBitmap);
     }
-
 
     /**
      * Get event by ID
      */
     public Event getEventById(String eventId) {
-        for (Event event : repository.getAllEventsList()) {
-            if (event.getEventID().equals(eventId)) {
-                return event;
-            }
-        }
-        return null;
+        return repository.getEventById(eventId);
     }
-
 
     /**
      * Get Organizer events by organizer id
      */
-    public ArrayList<Event> getOrganizerEvents(String organizerID) {
-        ArrayList<Event> organizerEvents = new ArrayList<>();
-        for (Event event : repository.getAllEventsList()) {
-            if (event.getOrganizerId().equals(organizerID)) {
-                organizerEvents.add(event);
-            }
-        }
-
-        return organizerEvents;
+    public List<Event> getOrganizerEvents(String organizerId) {
+        return repository.getOrganizerEvents(organizerId);
     }
 
     /**
      * Get list of events where Entrant is in waiting list
      */
-    public ArrayList<Event> getEntrantWaitingListEvents(String entrantID) {
-        ArrayList<Event> entrantWaitingList = new ArrayList<>();
-        for (Event event : repository.getAllEventsList()) {
-            if (event.getParticipants().contains(entrantID)) {
-                entrantWaitingList.add(event);
-            }
-        }
-        return entrantWaitingList;
+    public List<Event> getEntrantWaitingListEvents(String entrantId) {
+        return repository.getEntrantWaitingListEvents(entrantId);
     }
 
     /**
      * Get list of events where Entrant is in selected list
      */
-    public ArrayList<Event> getEntrantSelectedListEvents(String entrantID) {
-        ArrayList<Event> entrantSelectedList = new ArrayList<>();
-        for (Event event : repository.getAllEventsList()) {
-            if (event.getSelectedParticipants().contains(entrantID)) {
-                entrantSelectedList.add(event);
-            }
-        }
-        return entrantSelectedList;
+    public List<Event> getEntrantSelectedListEvents(String entrantId) {
+        return repository.getEntrantSelectedListEvents(entrantId);
     }
 
     /**
      * Check if event is full
      */
     public boolean isEventFull(String eventId) {
-        Event event = getEventById(eventId);
-        if (event == null) return false;
-        return event.getParticipants().size() >= event.getCapacity();
+        return repository.isEventFull(eventId);
     }
 
     /**
@@ -117,22 +100,13 @@ public class EventController {
      * Returns true if success, false otherwise
      */
     public boolean addParticipant(String eventId, String participantId) {
-        Event event = getEventById(eventId);
-        if (event == null) return false;
-
-        // Check if event is full
         if (isEventFull(eventId)) {
             return false;
         }
-
-        // Check if participant is already registered
-        if (event.getParticipants().contains(participantId)) {
+        if (repository.isUserRegistered(eventId, participantId)) {
             return false;
         }
-
-        // Add participant
-        event.addParticipant(participantId);
-        repository.updateEventDetails(event, null, null); // Update in repository
+        repository.addParticipant(eventId, participantId);
         return true;
     }
 
@@ -140,11 +114,10 @@ public class EventController {
      * Remove participant from event
      */
     public boolean removeParticipant(String eventId, String participantId) {
-        Event event = getEventById(eventId);
-        if (event == null) return false;
-
-        event.removeParticipant(participantId);
-        repository.updateEventDetails(event, null, null); // Update in repository
+        if (!repository.isUserRegistered(eventId, participantId)) {
+            return false;
+        }
+        repository.removeParticipant(eventId, participantId);
         return true;
     }
 
@@ -173,33 +146,15 @@ public class EventController {
     }
 
     /**
-     * Get list of winners for an event
+     * Generates a QR Code bitmap for the given event ID.
+     *
+     * @param eventId The ID of the event.
+     * @return The generated QR Code bitmap.
      */
-    /*
-    public ArrayList<String> getEventWinners(String eventId) {
-        Event event = getEventById(eventId);
-        if (event == null) return new ArrayList<>();
-        return event.getSelectedParticipants();
-    }*/
-
-    /**
-     * Check if user is registered for event
-     */
-    public boolean isUserRegistered(String eventId, String userId) {
-        Event event = getEventById(eventId);
-        if (event == null) return false;
-        return event.getParticipants().contains(userId);
-    }
-
-    /**
-     * This method creates and returns a bitmap for the event's qr code
-     * @param eventID The id of the event to generate a bitmap for
-     * @return The generated bitmap
-     */
-    private Bitmap generateQRCodeBitmap(String eventID) {
+    public Bitmap generateQRCodeBitmap(String eventId) {
         QRCodeWriter writer = new QRCodeWriter();
         try {
-            BitMatrix bitMatrix = writer.encode(eventID, BarcodeFormat.QR_CODE, 300, 300);
+            BitMatrix bitMatrix = writer.encode(eventId, BarcodeFormat.QR_CODE, 300, 300);
             Bitmap bmp = Bitmap.createBitmap(300, 300, Bitmap.Config.RGB_565);
             for (int x = 0; x < 300; x++) {
                 for (int y = 0; y < 300; y++) {
@@ -211,5 +166,33 @@ public class EventController {
             e.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * Accept an event invitation
+     */
+    public void acceptInvitation(String eventId, String userId) {
+        repository.acceptInvitation(eventId, userId);
+    }
+
+    /**
+     * Reject an event invitation
+     */
+    public void rejectInvitation(String eventId, String userId) {
+        repository.rejectInvitation(eventId, userId);
+    }
+
+    /**
+     * Perform draw for an event
+     */
+    public void performDraw(String eventId) {
+        repository.performDraw(eventId);
+    }
+
+    /**
+     * Check if user is registered for event
+     */
+    public boolean isUserRegistered(String eventId, String userId) {
+        return repository.isUserRegistered(eventId, userId);
     }
 }

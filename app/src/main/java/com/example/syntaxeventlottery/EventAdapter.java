@@ -22,7 +22,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     private List<Event> eventsList;
     private Context context;
 
-    // 构造函数，接收 List<Event> 和 Context
+    // constructor, List<Event> and Context
     public EventAdapter(List<Event> eventsList, Context context) {
         this.eventsList = eventsList;
         this.context = context;
