@@ -415,7 +415,6 @@ public class EventDetailActivity extends AppCompatActivity {
                     Toast.makeText(this, "You have accepted the invitation", Toast.LENGTH_SHORT).show();
                     acceptButton.setVisibility(View.GONE);
                     rejectButton.setVisibility(View.GONE);
-                    leaveEventButton.setVisibility(View.VISIBLE);
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed to accept invitation", Toast.LENGTH_SHORT).show();
