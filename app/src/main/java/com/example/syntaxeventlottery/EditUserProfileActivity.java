@@ -28,7 +28,7 @@ import com.google.firebase.storage.StorageReference;
 
 public class EditUserProfileActivity extends AppCompatActivity {
 
-    private EditText nameEditText, emailEditText, phoneEditText, facilityEditText; // Add facilityEditText
+    private EditText nameEditText, emailEditText, phoneEditText, facilityEditText;
     private Button saveButton;
     private ImageButton backButton, uploadImageButton;
     private ImageView profileImageView;
@@ -50,7 +50,7 @@ public class EditUserProfileActivity extends AppCompatActivity {
         nameEditText = findViewById(R.id.editName);
         emailEditText = findViewById(R.id.editEmail);
         phoneEditText = findViewById(R.id.editPhone);
-        facilityEditText = findViewById(R.id.editFacility); // Initialize facilityEditText
+        facilityEditText = findViewById(R.id.editFacility);
         saveButton = findViewById(R.id.saveButton);
 
         // Initialize Firestore and Firebase Storage

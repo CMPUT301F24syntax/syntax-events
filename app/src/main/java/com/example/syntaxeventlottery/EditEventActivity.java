@@ -23,7 +23,7 @@ public class EditEventActivity extends AppCompatActivity {
     private String eventId;
     private EventController eventController;
     private EventRepository eventRepository;
-    private Event event; // this is the event that is displayed
+    private Event event;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

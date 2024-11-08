@@ -1,5 +1,4 @@
-// UserHomeActivity.java
-
+// Refactor Complete
 package com.example.syntaxeventlottery;
 
 import android.content.Intent;

@@ -1,3 +1,4 @@
+// Refactor Complete
 package com.example.syntaxeventlottery;
 
 import android.content.Context;
@@ -16,9 +17,9 @@ public class UserRepository {
     private FirebaseFirestore db;
     private FirebaseStorage storage;
 
-    public UserRepository(FirebaseFirestore db, FirebaseStorage storage) {
-        this.db = db;
-        this.storage = storage;
+    public UserRepository() {
+        this.db = FirebaseFirestore.getInstance();
+        this.storage = FirebaseStorage.getInstance();
     }
 
     // -------------------------------------------------------------------------

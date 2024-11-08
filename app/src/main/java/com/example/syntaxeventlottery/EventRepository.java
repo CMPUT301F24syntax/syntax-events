@@ -1,3 +1,4 @@
+// Refactor Complete
 package com.example.syntaxeventlottery;
 
 import android.graphics.Bitmap;
@@ -53,6 +54,10 @@ public class EventRepository implements EventRepositoryInterface {
                     Event event = doc.toObject(Event.class);
                     eventsDataList.add(event);
                 }
+            }
+
+            if (dataChangeListener != null) {
+                dataChangeListener.onEventsDataChanged();
             }
         });
     }
