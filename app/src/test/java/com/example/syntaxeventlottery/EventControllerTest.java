@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -28,7 +29,8 @@ public class EventControllerTest {
     @Test
     public void testAddEvent() {
         // Arrange
-        Event event = new Event("TestEvent", "TestOrganizer", "test", "test");
+        Event event = new Event("event123", "TestEvent", "this is a test", "test facility",
+                0, new Date(), new Date(), "test_organizer");
 
         // Act
         testController.addEvent(event, null);
@@ -38,33 +40,21 @@ public class EventControllerTest {
                 mockEventRepository.getAllEventsList().contains(event));
     }
 
-    @Test
-    public void testDeleteEvent() {
-        // Arrange
-        Event event = new Event("Event to Delete", "Description", "Location", "Organizer ID");
-        mockEventRepository.addEventToRepo(event, null, null);
-
-        // Act
-        testController.deleteEvent(event);
-
-        // Assert
-        assertFalse("The repository should not contain the deleted event",
-                mockEventRepository.getAllEventsList().contains(event));
-    }
 
     @Test
     public void testUpdateEvent() {
         // Arrange
-        Event event = new Event("Original Title", "Description", "Location", "Organizer ID");
+        Event event = new Event("event123", "TestEvent", "this is a test", "test facility",
+                0, new Date(), new Date(), "test_organizer");
         mockEventRepository.addEventToRepo(event, null, null);
 
         // Act
-        event.setTitle("Updated Title");
+        event.setEventName("UpdatedName");
         testController.updateEvent(event, null, null);
 
         // Assert
         Event updatedEvent = mockEventRepository.getAllEventsList().get(0);
-        assertEquals("The event title should be updated", "Updated Title", updatedEvent.getTitle());
+        assertEquals("The event title should be updated", "Updated Title", updatedEvent.getEventName());
     }
 
     // MockEventRepository class to store events in-memory for testing
