@@ -19,8 +19,11 @@ public class EditEventActivity extends AppCompatActivity {
 
     private EditText editEventName, editEventDescription, editStartDate, editEndDate, editFacility, editCapacity;
     private Button saveEventButton, backButton;
-    private FirebaseFirestore db;
+    //private FirebaseFirestore db;
     private String eventId;
+    private EventController eventController;
+    private EventRepository eventRepository;
+    private Event event;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,14 +40,19 @@ public class EditEventActivity extends AppCompatActivity {
         backButton = findViewById(R.id.backButton);
 
         // Initialize Firestore
-        db = FirebaseFirestore.getInstance();
+        //db = FirebaseFirestore.getInstance();
+
+        // initialize controller and firebase
+        eventRepository = new EventRepository();
+        eventController = new EventController(eventRepository);
 
         // Get event ID from Intent
         eventId = getIntent().getStringExtra("event_id");
 
         // Load event details if event ID is available
         if (eventId != null) {
-            loadEventDetails();
+            event = eventController.getEventById(eventId);
+            loadEventDetails(event);
         } else {
             Toast.makeText(this, "Event ID is missing", Toast.LENGTH_SHORT).show();
             finish();
@@ -57,28 +65,22 @@ public class EditEventActivity extends AppCompatActivity {
         saveEventButton.setOnClickListener(v -> saveEventDetails());
     }
 
-    private void loadEventDetails() {
-        db.collection("events").document(eventId).get()
-                .addOnSuccessListener(document -> {
-                    if (document.exists()) {
-                        // Set existing data to EditTexts
-                        editEventName.setText(document.getString("eventName"));
-                        editEventDescription.setText(document.getString("description"));
-
-                        // Convert Timestamps to formatted Strings for the EditTexts
-                        Date startDate = document.getDate("startDate");
-                        Date endDate = document.getDate("endDate");
-                        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-                        editStartDate.setText(startDate != null ? dateFormat.format(startDate) : "");
-                        editEndDate.setText(endDate != null ? dateFormat.format(endDate) : "");
-
-                        editCapacity.setText(String.valueOf(document.getLong("capacity")));
-                    } else {
-                        Toast.makeText(EditEventActivity.this, "Event not found", Toast.LENGTH_SHORT).show();
-                        finish();
-                    }
-                })
-                .addOnFailureListener(e -> Toast.makeText(EditEventActivity.this, "Failed to load event details", Toast.LENGTH_SHORT).show());
+    private void loadEventDetails(Event eventToDisplay) {
+        if (eventToDisplay != null) {
+            // Set event data to EditTexts
+            editEventName.setText(eventToDisplay.getEventName());
+            editEventDescription.setText(eventToDisplay.getDescription());
+            editCapacity.setText(String.valueOf(eventToDisplay.getCapacity()));
+            // Convert Timestamps to formatted Strings for the EditTexts
+            Date startDate = eventToDisplay.getStartDate();
+            Date endDate = eventToDisplay.getEndDate();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            editStartDate.setText(startDate != null ? dateFormat.format(startDate) : "");
+            editEndDate.setText(endDate != null ? dateFormat.format(endDate) : "");
+            } else {
+                Toast.makeText(EditEventActivity.this, "Event not found", Toast.LENGTH_SHORT).show();
+                finish();
+        }
     }
 
     private void saveEventDetails() {
@@ -108,14 +110,20 @@ public class EditEventActivity extends AppCompatActivity {
             return;
         }
 
-        // Create a map with the updated values
-        Map<String, Object> eventUpdates = new HashMap<>();
-        eventUpdates.put("eventName", eventName);
-        eventUpdates.put("description", eventDescription);
-        eventUpdates.put("startDate", startDate);
-        eventUpdates.put("endDate", endDate);
-        eventUpdates.put("capacity", Long.parseLong(capacity));
+        // update event details
+        event.setEventName(eventName);
+        event.setDescription(eventDescription);
+        event.setStartDate(startDate);
+        event.setEndDate(endDate);
+        event.setFacility(facility);
+        event.setCapacity(Integer.parseInt(capacity));
 
+        eventController.updateEvent(event, null, null);
+        Intent intent = new Intent(EditEventActivity.this, UserHomeActivity.class);
+        startActivity(intent);
+        finish();
+
+        /*
         // Update Firestore with new details
         db.collection("events").document(eventId).update(eventUpdates)
                 .addOnSuccessListener(aVoid -> {
@@ -126,5 +134,6 @@ public class EditEventActivity extends AppCompatActivity {
                     finish();
                 })
                 .addOnFailureListener(e -> Toast.makeText(EditEventActivity.this, "Failed to update event", Toast.LENGTH_SHORT).show());
+    }*/
     }
 }

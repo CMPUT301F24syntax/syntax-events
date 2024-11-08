@@ -39,8 +39,8 @@ public class OrganizerCreateEvent extends AppCompatActivity {
     private EditText eventNameEditText, eventStartDateEditText, eventEndDateEditText, facilityEditText, capacityEditText, eventDescriptionEditText;
     private Button createEventButton, backButton, uploadButton;
     private ImageView eventImageView;
-    private FirebaseFirestore db;
-    private FirebaseStorage storage;
+    private EventRepository eventRepository;
+    private EventController eventController;
     private Uri imageUri;
     private Bitmap qrCodeBitmap;
 
@@ -60,7 +60,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.organizer_create_event);
 
-        // Initialize UI and Firebase
+        // Initialize UI components
         eventNameEditText = findViewById(R.id.eventNameEditText);
         eventStartDateEditText = findViewById(R.id.eventStartDateEditText);
         eventEndDateEditText = findViewById(R.id.eventEndDateEditText);
@@ -70,8 +70,10 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         backButton = findViewById(R.id.backButton);
         uploadButton = findViewById(R.id.uploadButton);
         eventImageView = findViewById(R.id.eventImageView);
-        db = FirebaseFirestore.getInstance();
-        storage = FirebaseStorage.getInstance();
+
+        // initialize controller and repository
+        EventRepository eventRepository = new EventRepository();
+        eventController = new EventController(eventRepository);
 
         // Back button click listener
         backButton.setOnClickListener(v -> finish());
@@ -83,30 +85,15 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         });
 
         // Create event button click listener
-        createEventButton.setOnClickListener(v -> saveEventToDatabase());
+        createEventButton.setOnClickListener(v -> {
+            saveEvent();
+            clearInputFields();
+        });
     }
 
-    // Generate QR Code
-    private Bitmap generateQRCodeBitmap(String content) {
-        QRCodeWriter writer = new QRCodeWriter();
-        try {
-            BitMatrix bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, 300, 300);
-            Bitmap bmp = Bitmap.createBitmap(300, 300, Bitmap.Config.RGB_565);
-            for (int x = 0; x < 300; x++) {
-                for (int y = 0; y < 300; y++) {
-                    bmp.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
-                }
-            }
-            return bmp;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 
-    // Save event data to Firestore
-    private void saveEventToDatabase() {
-        String eventID = UUID.randomUUID().toString();
+    // Save event using event controller
+    private void saveEvent() {
         String eventName = eventNameEditText.getText().toString();
         String eventDescription = eventDescriptionEditText.getText().toString();
         String eventStartDateText = eventStartDateEditText.getText().toString();
@@ -114,19 +101,8 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         String capacityStr = capacityEditText.getText().toString();
         String organizerId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        if (eventName.isEmpty() || eventDescription.isEmpty() || eventStartDateText.isEmpty() || eventEndDateText.isEmpty() ||  capacityStr.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-            return;
-        }
 
-        int capacity;
-        try {
-            capacity = Integer.parseInt(capacityStr);
-        } catch (NumberFormatException e) {
-            Toast.makeText(this, "Invalid capacity value", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
+        // format date texts
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         Date startDate, endDate;
         try {
@@ -137,70 +113,32 @@ public class OrganizerCreateEvent extends AppCompatActivity {
             return;
         }
 
-        qrCodeBitmap = generateQRCodeBitmap(eventID);
+        // get capacity to an integer
+        int capacity;
+        try {
+            capacity = Integer.parseInt(capacityStr);
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Invalid capacity value", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        Map<String, Object> eventData = new HashMap<>();
-        eventData.put("eventID", eventID);
-        eventData.put("eventName", eventName);
-        eventData.put("description", eventDescription);
-        eventData.put("startDate", new com.google.firebase.Timestamp(startDate));  // Use Firebase Timestamp
-        eventData.put("endDate", new com.google.firebase.Timestamp(endDate));      // Use Firebase Timestamp
-        eventData.put("capacity", capacity);
-        eventData.put("organizerId", organizerId);
+        // input validation
+        if (eventName.isEmpty() || eventDescription.isEmpty() || eventStartDateText.isEmpty() || eventEndDateText.isEmpty() ||  capacityStr.isEmpty()) {
+            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+        // initialize event object
+        Event event = new Event(eventName, eventDescription, capacity, startDate, endDate, organizerId);
 
         if (imageUri != null) {
-            uploadImageAndSaveEventData(eventID, eventData);
+            eventController.addEvent(event, imageUri);
         } else {
-            uploadQRCodeAndSaveEventData(eventID, eventData);
+            eventController.addEvent(event, null);
         }
     }
 
-    // Upload QR code to Firebase Storage
-    private void uploadQRCodeAndSaveEventData(String eventID, Map<String, Object> eventData) {
-        StorageReference qrCodeRef = storage.getReference().child("qrcodes/" + eventID + ".png");
-        qrCodeRef.putBytes(bitmapToByteArray(qrCodeBitmap))
-                .addOnSuccessListener(taskSnapshot -> qrCodeRef.getDownloadUrl()
-                        .addOnSuccessListener(uri -> {
-                            eventData.put("qrCodeUrl", uri.toString());
-                            saveEventData(eventID, eventData, null);
-                        })
-                        .addOnFailureListener(e -> Toast.makeText(this, "QR Code upload failed", Toast.LENGTH_SHORT).show()))
-                .addOnFailureListener(e -> Toast.makeText(this, "QR Code upload failed", Toast.LENGTH_SHORT).show());
-    }
-
-    // Convert Bitmap to ByteArray
-    private byte[] bitmapToByteArray(Bitmap bitmap) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-        return baos.toByteArray();
-    }
-
-    // Upload event poster image and save event data
-    private void uploadImageAndSaveEventData(String eventID, Map<String, Object> eventData) {
-        StorageReference storageRef = storage.getReference().child("event_images/" + eventID);
-        storageRef.putFile(imageUri)
-                .addOnSuccessListener(taskSnapshot -> storageRef.getDownloadUrl()
-                        .addOnSuccessListener(uri -> {
-                            eventData.put("posterUrl", uri.toString());
-                            uploadQRCodeAndSaveEventData(eventID, eventData);
-                        })
-                        .addOnFailureListener(e -> Toast.makeText(this, "Image upload failed", Toast.LENGTH_SHORT).show()))
-                .addOnFailureListener(e -> Toast.makeText(this, "Image upload failed", Toast.LENGTH_SHORT).show());
-    }
-
-    // Save event data to Firestore
-    private void saveEventData(String eventID, Map<String, Object> eventData, String imageUrl) {
-        if (imageUrl != null) {
-            eventData.put("posterUrl", imageUrl);
-        }
-        db.collection("events").document(eventID)
-                .set(eventData)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Event Created and Saved to Database", Toast.LENGTH_SHORT).show();
-                    clearInputFields();
-                })
-                .addOnFailureListener(e -> Toast.makeText(this, "Failed to save event", Toast.LENGTH_SHORT).show());
-    }
 
     private void clearInputFields() {
         eventNameEditText.setText("");

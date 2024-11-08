@@ -1,5 +1,4 @@
-// UserProfileActivity.java
-
+// Refactor Complete
 package com.example.syntaxeventlottery;
 
 import android.content.Intent;
@@ -31,11 +30,10 @@ public class UserProfileActivity extends AppCompatActivity {
 
     private Button backButton, editButton;
     private ImageView profileImageView;
-    private TextView nameTextView, emailTextView, phoneTextView, facilityTextView; // Added facilityTextView
+    private TextView nameTextView, emailTextView, phoneTextView, facilityTextView;
     private Uri selectedImageUri;
 
-    private FirebaseFirestore db;
-    private UserRepository userRepository;
+    private UserController userController;
     private String deviceId;
 
     // Image picker launcher
@@ -64,15 +62,17 @@ public class UserProfileActivity extends AppCompatActivity {
         phoneTextView = findViewById(R.id.phoneTextView);
         facilityTextView = findViewById(R.id.facilityTextView); // Initialize facilityTextView
 
-        // Initialize Firestore and UserRepository
-        db = FirebaseFirestore.getInstance();
-        userRepository = new UserRepository();
+        // Initialize UserController
+        userController = new UserController(this);
 
-        // Retrieve device ID
-        deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        // Retrieve device ID from UserController
+        deviceId = userController.getDeviceId();
+
+        // Retrieve device ID from UserController
+        deviceId = userController.getDeviceId();
 
         if (deviceId != null && !deviceId.isEmpty()) {
-            loadUserProfileByDeviceId(deviceId); // Load user profile using deviceId
+            loadUserProfile(); // Load user profile using deviceId
         } else {
             Toast.makeText(this, "Device ID not found", Toast.LENGTH_SHORT).show();
             finish();
@@ -105,8 +105,7 @@ public class UserProfileActivity extends AppCompatActivity {
      */
     private void uploadProfilePhoto() {
         if (selectedImageUri != null) {
-            String userId = deviceId; // Using deviceId as user ID
-            userRepository.uploadProfilePhoto(userId, selectedImageUri, new UserRepository.OnUploadCompleteListener() {
+            userController.uploadProfilePhoto(selectedImageUri, new UserRepository.OnUploadCompleteListener() {
                 @Override
                 public void onUploadSuccess(Uri downloadUrl) {
                     updateProfileImage(downloadUrl.toString());
@@ -126,56 +125,52 @@ public class UserProfileActivity extends AppCompatActivity {
      * @param profileImageUrl The URL of the uploaded profile image.
      */
     private void updateProfileImage(String profileImageUrl) {
-        db.collection("Users").document(deviceId)
-                .update("profilePhotoUrl", profileImageUrl)
-                .addOnSuccessListener(aVoid -> {
-                    loadImageWithGlide(profileImageUrl);
-                    Toast.makeText(UserProfileActivity.this, "Profile photo updated successfully.", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> Toast.makeText(UserProfileActivity.this, "Failed to update profile photo URL.", Toast.LENGTH_SHORT).show());
+        userController.updateProfilePhotoUrl(profileImageUrl, new UserRepository.OnEntrantUpdateListener() {
+            @Override
+            public void onEntrantUpdateSuccess() {
+                loadImageWithGlide(profileImageUrl);
+                Toast.makeText(UserProfileActivity.this, "Profile photo updated successfully.", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onEntrantUpdateError(Exception e) {
+                Toast.makeText(UserProfileActivity.this, "Failed to update profile photo URL.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     /**
-     * Loads the user profile data from Firestore using the device ID.
-     *
-     * @param deviceId The device ID used to retrieve the user data.
+     * Loads the user profile data using UserController.
      */
-    private void loadUserProfileByDeviceId(String deviceId) {
-        db.collection("Users").whereEqualTo("deviceCode", deviceId).get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        QuerySnapshot querySnapshot = task.getResult();
-                        if (!querySnapshot.isEmpty()) {
-                            DocumentSnapshot document = querySnapshot.getDocuments().get(0);
-                            // Retrieve user data from Firestore document
-                            String username = document.getString("username");
-                            String email = document.getString("email");
-                            String phoneNumber = document.getString("phoneNumber");
-                            String profileImageUrl = document.getString("profilePhotoUrl");
-                            String facility = document.getString("facility"); // Retrieve facility information
+    private void loadUserProfile() {
+        userController.loadUserProfile(new UserRepository.OnEntrantDataFetchListener() {
+            @Override
+            public void onEntrantDataFetched(Entrant entrant) {
+                if (entrant != null) {
+                    // Set retrieved data to TextViews
+                    nameTextView.setText(entrant.getUsername());
+                    emailTextView.setText(entrant.getEmail());
+                    phoneTextView.setText(entrant.getPhoneNumber());
+                    facilityTextView.setText(entrant.getFacility());
 
-                            // Set retrieved data to TextViews
-                            nameTextView.setText(username);
-                            emailTextView.setText(email);
-                            phoneTextView.setText(phoneNumber);
-                            facilityTextView.setText(facility); // Display facility information
+                    String profileImageUrl = entrant.getProfilePhotoUrl();
 
-                            // Log profileImageUrl for debugging
-                            Log.d("UserProfile", "Fetched profileImageUrl: " + profileImageUrl);
-
-                            // Load profile image using Glide, or set default if URL is null or empty
-                            if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
-                                loadImageWithGlide(profileImageUrl);
-                            } else {
-                                profileImageView.setImageResource(R.drawable.ic_avatar_placeholder); // Set default avatar
-                            }
-                        } else {
-                            Toast.makeText(UserProfileActivity.this, "User data not found", Toast.LENGTH_SHORT).show();
-                        }
+                    // Load profile image using Glide, or set default if URL is null or empty
+                    if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                        loadImageWithGlide(profileImageUrl);
                     } else {
-                        Toast.makeText(UserProfileActivity.this, "Failed to load user data", Toast.LENGTH_SHORT).show();
+                        profileImageView.setImageResource(R.drawable.ic_avatar_placeholder); // Set default avatar
                     }
-                });
+                } else {
+                    Toast.makeText(UserProfileActivity.this, "User data not found", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onEntrantDataFetchError(Exception e) {
+                Toast.makeText(UserProfileActivity.this, "Failed to load user data", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     /**

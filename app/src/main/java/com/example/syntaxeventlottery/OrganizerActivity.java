@@ -6,13 +6,9 @@ import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,8 +21,9 @@ public class OrganizerActivity extends AppCompatActivity {
     private Button backButton;         // Button to go back to the previous screen
     private RecyclerView eventRecyclerView; // RecyclerView to display events
     private EventAdapter eventAdapter; // Adapter for managing event list display
+    private EventRepository eventRepository; // event repository
+    private EventController eventController; // event controller
     private List<Event> eventList = new ArrayList<>(); // List to hold events
-    private FirebaseFirestore db;      // Firestore database instance
     private String deviceID;           // Device ID to identify the user
 
     @Override
@@ -39,8 +36,9 @@ public class OrganizerActivity extends AppCompatActivity {
         backButton = findViewById(R.id.backButton);
         eventRecyclerView = findViewById(R.id.eventRecyclerView);
 
-        // Initialize Firestore
-        db = FirebaseFirestore.getInstance();
+        // initialize repository and controller
+        eventRepository = new EventRepository();
+        eventController = new EventController(eventRepository);
 
         // Get device ID to identify the organizer
         deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -50,8 +48,8 @@ public class OrganizerActivity extends AppCompatActivity {
         eventAdapter = new EventAdapter(eventList, this);
         eventRecyclerView.setAdapter(eventAdapter);
 
-        // Load events from Firestore where organizerId matches deviceID
-        loadEventsFromFirestore();
+        // Load events from event controller where organizerId matches deviceID
+        loadEvents();
 
         // Navigate to Create Event page on button click
         createEventButton.setOnClickListener(new View.OnClickListener() {
@@ -75,32 +73,22 @@ public class OrganizerActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         // Refresh the event list when returning to this activity
-        loadEventsFromFirestore();
+        loadEvents();
     }
 
     /**
-     * Load events from Firestore where organizerId matches the deviceID.
-     * Only events created by the current user (identified by deviceID) will be displayed.
+     * Load events
+     * retrieved from eventController
      */
-    private void loadEventsFromFirestore() {
-        db.collection("events")
-                .whereEqualTo("organizerId", deviceID) // Only fetch events where organizerId matches deviceID
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        eventList.clear();  // Clear the list before adding fresh data
-                        QuerySnapshot querySnapshot = task.getResult();
-                        for (DocumentSnapshot document : querySnapshot.getDocuments()) {
-                            Event event = document.toObject(Event.class); // Convert document to Event object
-                            eventList.add(event); // Add event to the list
-                        }
-                        eventAdapter.notifyDataSetChanged(); // Notify adapter of data change
-                    } else {
-                        Toast.makeText(this, "Failed to load events.", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Error loading events: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                });
+    private void loadEvents() {
+        ArrayList<Event> events = eventController.getOrganizerEvents(deviceID);
+
+        if (events != null && !events.isEmpty()) {
+            eventList.clear(); // clear any previous events
+            eventList.addAll(events);
+            eventAdapter.notifyDataSetChanged();
+        } else {
+            Toast.makeText(OrganizerActivity.this, "No events found, try creating an event!", Toast.LENGTH_SHORT).show();
+        }
     }
 }

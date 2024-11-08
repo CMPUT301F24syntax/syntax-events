@@ -51,9 +51,10 @@ public class EventDetailActivity extends AppCompatActivity {
     private ImageButton backButton;
     private TextView drawEndedTextView;
 
+    private EventController eventController; // initialize event controller
+    private EventRepository eventRepository; // initialize repository
 
-
-    private FirebaseFirestore db;
+    //private FirebaseFirestore db;
     private String eventId;
     private String eventName;
     private String organizerId;
@@ -85,8 +86,9 @@ public class EventDetailActivity extends AppCompatActivity {
         waitingListButton = findViewById(R.id.waitingListButton); // Initialize waitingListButton
 
 
-        // Initialize Firestore
-        db = FirebaseFirestore.getInstance();
+        // Initialize repository and controller
+        eventRepository = new EventRepository();
+        eventController = new EventController(eventRepository);
 
         // Retrieve the event ID passed from the previous screen
         eventId = getIntent().getStringExtra("event_id");
@@ -182,6 +184,78 @@ public class EventDetailActivity extends AppCompatActivity {
      * @param eventId The ID of the event to load.
      */
     private void loadEventDetails(String eventId) {
+        // get current device ID
+
+        // get eventToDisplay event ID
+        Event eventToDisplay = eventController.getEventById(eventId);
+        if (eventToDisplay != null ) {
+            // get details from event object
+            eventName = eventToDisplay.getEventName();
+            String eventDescription = eventToDisplay.getDescription();
+            String eventPosterUrl = eventToDisplay.getPosterUrl();
+            Date startDate = eventToDisplay.getStartDate();
+            Date endDate = eventToDisplay.getEndDate();
+            String facility = eventToDisplay.getFacility();
+            int capacity = eventToDisplay.getCapacity();
+            String qrCodeUrl = eventToDisplay.getQrCodeUrl();
+            organizerId = eventToDisplay.getOrganizerId();
+
+            // Set details to textviews
+            eventNameTextView.setText(eventName);
+            eventDescriptionTextView.setText(eventDescription);
+            SimpleDateFormat displayFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            eventStartDateTextView.setText("Start Date: " + (startDate != null ? displayFormat.format(startDate) : "N/A"));
+            eventEndDateTextView.setText("End Date: " + (endDate != null ? displayFormat.format(endDate) : "N/A"));
+            eventFacilityTextView.setText("Location: " + facility);
+            eventCapacityTextView.setText("Capacity: " + (capacity != null ? String.valueOf(capacity) : "N/A"));
+
+            // display images
+            if (eventPosterUrl != null) {
+                Glide.with(this).load(eventPosterUrl).into(eventPosterImageView);
+            }
+            if (qrCodeUrl != null) {
+                Glide.with(this).load(qrCodeUrl).into(eventQRCodeImageView);
+            }
+
+            // if current device id is associated with an organizer
+            if (organizerId.equals(Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID)) && organizerId != null) {
+                showOrganizerDisplay(eventToDisplay);
+            } else {
+                showUserDisplay(eventToDisplay);
+            }
+        }
+    }
+
+    private void showOrganizerDisplay(Event event) {
+        // set organizer UI visible
+        updatePosterButton.setVisibility(View.VISIBLE);
+        drawButton.setVisibility(View.VISIBLE);
+        joinEventButton.setVisibility(View.GONE);
+        leaveEventButton.setVisibility(View.GONE);
+        editInfoButton.setVisibility(View.VISIBLE);
+        acceptButton.setVisibility(View.GONE);
+        rejectButton.setVisibility(View.GONE);
+        drawEndedTextView.setVisibility(View.GONE);
+    }
+
+    private void showUserDisplay(Event event) {
+        // set user UI visible
+        updatePosterButton.setVisibility(View.GONE);
+        drawButton.setVisibility(View.GONE);
+        editInfoButton.setVisibility(View.GONE);
+        // get device ID
+        String currentDeviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        // see if entrant has been selected or in waiting list
+        if (event.getParticipants().contains(currentDeviceId)) {
+
+        } else if (event.getSelectedParticipants().contains(currentDeviceId)) {
+
+        }
+
+    }
+
+
+    private void loadEventDetails(String eventId) {
         DocumentReference eventRef = db.collection("events").document(eventId);
 
         eventRef.get().addOnCompleteListener(task -> {
@@ -216,7 +290,7 @@ public class EventDetailActivity extends AppCompatActivity {
                     }
 
                     // Get current device ID
-                    String currentDeviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+
 
                     // Retrieve ChosenList and joinEventList
                     List<String> chosenList = (List<String>) document.get("ChosenList");
