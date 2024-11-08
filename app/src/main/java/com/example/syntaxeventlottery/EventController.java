@@ -41,6 +41,14 @@ public class EventController {
         repository.addEventToRepo(event, imageUri, qrCodeBitmap);
     }
 
+    /**
+     * Update an existing event
+     */
+    public void updateEvent(Event event, @Nullable Uri imageUri, @Nullable Bitmap qrCodeBitmap) {
+        // call repository to update event
+        repository.updateEventDetails(event, imageUri, qrCodeBitmap);
+    }
+
 
     /**
      * Get event by ID
@@ -67,6 +75,32 @@ public class EventController {
         }
 
         return organizerEvents;
+    }
+
+    /**
+     * Get list of events where Entrant is in waiting list
+     */
+    public ArrayList<Event> getEntrantWaitingListEvents(String entrantID) {
+        ArrayList<Event> entrantWaitingList = new ArrayList<>();
+        for (Event event : repository.getAllEventsList()) {
+            if (event.getParticipants().contains(entrantID)) {
+                entrantWaitingList.add(event);
+            }
+        }
+        return entrantWaitingList;
+    }
+
+    /**
+     * Get list of events where Entrant is in selected list
+     */
+    public ArrayList<Event> getEntrantSelectedListEvents(String entrantID) {
+        ArrayList<Event> entrantSelectedList = new ArrayList<>();
+        for (Event event : repository.getAllEventsList()) {
+            if (event.getSelectedParticipants().contains(entrantID)) {
+                entrantSelectedList.add(event);
+            }
+        }
+        return entrantSelectedList;
     }
 
     /**

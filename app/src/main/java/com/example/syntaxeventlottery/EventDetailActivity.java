@@ -217,9 +217,44 @@ public class EventDetailActivity extends AppCompatActivity {
                 Glide.with(this).load(qrCodeUrl).into(eventQRCodeImageView);
             }
 
-            if (organizerId.equals(de))
+            // if current device id is associated with an organizer
+            if (organizerId.equals(Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID)) && organizerId != null) {
+                showOrganizerDisplay(eventToDisplay);
+            } else {
+                showUserDisplay(eventToDisplay);
+            }
         }
     }
+
+    private void showOrganizerDisplay(Event event) {
+        // set organizer UI visible
+        updatePosterButton.setVisibility(View.VISIBLE);
+        drawButton.setVisibility(View.VISIBLE);
+        joinEventButton.setVisibility(View.GONE);
+        leaveEventButton.setVisibility(View.GONE);
+        editInfoButton.setVisibility(View.VISIBLE);
+        acceptButton.setVisibility(View.GONE);
+        rejectButton.setVisibility(View.GONE);
+        drawEndedTextView.setVisibility(View.GONE);
+    }
+
+    private void showUserDisplay(Event event) {
+        // set user UI visible
+        updatePosterButton.setVisibility(View.GONE);
+        drawButton.setVisibility(View.GONE);
+        editInfoButton.setVisibility(View.GONE);
+        // get device ID
+        String currentDeviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        // see if entrant has been selected or in waiting list
+        if (event.getParticipants().contains(currentDeviceId)) {
+
+        } else if (event.getSelectedParticipants().contains(currentDeviceId)) {
+
+        }
+
+    }
+
+
     private void loadEventDetails(String eventId) {
         DocumentReference eventRef = db.collection("events").document(eventId);
 
@@ -255,7 +290,7 @@ public class EventDetailActivity extends AppCompatActivity {
                     }
 
                     // Get current device ID
-                    String currentDeviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+
 
                     // Retrieve ChosenList and joinEventList
                     List<String> chosenList = (List<String>) document.get("ChosenList");
