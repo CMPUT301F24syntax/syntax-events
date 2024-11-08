@@ -19,7 +19,6 @@ public class EditEventActivity extends AppCompatActivity {
 
     private EditText editEventName, editEventDescription, editStartDate, editEndDate, editFacility, editCapacity;
     private Button saveEventButton, backButton;
-    //private FirebaseFirestore db;
     private String eventId;
     private EventController eventController;
     private EventRepository eventRepository;
@@ -38,9 +37,6 @@ public class EditEventActivity extends AppCompatActivity {
         editCapacity = findViewById(R.id.editCapacity);
         saveEventButton = findViewById(R.id.saveEventButton);
         backButton = findViewById(R.id.backButton);
-
-        // Initialize Firestore
-        //db = FirebaseFirestore.getInstance();
 
         // initialize controller and firebase
         eventRepository = new EventRepository();
@@ -62,7 +58,12 @@ public class EditEventActivity extends AppCompatActivity {
         backButton.setOnClickListener(v -> finish());
 
         // Set click listener for save button
-        saveEventButton.setOnClickListener(v -> saveEventDetails());
+        saveEventButton.setOnClickListener(v -> {
+            saveEventDetails();
+            Intent intent = new Intent(EditEventActivity.this, UserHomeActivity.class);
+            startActivity(intent);
+            finish();
+        });
     }
 
     private void loadEventDetails(Event eventToDisplay) {
@@ -119,21 +120,5 @@ public class EditEventActivity extends AppCompatActivity {
         event.setCapacity(Integer.parseInt(capacity));
 
         eventController.updateEvent(event, null, null);
-        Intent intent = new Intent(EditEventActivity.this, UserHomeActivity.class);
-        startActivity(intent);
-        finish();
-
-        /*
-        // Update Firestore with new details
-        db.collection("events").document(eventId).update(eventUpdates)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(EditEventActivity.this, "Event updated successfully", Toast.LENGTH_SHORT).show();
-                    // Start UserHomeActivity and finish EditEventActivity
-                    Intent intent = new Intent(EditEventActivity.this, UserHomeActivity.class);
-                    startActivity(intent);
-                    finish();
-                })
-                .addOnFailureListener(e -> Toast.makeText(EditEventActivity.this, "Failed to update event", Toast.LENGTH_SHORT).show());
-    }*/
     }
 }
