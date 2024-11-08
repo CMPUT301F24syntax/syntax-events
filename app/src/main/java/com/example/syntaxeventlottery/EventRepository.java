@@ -54,6 +54,10 @@ public class EventRepository implements EventRepositoryInterface {
                     eventsDataList.add(event);
                 }
             }
+
+            if (dataChangeListener != null) {
+                dataChangeListener.onEventsDataChanged();
+            }
         });
     }
 
