@@ -21,7 +21,7 @@ public class EventRepository implements EventRepositoryInterface {
     private CollectionReference eventsRef;
     private StorageReference eventsImageRef;
     private ArrayList<Event> eventsDataList;
-    private OnEventsDataChangeListener dataChangeListener;
+    //private OnEventsDataChangeListener dataChangeListener;
 
 
     public EventRepository() {
