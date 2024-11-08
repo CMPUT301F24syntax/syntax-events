@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -132,11 +133,19 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         // initialize event object
         Event event = new Event(eventName, eventDescription, capacity, startDate, endDate, organizerId);
 
-        if (imageUri != null) {
-            eventController.addEvent(event, imageUri);
-        } else {
-            eventController.addEvent(event, null);
-        }
+        eventController.addEvent(event, imageUri, new DataCallback<Event>() {
+            @Override
+            public void onSuccess(Event result) {
+                Toast.makeText(OrganizerCreateEvent.this, "Event creation successfull", Toast.LENGTH_SHORT).show();
+                clearInputFields();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(OrganizerCreateEvent.this, "Event creation Error!", Toast.LENGTH_SHORT).show();
+                Log.e("OrganizerCreateEvent", e.toString());
+                }
+            });
     }
 
 

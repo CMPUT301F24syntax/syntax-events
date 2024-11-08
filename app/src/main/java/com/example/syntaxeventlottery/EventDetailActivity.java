@@ -17,11 +17,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-// Import Firebase and other necessary libraries
-import com.bumptech.glide.Glide;
-
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -97,12 +93,13 @@ public class EventDetailActivity extends AppCompatActivity {
             intent.putExtra("event_id", eventId);
             startActivity(intent);
         });
+        /*
         joinEventButton.setOnClickListener(v -> joinEvent());
         leaveEventButton.setOnClickListener(v -> leaveEvent());
         drawButton.setOnClickListener(v -> drawParticipants());
         acceptButton.setOnClickListener(v -> acceptDraw());
         rejectButton.setOnClickListener(v -> rejectDraw());
-
+        */
         // Set click listener for waitingListButton
         waitingListButton.setOnClickListener(v -> {
             // Start EventWaitingListActivity
@@ -144,7 +141,17 @@ public class EventDetailActivity extends AppCompatActivity {
         // Assuming you have access to the Event object
         Event event = eventController.getEventById(eventId);
         if (event != null) {
-            eventController.updateEvent(event, imageUri, qrCodeBitmap);
+            eventController.updateEvent(event, imageUri, qrCodeBitmap, new DataCallback<Event>() {
+                @Override
+                public void onSuccess(Event result) {
+
+                }
+
+                @Override
+                public void onError(Exception e) {
+
+                }
+            });
         }
     }
 
@@ -154,48 +161,40 @@ public class EventDetailActivity extends AppCompatActivity {
      * @param eventId The ID of the event to load.
      */
     private void loadEventDetails(String eventId) {
-        Event eventToDisplay = eventController.getEventById(eventId);
-        if (eventToDisplay != null) {
-            // Get details from event object
-            eventName = eventToDisplay.getEventName();
-            String eventDescription = eventToDisplay.getDescription();
-            String eventPosterUrl = eventToDisplay.getPosterUrl();
-            Date startDate = eventToDisplay.getStartDate();
-            Date endDate = eventToDisplay.getEndDate();
-            String facility = eventToDisplay.getFacility();
-            int capacity = eventToDisplay.getCapacity();
-            String qrCodeUrl = eventToDisplay.getQrCodeUrl();
-            organizerId = eventToDisplay.getOrganizerId();
+        // implementing callbacks for asynchronous operation
+        eventController.getAllEvents(new DataCallback<List<Event>>() {
+            @Override
+            public void onSuccess(List<Event> result) {
+                Event eventToDisplay = eventController.getEventById(eventId);
+                // Populate the UI with event details
+                eventName = eventToDisplay.getEventName();
+                String eventDescription = eventToDisplay.getDescription();
+                String eventPosterUrl = eventToDisplay.getPosterUrl();
+                Date startDate = eventToDisplay.getStartDate();
+                Date endDate = eventToDisplay.getEndDate();
+                String facility = eventToDisplay.getFacility();
+                int capacity = eventToDisplay.getCapacity();
+                String qrCodeUrl = eventToDisplay.getQrCodeUrl();
+                organizerId = eventToDisplay.getOrganizerId();
 
-            // Set details to TextViews
-            eventNameTextView.setText(eventName);
-            eventDescriptionTextView.setText(eventDescription);
-            SimpleDateFormat displayFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-            eventStartDateTextView.setText("Start Date: " + (startDate != null ? displayFormat.format(startDate) : "N/A"));
-            eventEndDateTextView.setText("End Date: " + (endDate != null ? displayFormat.format(endDate) : "N/A"));
-            eventFacilityTextView.setText("Location: " + facility);
-            eventCapacityTextView.setText("Capacity: " + (capacity > 0 ? String.valueOf(capacity) : "N/A"));
+                // Set details to TextViews
+                eventNameTextView.setText(eventName);
+                eventDescriptionTextView.setText(eventDescription);
+                SimpleDateFormat displayFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                eventStartDateTextView.setText("Start Date: " + (startDate != null ? displayFormat.format(startDate) : "N/A"));
+                eventEndDateTextView.setText("End Date: " + (endDate != null ? displayFormat.format(endDate) : "N/A"));
+                eventFacilityTextView.setText("Location: " + facility);
+                eventCapacityTextView.setText("Capacity: " + (capacity > 0 ? String.valueOf(capacity) : "N/A"));
 
-            // Display images
-            if (eventPosterUrl != null) {
-                Glide.with(this).load(eventPosterUrl).into(eventPosterImageView);
-            }
-            if (qrCodeUrl != null) {
-                Glide.with(this).load(qrCodeUrl).into(eventQRCodeImageView);
             }
 
-            // Check if current device is the organizer
-            String currentDeviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-            if (organizerId != null && organizerId.equals(currentDeviceId)) {
-                showOrganizerDisplay(eventToDisplay);
-            } else {
-                showUserDisplay(eventToDisplay);
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(EventDetailActivity.this,"Event could not be found", Toast.LENGTH_LONG).show();
             }
-        } else {
-            Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
-            finish();
-        }
+        });
     }
+    /*
 
     private void showOrganizerDisplay(Event event) {
         // Set organizer UI visible
@@ -239,9 +238,7 @@ public class EventDetailActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Draws participants by delegating to the controller.
-     */
+
     private void drawParticipants() {
         if (eventId == null) {
             Toast.makeText(this, "Invalid Event ID", Toast.LENGTH_SHORT).show();
@@ -252,9 +249,7 @@ public class EventDetailActivity extends AppCompatActivity {
         Toast.makeText(this, "Draw initiated", Toast.LENGTH_SHORT).show();
     }
 
-    /**
-     * Accepts the draw invitation by delegating to the controller.
-     */
+
     private void acceptDraw() {
         if (eventId == null) {
             Toast.makeText(this, "Invalid Event ID", Toast.LENGTH_SHORT).show();
@@ -268,9 +263,7 @@ public class EventDetailActivity extends AppCompatActivity {
         rejectButton.setVisibility(View.GONE);
     }
 
-    /**
-     * Rejects the draw invitation by delegating to the controller.
-     */
+
     private void rejectDraw() {
         if (eventId == null) {
             Toast.makeText(this, "Invalid Event ID", Toast.LENGTH_SHORT).show();
@@ -284,9 +277,7 @@ public class EventDetailActivity extends AppCompatActivity {
         rejectButton.setVisibility(View.GONE);
     }
 
-    /**
-     * Allows the user to join the event by delegating to the controller.
-     */
+
     private void joinEvent() {
         if (eventId == null) {
             Toast.makeText(this, "Invalid Event ID", Toast.LENGTH_SHORT).show();
@@ -304,9 +295,7 @@ public class EventDetailActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Allows the user to leave the event by delegating to the controller.
-     */
+
     private void leaveEvent() {
         if (eventId == null) {
             Toast.makeText(this, "Invalid Event ID", Toast.LENGTH_SHORT).show();
@@ -322,5 +311,6 @@ public class EventDetailActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "Failed to leave the event. You might not be registered.", Toast.LENGTH_SHORT).show();
         }
-    }
+    } */
+
 }

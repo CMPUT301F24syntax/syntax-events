@@ -15,110 +15,50 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 public class EventController {
-    private EventRepositoryInterface repository;
+    private EventRepository repository;
 
-    public EventController(EventRepositoryInterface repository) {
+    public EventController(EventRepository repository) {
         this.repository = repository;
     }
 
-    /**
-     * Get all events from the repository
-     */
-    public ArrayList<Event> getAllEvents() {
-        return repository.getAllEventsList();
+    public void getAllEvents(DataCallback<List<Event>> callback) {
+        repository.fetchAllEvents(callback);
     }
 
-    /**
-     * Add a new event with validation and QR code generation
-     */
-    public void addEvent(Event event, @Nullable Uri imageUri, Bitmap qrCodeBitmap) {
-        // Generate event ID
-        event.generateEventID(event.getOrganizerId());
-        // Validate event data
-        validateEvent(event);
-        // Add to repository
-        repository.addEventToRepo(event, imageUri, qrCodeBitmap);
-    }
-
-    /**
-     * Overloaded addEvent method that generates QR code internally
-     */
-    public void addEvent(Event event, @Nullable Uri imageUri) {
-        Bitmap qrCodeBitmap = generateQRCodeBitmap(event.getEventID());
-        if (qrCodeBitmap != null) {
-            addEvent(event, imageUri, qrCodeBitmap);
-        } else {
-            // Handle QR code generation failure
-            // For example, you might throw an exception or notify the user
+    public void addEvent(Event event, @Nullable Uri imageUri, DataCallback<Event> callback) {
+        try {
+            validateEvent(event);
+            event.generateEventID(event.getOrganizerId());
+            Bitmap qrCodeBitmap = generateQRCodeBitmap(event.getEventID());
+            repository.addEventToRepo(event, imageUri, qrCodeBitmap, callback);
+        } catch (IllegalArgumentException e) {
+            callback.onError(e);
         }
     }
 
-    /**
-     * Update an existing event
-     */
-    public void updateEvent(Event event, @Nullable Uri imageUri, @Nullable Bitmap qrCodeBitmap) {
-        repository.updateEventDetails(event, imageUri, qrCodeBitmap);
+    public void updateEvent(Event event, @Nullable Uri imageUri,
+                            @Nullable Bitmap qrCodeBitmap, DataCallback<Event> callback) {
+        try {
+            validateEvent(event);
+            repository.updateEventDetails(event, imageUri, qrCodeBitmap, callback);
+        } catch (IllegalArgumentException e) {
+            callback.onError(e);
+        }
     }
 
-    /**
-     * Get event by ID
-     */
+    public void deleteEvent(Event event, DataCallback<Void> callback) {
+        repository.deleteEventFromRepo(event, callback);
+    }
+
+    // Synchronous method to get event by ID from local cache
     public Event getEventById(String eventId) {
-        return repository.getEventById(eventId);
-    }
-
-    /**
-     * Get Organizer events by organizer id
-     */
-    public List<Event> getOrganizerEvents(String organizerId) {
-        return repository.getOrganizerEvents(organizerId);
-    }
-
-    /**
-     * Get list of events where Entrant is in waiting list
-     */
-    public List<Event> getEntrantWaitingListEvents(String entrantId) {
-        return repository.getEntrantWaitingListEvents(entrantId);
-    }
-
-    /**
-     * Get list of events where Entrant is in selected list
-     */
-    public List<Event> getEntrantSelectedListEvents(String entrantId) {
-        return repository.getEntrantSelectedListEvents(entrantId);
-    }
-
-    /**
-     * Check if event is full
-     */
-    public boolean isEventFull(String eventId) {
-        return repository.isEventFull(eventId);
-    }
-
-    /**
-     * Add participant to event
-     * Returns true if success, false otherwise
-     */
-    public boolean addParticipant(String eventId, String participantId) {
-        if (isEventFull(eventId)) {
-            return false;
+        List<Event> events = repository.getLocalEventsList();
+        for (Event event : events) {
+            if (event.getEventID().equals(eventId)) {
+                return event;
+            }
         }
-        if (repository.isUserRegistered(eventId, participantId)) {
-            return false;
-        }
-        repository.addParticipant(eventId, participantId);
-        return true;
-    }
-
-    /**
-     * Remove participant from event
-     */
-    public boolean removeParticipant(String eventId, String participantId) {
-        if (!repository.isUserRegistered(eventId, participantId)) {
-            return false;
-        }
-        repository.removeParticipant(eventId, participantId);
-        return true;
+        return null;
     }
 
     /**
@@ -166,33 +106,5 @@ public class EventController {
             e.printStackTrace();
             return null;
         }
-    }
-
-    /**
-     * Accept an event invitation
-     */
-    public void acceptInvitation(String eventId, String userId) {
-        repository.acceptInvitation(eventId, userId);
-    }
-
-    /**
-     * Reject an event invitation
-     */
-    public void rejectInvitation(String eventId, String userId) {
-        repository.rejectInvitation(eventId, userId);
-    }
-
-    /**
-     * Perform draw for an event
-     */
-    public void performDraw(String eventId) {
-        repository.performDraw(eventId);
-    }
-
-    /**
-     * Check if user is registered for event
-     */
-    public boolean isUserRegistered(String eventId, String userId) {
-        return repository.isUserRegistered(eventId, userId);
     }
 }

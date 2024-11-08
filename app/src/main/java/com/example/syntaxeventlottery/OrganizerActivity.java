@@ -3,6 +3,7 @@ package com.example.syntaxeventlottery;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -82,14 +83,19 @@ public class OrganizerActivity extends AppCompatActivity {
      * Load events retrieved from eventController
      */
     private void loadEvents() {
-        List<Event> events = eventController.getOrganizerEvents(deviceID);
+        eventController.getAllEvents(new DataCallback<List<Event>>() {
+            @Override
+            public void onSuccess(List<Event> result) {
+                eventList.clear(); // clear any previous events
+                eventList.addAll(result);
+                eventAdapter.notifyDataSetChanged();
+            }
 
-        if (events != null && !events.isEmpty()) {
-            eventList.clear(); // clear any previous events
-            eventList.addAll(events);
-            eventAdapter.notifyDataSetChanged();
-        } else {
-            Toast.makeText(OrganizerActivity.this, "No events found, try creating an event!", Toast.LENGTH_SHORT).show();
-        }
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(OrganizerActivity.this, "No events found, try creating an event!", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
 }
