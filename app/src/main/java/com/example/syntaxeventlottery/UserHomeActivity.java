@@ -112,7 +112,7 @@ public class UserHomeActivity extends AppCompatActivity {
     /**
      * Checks the user's facility attribute and navigates accordingly.
      * If the facility is not set, navigates to {@link FacilityProfileActivity}.
-     * If the facility is set, navigates to {@link OrganizerActivity}.
+     * If the facility is set, navigates to {@link }.
      */
     private void checkUserAndNavigate() {
         db.collection("Users").document(deviceId).get()

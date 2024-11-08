@@ -1,3 +1,4 @@
+// Refactor Complete
 package com.example.syntaxeventlottery;
 
 /**
@@ -23,7 +24,7 @@ public class User {
         this.profilePhotoUrl = profilePhotoUrl;
         this.username = username;
         this.userID = generateUserID();
-        this.facility = facility; // Automatically generate userID
+        this.facility = facility;
     }
 
     // Method to generate a unique, shorter userID
