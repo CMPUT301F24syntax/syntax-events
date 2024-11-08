@@ -6,9 +6,11 @@ import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +23,8 @@ public class OrganizerActivity extends AppCompatActivity {
     private Button backButton;         // Button to go back to the previous screen
     private RecyclerView eventRecyclerView; // RecyclerView to display events
     private EventAdapter eventAdapter; // Adapter for managing event list display
-    private EventRepository eventRepository; // event repository
-    private EventController eventController; // event controller
+    private EventRepository eventRepository; // Event repository
+    private EventController eventController; // Event controller
     private List<Event> eventList = new ArrayList<>(); // List to hold events
     private String deviceID;           // Device ID to identify the user
 
@@ -36,7 +38,7 @@ public class OrganizerActivity extends AppCompatActivity {
         backButton = findViewById(R.id.backButton);
         eventRecyclerView = findViewById(R.id.eventRecyclerView);
 
-        // initialize repository and controller
+        // Initialize repository and controller
         eventRepository = new EventRepository();
         eventController = new EventController(eventRepository);
 
@@ -77,11 +79,10 @@ public class OrganizerActivity extends AppCompatActivity {
     }
 
     /**
-     * Load events
-     * retrieved from eventController
+     * Load events retrieved from eventController
      */
     private void loadEvents() {
-        ArrayList<Event> events = eventController.getOrganizerEvents(deviceID);
+        List<Event> events = eventController.getOrganizerEvents(deviceID);
 
         if (events != null && !events.isEmpty()) {
             eventList.clear(); // clear any previous events

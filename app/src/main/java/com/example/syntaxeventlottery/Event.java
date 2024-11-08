@@ -43,6 +43,16 @@ public class Event implements Serializable {
     private String posterUrl;
     private String qrCodeUrl;
 
+    public ArrayList<String> getUnChosenList() {
+        return unChosenParticipants;
+    }
+
+    public void setUnChosenList(List<String> unChosenParticipants) {
+        this.unChosenParticipants = new ArrayList<>(unChosenParticipants);
+    }
+
+    private ArrayList<String> unChosenParticipants;
+
     /**
      * A list of participant IDs who have joined the event's waiting list.
      */
@@ -327,6 +337,8 @@ public class Event implements Serializable {
             // This should be handled in your repository or storage management code
         }
     }
+
+
 
     /**
      * String representation of the Event object.
