@@ -1,3 +1,4 @@
+// Refactor Complete
 package com.example.syntaxeventlottery;
 
 /**

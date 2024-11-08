@@ -1,10 +1,9 @@
+// Refactor Complete
 package com.example.syntaxeventlottery;
 
 import android.content.Context;
 import android.net.Uri;
 import android.provider.Settings;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
 
 public class UserController {
 
@@ -15,7 +14,7 @@ public class UserController {
 
     public UserController(Context context) {
         this.context = context;
-        userRepository = new UserRepository(); // Use default constructor
+        userRepository = new UserRepository();
         this.deviceId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 

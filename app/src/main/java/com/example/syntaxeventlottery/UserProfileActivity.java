@@ -1,5 +1,4 @@
-// UserProfileActivity.java
-
+// Refactor Complete
 package com.example.syntaxeventlottery;
 
 import android.content.Intent;
@@ -31,7 +30,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
     private Button backButton, editButton;
     private ImageView profileImageView;
-    private TextView nameTextView, emailTextView, phoneTextView, facilityTextView; // Added facilityTextView
+    private TextView nameTextView, emailTextView, phoneTextView, facilityTextView;
     private Uri selectedImageUri;
 
     private UserController userController;
