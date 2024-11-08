@@ -9,6 +9,7 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -59,6 +60,59 @@ public class EventController {
             }
         }
         return null;
+    }
+    // check if user is registered
+    public boolean isUserRegistered(String eventId, String userId) {
+        List<Event> events = repository.getLocalEventsList();
+        for (Event event : events) {
+            if (event.getEventID().equals(eventId) && event.getParticipants().contains(userId) && !event.getSelectedParticipants().contains(userId)) {
+                return true;
+            }
+        } return false;
+    }
+
+    // check if user is selected
+    public boolean isUserSelected(String eventId, String userId) {
+        List<Event> events = repository.getLocalEventsList();
+        for (Event event : events) {
+            if (event.getEventID().equals(eventId) && event.getSelectedParticipants().contains(userId)) {
+                return true;
+            }
+        } return false;
+    }
+    // Perform event draw, i.e., select participants from the waiting list
+    public Event performDraw(String eventId) {
+        List<Event> events = repository.getLocalEventsList();
+
+        Event eventToPerformDraw = null;
+        int capacity = 0;
+        List<String> participants = null;
+
+        // Find the event by eventId
+        for (Event event : events) {
+            if (event.getEventID().equals(eventId)) {
+                eventToPerformDraw = event;
+                capacity = event.getCapacity();
+                participants = event.getParticipants();
+                break;
+            }
+        }
+
+        // Check if event and participants are valid
+        if (eventToPerformDraw == null || participants == null || participants.isEmpty()) {
+            return null;
+        }
+
+        // Shuffle the participants list to randomize the selection
+        Collections.shuffle(participants);
+
+        // Select up to 'capacity' participants
+        List<String> selectedUsers = participants.subList(0, Math.min(capacity, participants.size()));
+
+        // Update the event with the selected users
+        eventToPerformDraw.setSelectedParticipants(selectedUsers);
+
+        return eventToPerformDraw;
     }
 
     /**

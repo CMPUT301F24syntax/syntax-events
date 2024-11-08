@@ -186,17 +186,25 @@ public class EventDetailActivity extends AppCompatActivity {
                 eventFacilityTextView.setText("Location: " + facility);
                 eventCapacityTextView.setText("Capacity: " + (capacity > 0 ? String.valueOf(capacity) : "N/A"));
 
+                String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+
+                // show organizer display if event has been created by the current user
+                if (eventToDisplay.getOrganizerId().equals(deviceId)) {
+                    showOrganizerDisplay(eventToDisplay, deviceId);
+                } else {
+                    // else show normal user display
+                    showUserDisplay(eventToDisplay, deviceId);
+                }
             }
 
             @Override
             public void onError(Exception e) {
-                Toast.makeText(EventDetailActivity.this,"Event could not be found", Toast.LENGTH_LONG).show();
+                Toast.makeText(EventDetailActivity.this,"Event details could not be loaded", Toast.LENGTH_LONG).show();
             }
         });
     }
-    /*
 
-    private void showOrganizerDisplay(Event event) {
+    private void showOrganizerDisplay(Event event, String deviceId) {
         // Set organizer UI visible
         updatePosterButton.setVisibility(View.VISIBLE);
         drawButton.setVisibility(View.VISIBLE);
@@ -208,29 +216,31 @@ public class EventDetailActivity extends AppCompatActivity {
         drawEndedTextView.setVisibility(View.GONE);
     }
 
-    private void showUserDisplay(Event event) {
+    private void showUserDisplay(Event event, String deviceId) {
         // Set user UI visible
         updatePosterButton.setVisibility(View.GONE);
         drawButton.setVisibility(View.GONE);
         editInfoButton.setVisibility(View.GONE);
-        String currentDeviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        //String currentDeviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        if (eventController.isUserRegistered(event.getEventID(), currentDeviceId)) {
+        if (eventController.isUserRegistered(event.getEventID(), deviceId)) {
+            // if user is registered in waiting list
             joinEventButton.setVisibility(View.GONE);
             leaveEventButton.setVisibility(View.VISIBLE);
-        } else if (eventController.getEntrantSelectedListEvents(currentDeviceId).contains(event)) {
+        } else if (eventController.isUserSelected(event.getEventID(), deviceId)) {
+            // if user is selected to participate
             acceptButton.setVisibility(View.VISIBLE);
             rejectButton.setVisibility(View.VISIBLE);
             joinEventButton.setVisibility(View.GONE);
             leaveEventButton.setVisibility(View.GONE);
         } else {
+            // neither is true
             joinEventButton.setVisibility(View.VISIBLE);
             leaveEventButton.setVisibility(View.GONE);
             acceptButton.setVisibility(View.GONE);
             rejectButton.setVisibility(View.GONE);
 
-            // Check if draw has ended
-            if (!eventController.getEntrantWaitingListEvents(currentDeviceId).isEmpty()) {
+            if (eventController.getEventById(event.getEventID()).isDrawed()) {
                 drawEndedTextView.setVisibility(View.VISIBLE);
             } else {
                 drawEndedTextView.setVisibility(View.GONE);
@@ -244,9 +254,25 @@ public class EventDetailActivity extends AppCompatActivity {
             Toast.makeText(this, "Invalid Event ID", Toast.LENGTH_SHORT).show();
             return;
         }
+        // perform draw on event and return
+        Event event = eventController.performDraw(eventId);
+        // if draw has been performed successfully
+        if (event != null) {
+            eventController.updateEvent(event, null, null, new DataCallback<Event>() {
+                @Override
+                public void onSuccess(Event result) {
+                    Log.d("EventDetailActivity", "Event performed succesfully");
+                }
 
-        eventController.performDraw(eventId);
-        Toast.makeText(this, "Draw initiated", Toast.LENGTH_SHORT).show();
+                @Override
+                public void onError(Exception e) {
+                    Log.e("EventDetailActivity", e.toString());
+
+                }
+            });
+        } else {
+            Toast.makeText(this, "Event draw cannot be performed at this time", Toast.LENGTH_SHORT).show();
+        }
     }
 
 
@@ -311,6 +337,6 @@ public class EventDetailActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "Failed to leave the event. You might not be registered.", Toast.LENGTH_SHORT).show();
         }
-    } */
+    }
 
 }
