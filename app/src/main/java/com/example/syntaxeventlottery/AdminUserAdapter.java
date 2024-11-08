@@ -19,24 +19,47 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
 
+/**
+ * The {@code AdminUserAdapter} class extends {@link ArrayAdapter} to provide a custom adapter
+ * for displaying user profiles in a list view for administrators.
+ */
 public class AdminUserAdapter extends ArrayAdapter<User> {
 
+    /** The context from which the adapter is created. */
     private Context context;
+
+    /** The list of users to display. */
     private List<User> userList;
 
+    /**
+     * Constructs a new {@code AdminUserAdapter}.
+     *
+     * @param context  The current context.
+     * @param userList The list of users to be displayed.
+     */
     public AdminUserAdapter(Context context, List<User> userList) {
         super(context, R.layout.item_admin_user, userList);
         this.context = context;
         this.userList = userList;
     }
 
+    /**
+     * Provides a view for an AdapterView.
+     *
+     * @param position    The position of the item within the adapter's data set.
+     * @param convertView The old view to reuse, if possible.
+     * @param parent      The parent that this view will eventually be attached to.
+     * @return A View corresponding to the data at the specified position.
+     */
     @NonNull
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        // Inflate the view if it's not already created
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.item_admin_user, parent, false);
         }
 
+        // Get the current user
         User user = userList.get(position);
 
         // Find and set views
@@ -77,6 +100,11 @@ public class AdminUserAdapter extends ArrayAdapter<User> {
         return convertView;
     }
 
+    /**
+     * Deletes a user profile from the database and updates the adapter.
+     *
+     * @param userID The unique identifier of the user to delete.
+     */
     private void deleteUserProfile(String userID) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Users").document(userID)

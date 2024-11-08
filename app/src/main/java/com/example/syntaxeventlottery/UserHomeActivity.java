@@ -1,5 +1,3 @@
-// UserHomeActivity.java
-
 package com.example.syntaxeventlottery;
 
 import android.content.Intent;
@@ -24,16 +22,47 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
+/**
+ * The {@code UserHomeActivity} class represents the main screen for users after logging in.
+ * It displays the current date and time, lists future events, and provides navigation buttons
+ * to the organizer's functions, user profile, and news center.
+ */
 public class UserHomeActivity extends AppCompatActivity {
 
+    /** TextView for displaying the current date and time. */
     private TextView dateTextView;
+
+    /** RecyclerView for displaying a list of future events. */
     private RecyclerView futureEventsRecyclerView;
+
+    /** Adapter for the RecyclerView to manage event items. */
     private EventAdapter eventAdapter;
+
+    /** List of events fetched from Firestore to be displayed. */
     private List<Event> eventList;
+
+    /** Firebase Firestore database instance. */
     private FirebaseFirestore db;
-    private ImageButton organizerButton, profileButton, newsButton;
+
+    /** ImageButton to navigate to the organizer functions. */
+    private ImageButton organizerButton;
+
+    /** ImageButton to navigate to the user profile. */
+    private ImageButton profileButton;
+
+    /** ImageButton to navigate to the news center. */
+    private ImageButton newsButton;
+
+    /** Unique device ID used to identify the user. */
     private String deviceId;
 
+    /**
+     * Called when the activity is first created.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously being
+     *                           shut down, then this Bundle contains the data it most recently
+     *                           supplied in {@link #onSaveInstanceState}. Otherwise, it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +111,8 @@ public class UserHomeActivity extends AppCompatActivity {
 
     /**
      * Checks the user's facility attribute and navigates accordingly.
+     * If the facility is not set, navigates to {@link FacilityProfileActivity}.
+     * If the facility is set, navigates to {@link OrganizerActivity}.
      */
     private void checkUserAndNavigate() {
         db.collection("Users").document(deviceId).get()
@@ -109,6 +140,7 @@ public class UserHomeActivity extends AppCompatActivity {
 
     /**
      * Loads events from Firestore and populates the future events list.
+     * Fetches all events from the "events" collection and updates the RecyclerView.
      */
     private void loadEventsFromFirestore() {
         db.collection("events")
@@ -154,6 +186,7 @@ public class UserHomeActivity extends AppCompatActivity {
 
     /**
      * Updates the date and time in the TextView every second.
+     * Uses a background thread to update the UI thread with the current time.
      */
     private void updateDateTime() {
         final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.getDefault());

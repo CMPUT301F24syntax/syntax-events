@@ -13,21 +13,39 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.syntaxeventlottery.R;
 
 import java.util.List;
 
+/**
+ * The {@code EventAdapter} class extends {@link RecyclerView.Adapter} to provide a custom adapter
+ * for displaying event items in a {@link RecyclerView}. It binds event data to the views in each item.
+ */
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
 
+    /** List of events to be displayed in the RecyclerView. */
     private List<Event> eventsList;
+
+    /** Context from which the adapter is created, used for inflating layouts and starting activities. */
     private Context context;
 
-    // 构造函数，接收 List<Event> 和 Context
+    /**
+     * Constructs a new {@code EventAdapter}.
+     *
+     * @param eventsList List of {@link Event} objects to display.
+     * @param context    The context in which the adapter is operating.
+     */
     public EventAdapter(List<Event> eventsList, Context context) {
         this.eventsList = eventsList;
         this.context = context;
     }
 
+    /**
+     * Called when RecyclerView needs a new {@link EventViewHolder} of the given type to represent an item.
+     *
+     * @param parent   The ViewGroup into which the new View will be added after it is bound to an adapter position.
+     * @param viewType The view type of the new View.
+     * @return A new {@link EventViewHolder} that holds a View for each event item.
+     */
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -35,6 +53,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         return new EventViewHolder(view);
     }
 
+    /**
+     * Called by RecyclerView to display the data at the specified position.
+     * This method updates the contents of the {@link EventViewHolder#itemView} to reflect the item at the given position.
+     *
+     * @param holder   The {@link EventViewHolder} which should be updated to represent the contents of the item at the given position.
+     * @param position The position of the item within the adapter's data set.
+     */
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         Event event = eventsList.get(position);
@@ -52,7 +77,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                     .into(holder.eventPosterImageView);
         }
 
-
         // Set click listener for each event item to open EventDetailActivity
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, EventDetailActivity.class);
@@ -68,25 +92,42 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         });
     }
 
+    /**
+     * Returns the total number of items in the data set held by the adapter.
+     *
+     * @return The total number of events.
+     */
     @Override
     public int getItemCount() {
         return eventsList.size();
     }
 
-    // Method to update the entire list
+    /**
+     * Updates the entire list of events and refreshes the RecyclerView.
+     *
+     * @param newEvents A new list of {@link Event} objects to replace the current list.
+     */
     public void updateEvents(List<Event> newEvents) {
         this.eventsList.clear();
         this.eventsList.addAll(newEvents);
         notifyDataSetChanged();
     }
 
-    // Method to add a single event
+    /**
+     * Adds a single event to the list and notifies the adapter.
+     *
+     * @param event The {@link Event} object to be added.
+     */
     public void addEvent(Event event) {
         this.eventsList.add(event);
         notifyItemInserted(eventsList.size() - 1);
     }
 
-    // Method to remove an event by position
+    /**
+     * Removes an event from the list by its position and notifies the adapter.
+     *
+     * @param position The position of the event to be removed.
+     */
     public void removeEvent(int position) {
         if (position >= 0 && position < eventsList.size()) {
             this.eventsList.remove(position);
@@ -94,11 +135,21 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         }
     }
 
-    // ViewHolder class to hold views for each item
+    /**
+     * The {@code EventViewHolder} class holds references to the views for each event item.
+     */
     static class EventViewHolder extends RecyclerView.ViewHolder {
+        /** TextView displaying the event name. */
         TextView eventNameTextView;
+
+        /** ImageView displaying the event poster image. */
         ImageView eventPosterImageView;
 
+        /**
+         * Constructs a new {@code EventViewHolder}.
+         *
+         * @param itemView The view of the event item.
+         */
         public EventViewHolder(@NonNull View itemView) {
             super(itemView);
             eventNameTextView = itemView.findViewById(R.id.eventNameTextView);
