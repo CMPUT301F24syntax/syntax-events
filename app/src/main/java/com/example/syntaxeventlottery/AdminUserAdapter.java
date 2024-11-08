@@ -25,7 +25,7 @@ public class AdminUserAdapter extends ArrayAdapter<User> {
     private List<User> userList;
 
     public AdminUserAdapter(Context context, List<User> userList) {
-        super(context, R.layout.item_admin_user, userList);
+        super(context, R.layout.admin_user_item, userList);
         this.context = context;
         this.userList = userList;
     }
@@ -34,7 +34,7 @@ public class AdminUserAdapter extends ArrayAdapter<User> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.item_admin_user, parent, false);
+            convertView = LayoutInflater.from(context).inflate(R.layout.admin_user_item, parent, false);
         }
 
         User user = userList.get(position);
@@ -55,7 +55,7 @@ public class AdminUserAdapter extends ArrayAdapter<User> {
 
         // Set click listener to view user details
         convertView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, AdminUserDetailActivity.class);
+            Intent intent = new Intent(context, com.example.syntaxeventlottery.AdminUserDetailActivity.class);
             intent.putExtra("userID", user.getUserID());
             intent.putExtra("username", user.getUsername());
             intent.putExtra("email", user.getEmail());

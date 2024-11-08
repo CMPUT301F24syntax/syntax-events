@@ -29,6 +29,20 @@
             android:contentDescription="Event Poster"
             android:scaleType="centerCrop" />
 
+        <!-- Delete Image Button -->
+        <Button
+            android:id="@+id/deleteImageButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Delete Image"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#FF0000"
+            android:padding="8dp"
+            android:textSize="16sp"
+            android:layout_gravity="end"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp" />
+
         <TextView
             android:id="@+id/eventName"
             android:layout_width="wrap_content"

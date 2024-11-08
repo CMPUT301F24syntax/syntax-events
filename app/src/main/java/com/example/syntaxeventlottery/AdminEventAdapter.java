@@ -28,7 +28,7 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
 
     public AdminEventAdapter(Context context, List<Event> eventList) {
-        super(context, R.layout.admin_item_event, eventList);
+        super(context, R.layout.admin_event_item, eventList);
         this.context = context;
         this.eventList = eventList;
     }
@@ -37,7 +37,7 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.admin_item_event, parent, false);
+            convertView = LayoutInflater.from(context).inflate(R.layout.admin_event_item, parent, false);
         }
 
         Event event = eventList.get(position);
@@ -56,7 +56,7 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
 
         // Set click listener for item to show details
         convertView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, AdminEventDetailActivity.class);
+            Intent intent = new Intent(context, com.example.syntaxeventlottery.AdminEventDetailActivity.class);
             intent.putExtra("eventID", event.getEventID());
             intent.putExtra("eventName", event.getEventName());
             intent.putExtra("description", event.getDescription());
