@@ -20,5 +20,5 @@ Features
 Installation
 
 To install the Event Lottery System, follow these steps:
-  git clone https://github.com/yourusername/event-lottery-system.git
-  cd event-lottery-system
+	• git clone https://github.com/yourusername/event-lottery-system.git
+	• cd event-lottery-system
