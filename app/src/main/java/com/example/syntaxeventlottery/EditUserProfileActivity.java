@@ -26,60 +26,18 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-/**
- * The {@code EditUserProfileActivity} class allows users to edit their profile information,
- * including name, email, phone number, facility, and profile photo.
- * Users can upload a new profile photo, reset it to a default image, and save their updated information.
- * The class interacts with Firebase Firestore and Firebase Storage to retrieve and update user data.
- */
 public class EditUserProfileActivity extends AppCompatActivity {
 
-    /** EditText for entering the user's name. */
-    private EditText nameEditText;
-
-    /** EditText for entering the user's email. */
-    private EditText emailEditText;
-
-    /** EditText for entering the user's phone number. */
-    private EditText phoneEditText;
-
-    /** EditText for entering the user's facility. */
-    private EditText facilityEditText;
-
-    /** Button to save the updated profile information. */
+    private EditText nameEditText, emailEditText, phoneEditText, facilityEditText;
     private Button saveButton;
-
-    /** ImageButton to navigate back to the previous screen. */
-    private ImageButton backButton;
-
-    /** ImageButton to upload a new profile image. */
-    private ImageButton uploadImageButton;
-
-    /** ImageButton to reset the profile image to the default. */
-    private ImageButton resetImageButton;
-
-    /** ImageView to display the user's profile image. */
+    private ImageButton backButton, uploadImageButton, resetImageButton;
     private ImageView profileImageView;
 
-    /** Firebase Firestore database instance. */
     private FirebaseFirestore db;
-
-    /** Firebase Storage reference for storing profile images. */
     private StorageReference storageRef;
-
-    /** Unique device ID used to identify the user in the database. */
     private String deviceID;
-
-    /** URI of the selected image from the image picker. */
     private Uri selectedImageUri;
 
-    /**
-     * Called when the activity is first created.
-     *
-     * @param savedInstanceState If the activity is being re-initialized after previously being shut down,
-     *                           then this Bundle contains the data it most recently supplied in
-     *                           {@link #onSaveInstanceState}. <b>Note: Otherwise, it is null.</b>
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -124,24 +82,16 @@ public class EditUserProfileActivity extends AppCompatActivity {
     }
 
     /**
-     * Opens the image picker to allow the user to select a new profile image.
+     * Opens the image picker to allow the user to select a new avatar image.
      */
     private void openImagePicker() {
         Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, 1000);
     }
 
-    /**
-     * Handles the result from the image picker activity.
-     *
-     * @param requestCode The integer request code originally supplied to startActivityForResult().
-     * @param resultCode  The integer result code returned by the child activity.
-     * @param data        An Intent that carries the result data.
-     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         if (requestCode == 1000 && resultCode == RESULT_OK && data != null) {
             selectedImageUri = data.getData();
             profileImageView.setImageURI(selectedImageUri);
@@ -150,9 +100,7 @@ public class EditUserProfileActivity extends AppCompatActivity {
     }
 
     /**
-     * Loads user profile data from Firestore using the device ID and displays it in the UI components.
-     *
-     * @param deviceID The unique device ID used to retrieve the user's profile.
+     * Loads user profile data from Firestore using deviceID and displays it in the UI components.
      */
     private void loadUserProfileByDeviceID(String deviceID) {
         db.collection("Users").whereEqualTo("deviceCode", deviceID).get()
