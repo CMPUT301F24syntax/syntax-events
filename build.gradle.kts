@@ -3,8 +3,3 @@ plugins {
     alias(libs.plugins.android.application) apply false
     id("com.google.gms.google-services") version "4.4.0" apply false
 }
-buildscript {
-    dependencies {
-        classpath ("com.android.tools.build:gradle:7.2.2")
-    }
-}

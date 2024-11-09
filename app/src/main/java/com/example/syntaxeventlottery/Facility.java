@@ -1,6 +1,6 @@
 package com.example.syntaxeventlottery;
 
-
+import com.google.firebase.firestore.auth.User;
 
 import java.util.Date;
 

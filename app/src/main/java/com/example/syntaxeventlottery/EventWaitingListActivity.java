@@ -16,35 +16,14 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * The {@code EventWaitingListActivity} class displays the waiting list of participants for a specific event.
- * It retrieves the list of participant device codes from Firestore and loads their user information
- * to display in a RecyclerView.
- */
 public class EventWaitingListActivity extends AppCompatActivity {
 
-    /** Firebase Firestore database instance. */
     private FirebaseFirestore db;
-
-    /** The ID of the event whose waiting list is to be displayed. */
     private String eventId;
-
-    /** RecyclerView to display the list of waiting participants. */
     private RecyclerView waitingListRecyclerView;
-
-    /** Adapter for the RecyclerView to manage waiting list items. */
     private WaitingListAdapter waitingListAdapter;
-
-    /** List of users in the waiting list. */
     private List<User> waitingList;
 
-    /**
-     * Called when the activity is first created.
-     *
-     * @param savedInstanceState If the activity is being re-initialized after previously being shut down,
-     *                           then this Bundle contains the data it most recently supplied in
-     *                           {@link #onSaveInstanceState}. <b>Note: Otherwise, it is null.</b>
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,16 +53,11 @@ public class EventWaitingListActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Loads the waiting list of participants for the specified event from Firestore.
-     * It retrieves the list of participant device codes and loads their user information.
-     */
     private void loadWaitingList() {
         DocumentReference eventRef = db.collection("events").document(eventId);
 
         eventRef.get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
-                @SuppressWarnings("unchecked")
                 List<String> participants = (List<String>) documentSnapshot.get("participants");
                 if (participants != null && !participants.isEmpty()) {
                     for (String deviceCode : participants) {
@@ -101,11 +75,6 @@ public class EventWaitingListActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Loads user information for a given device code from Firestore and adds it to the waiting list.
-     *
-     * @param deviceCode The device code of the user to load information for.
-     */
     private void loadUserInfo(String deviceCode) {
         db.collection("Users").whereEqualTo("deviceCode", deviceCode).get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {

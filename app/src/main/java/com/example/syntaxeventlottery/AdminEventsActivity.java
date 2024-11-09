@@ -17,34 +17,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-/**
- * The {@code AdminEventsActivity} class displays a list of events to the administrator.
- * It fetches events from Firebase Firestore and populates a ListView using an adapter.
- */
 public class AdminEventsActivity extends AppCompatActivity {
 
-    /** The ListView that displays the list of events. */
     private ListView listViewEvents;
-
-    /** The adapter that bridges between the ListView and the data source. */
     private AdminEventAdapter eventAdapter;
-
-    /** The list of events fetched from the database. */
     private List<Event> eventList;
-
-    /** The back button to navigate to the previous activity. */
     private Button backButton;
 
-    /** The Firebase Firestore instance used to access the database. */
+    // Firestore instance
     private FirebaseFirestore db;
 
-    /**
-     * Called when the activity is first created.
-     *
-     * @param savedInstanceState If the activity is being re-initialized after previously being shut down,
-     *                           then this Bundle contains the data it most recently supplied in
-     *                           {@link #onSaveInstanceState}. <b>Note: Otherwise, it is null.</b>
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,23 +35,20 @@ public class AdminEventsActivity extends AppCompatActivity {
         // Initialize ListView, Back button, and Firestore
         listViewEvents = findViewById(R.id.listViewEvents);
         backButton = findViewById(R.id.backButton);
-        db = FirebaseFirestore.getInstance(); // Get Firestore instance
+        db = FirebaseFirestore.getInstance(); // 获取 Firestore 实例
 
         // Set up Back button
         backButton.setOnClickListener(v -> finish());
 
         // Initialize event list and adapter
         eventList = new ArrayList<>();
-        eventAdapter = new AdminEventAdapter(this, eventList); // Use AdminEventAdapter
+        eventAdapter = new AdminEventAdapter(this, eventList); // 使用 AdminEventAdapter
         listViewEvents.setAdapter(eventAdapter);
 
         // Load events from Firestore
         loadEventsFromDatabase();
     }
 
-    /**
-     * Loads events from the Firestore database and updates the ListView.
-     */
     private void loadEventsFromDatabase() {
         // Reference to the "events" collection
         CollectionReference eventsRef = db.collection("events");

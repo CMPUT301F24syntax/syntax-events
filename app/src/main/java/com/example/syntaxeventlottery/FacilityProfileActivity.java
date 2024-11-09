@@ -1,3 +1,5 @@
+// FacilityProfileActivity.java
+
 package com.example.syntaxeventlottery;
 
 import android.os.Bundle;
@@ -18,32 +20,12 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * The {@code FacilityProfileActivity} class allows users to enter and save facility details.
- * It retrieves the device ID to identify the user and updates the facility information in
- * Firebase Firestore under the "Users" collection.
- */
 public class FacilityProfileActivity extends AppCompatActivity {
 
-    /** EditText for entering the facility details. */
     private EditText editTextUsername;
-
-    /** Button to navigate back to the previous screen. */
-    private Button buttonBack;
-
-    /** Button to save the facility details to the database. */
-    private Button buttonSave;
-
-    /** Firebase Firestore database instance. */
+    private Button buttonBack, buttonSave;
     private FirebaseFirestore db;
 
-    /**
-     * Called when the activity is first created.
-     *
-     * @param savedInstanceState If the activity is being re-initialized after previously being shut down,
-     *                           then this Bundle contains the data it most recently supplied in
-     *                           {@link #onSaveInstanceState}. <b>Note: Otherwise, it is null.</b>
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,11 +56,6 @@ public class FacilityProfileActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Saves the facility details entered by the user to the Firebase Firestore database.
-     * It retrieves the device ID to identify the user and updates the "facility" field
-     * in the corresponding user document.
-     */
     private void saveFacilityDetails() {
         // Get the device ID
         final String deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -95,11 +72,6 @@ public class FacilityProfileActivity extends AppCompatActivity {
                 .whereEqualTo("deviceCode", deviceID)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    /**
-                     * Called when the query to find the user is complete.
-                     *
-                     * @param task The task representing the query operation.
-                     */
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful() && !task.getResult().isEmpty()) {
