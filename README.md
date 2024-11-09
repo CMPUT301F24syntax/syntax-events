@@ -28,4 +28,4 @@ Launch the application and follow the on-screen instructions to register or log 
 
 ## Documentation
 
-For detailed API documentation, visit our Javadoc[link](https://cmput301f24syntax.github.io/syntax-events/com/example/syntaxeventlottery/package-summary.html).
+For detailed API documentation, visit our [Javadoc](https://cmput301f24syntax.github.io/syntax-events/com/example/syntaxeventlottery/package-summary.html).
