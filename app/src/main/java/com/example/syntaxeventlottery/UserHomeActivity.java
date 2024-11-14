@@ -129,7 +129,7 @@ public class UserHomeActivity extends AppCompatActivity {
                             String eventID = document.getId();
                             String description = document.getString("description");
                             String facility = document.getString("facility");
-                            String qrCodeUrl = document.getString("qrCodeUrl");
+                            String qrCode = document.getString("qrCode");
                             String posterUrl = document.getString("posterUrl");
 
                             Date startDate = document.getDate("startDate");
@@ -138,9 +138,9 @@ public class UserHomeActivity extends AppCompatActivity {
                             if (startDate != null && endDate != null) {
                                 int capacity = document.getLong("capacity").intValue();
 
-                                Event event = new Event(eventID, eventName, description, facility, capacity, startDate, endDate, qrCodeUrl);
+                                Event event = new Event(eventID, eventName, description, facility, capacity, startDate, endDate, qrCode);
                                 event.setEventID(eventID);
-                                event.setQrCodeUrl(qrCodeUrl);
+                                event.setQrCode(qrCode);
                                 event.setPosterUrl(posterUrl);
                                 eventList.add(event);
                                 Log.d("Firestore", "Added event: " + eventName);

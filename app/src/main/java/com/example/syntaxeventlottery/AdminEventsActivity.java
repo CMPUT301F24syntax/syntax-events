@@ -92,12 +92,12 @@ public class AdminEventsActivity extends AppCompatActivity {
                                 Date endDate = document.getDate("endDate");
                                 String organizerId = document.getString("organizerId");
                                 String posterUrl = document.getString("posterUrl");
-                                String qrCodeUrl = document.getString("qrCodeUrl");
+                                String qrCode = document.getString("qrCode");
 
                                 // Create Event object and add it to the list
                                 Event event = new Event(eventID, eventName, description, facility, capacity, startDate, endDate, organizerId);
                                 event.setPosterUrl(posterUrl);
-                                event.setQrCodeUrl(qrCodeUrl);
+                                event.setQrCode(qrCode);
 
                                 eventList.add(event);
                             }

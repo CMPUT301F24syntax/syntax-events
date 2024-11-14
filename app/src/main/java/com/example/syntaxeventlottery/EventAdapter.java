@@ -83,7 +83,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             Intent intent = new Intent(context, EventDetailActivity.class);
             intent.putExtra("event_id", event.getEventID()); // Pass the event ID to the detail activity
             intent.putExtra("poster_url", event.getPosterUrl()); // Pass poster URL
-            intent.putExtra("qr_url", event.getQrCodeUrl()); // Pass QR code URL
+            intent.putExtra("qr_url", event.getQrCode()); // Pass QR code URL
             intent.putExtra("event_name", event.getEventName());
             intent.putExtra("event_description", event.getDescription()); // Pass description
             intent.putExtra("event_start_date", event.getStartDate().toString());

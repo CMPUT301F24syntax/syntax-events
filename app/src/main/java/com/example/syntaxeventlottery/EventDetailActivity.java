@@ -1,3 +1,4 @@
+// EventDetailActivity.java
 package com.example.syntaxeventlottery;
 
 import android.content.Intent;
@@ -18,22 +19,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 // Import Firebase and other necessary libraries
 import com.bumptech.glide.Glide;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-
-import java.util.Map;
-
 
 /**
  * Activity to display event details and manage event actions.
@@ -68,7 +55,6 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
     private String deviceId;
 
     private ImageButton backButton;
-
 
     private static final int REQUEST_CODE_SELECT_POSTER = 1001;
 
@@ -138,12 +124,7 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
         });
 
         if (backButton != null) {
-            backButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    finish();  // Simply closes the current activity
-                }
-            });
+            backButton.setOnClickListener(v -> finish());  // Simply closes the current activity
         } else {
             Log.e("EventDetailActivity", "Back button is not initialized");
         }
@@ -161,18 +142,14 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
             startActivityForResult(intent, REQUEST_CODE_SELECT_POSTER);
         });
 
-
-        waitingListButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Check if the current user is the organizer
-                if (deviceId.equals(event.getOrganizerId())) {
-                    Intent intent = new Intent(EventDetailActivity.this, EventWaitingListActivity.class);
-                    intent.putExtra("eventId", eventId);  // Assuming you have a variable 'eventId'
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(EventDetailActivity.this, "You are not authorized to view the waiting list.", Toast.LENGTH_SHORT).show();
-                }
+        waitingListButton.setOnClickListener(v -> {
+            // Check if the current user is the organizer
+            if (deviceId.equals(event.getOrganizerId())) {
+                Intent intent = new Intent(EventDetailActivity.this, EventWaitingListActivity.class);
+                intent.putExtra("eventId", eventId);
+                startActivity(intent);
+            } else {
+                Toast.makeText(EventDetailActivity.this, "You are not authorized to view the waiting list.", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -271,8 +248,8 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
             Glide.with(this).load(event.getPosterUrl()).into(posterImageView);
         }
 
-        if (event.getQrCodeUrl() != null && !event.getQrCodeUrl().isEmpty()) {
-            Glide.with(this).load(event.getQrCodeUrl()).into(qrCodeImageView);
+        if (event.getQrCode() != null && !event.getQrCode().isEmpty()) {
+            Glide.with(this).load(event.getQrCode()).into(qrCodeImageView);
         }
     }
 
@@ -321,10 +298,10 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
         declineInvitationButton.setVisibility(View.GONE);
     }
 
-
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == REQUEST_CODE_SELECT_POSTER && resultCode == RESULT_OK && data != null) {
             Uri imageUri = data.getData();
             // Use the EventController to update the poster

@@ -1,26 +1,28 @@
 // EventRepository.java
 package com.example.syntaxeventlottery;
 
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
-
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -68,7 +70,6 @@ public class EventRepository {
                     Log.e(TAG, "Error fetching events for organizerId: " + organizerId, e);
                 });
     }
-
 
     /**
      * Saves a new event to Firestore.
@@ -131,6 +132,12 @@ public class EventRepository {
                 })
                 .addOnCompleteListener(onCompleteListener);
     }
+    public void uploadImageToStorage(Uri imageUri, String path, OnCompleteListener<Uri> onCompleteListener) {
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(path);
+        storageRef.putFile(imageUri)
+                .continueWithTask(task -> storageRef.getDownloadUrl())
+                .addOnCompleteListener(onCompleteListener);
+    }
 
     /**
      * Callback interface for fetching event details.
@@ -175,7 +182,6 @@ public class EventRepository {
                 });
     }
 
-
     /**
      * Updates an existing event in the Firestore database.
      *
@@ -195,21 +201,6 @@ public class EventRepository {
                     }
                 });
     }
-
-    /**
-     * Uploads an image to Firebase Storage at the specified path and triggers a callback upon completion.
-     *
-     * @param imageUri           The URI of the image to upload.
-     * @param path               The storage path where the image will be uploaded.
-     * @param onCompleteListener The listener to be called upon completion of the upload.
-     */
-    public void uploadImageToStorage(Uri imageUri, String path, OnCompleteListener<Uri> onCompleteListener) {
-        StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(path);
-        storageRef.putFile(imageUri)
-                .continueWithTask(task -> storageRef.getDownloadUrl())
-                .addOnCompleteListener(onCompleteListener);
-    }
-
     /**
      * Saves a new event to Firestore with an optional image.
      *
@@ -241,34 +232,74 @@ public class EventRepository {
         }
     }
 
+
+    // QR code generation and saving functionality
+
     /**
-     * Saves the event to Firestore after generating and uploading the QR code.
+     * Generates a QR code bitmap from the provided content.
      *
-     * @param event    The event object to save.
+     * @param content The content to encode in the QR code.
+     * @return The generated QR code bitmap.
+     */
+    private Bitmap generateQRCodeBitmap(String content) {
+        QRCodeWriter writer = new QRCodeWriter();
+        try {
+            BitMatrix bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, 300, 300);
+            Bitmap bmp = Bitmap.createBitmap(300, 300, Bitmap.Config.RGB_565);
+            for (int x = 0; x < 300; x++) {
+                for (int y = 0; y < 300; y++) {
+                    bmp.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
+                }
+            }
+            return bmp;
+        } catch (Exception e) {
+            Log.e(TAG, "Error generating QR code bitmap", e);
+            return null;
+        }
+    }
+
+    /**
+     * Converts a bitmap image to a byte array.
+     *
+     * @param bitmap The bitmap image to convert.
+     * @return The byte array representation of the bitmap.
+     */
+    private byte[] bitmapToByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        return baos.toByteArray();
+    }
+
+    /**
+     * Saves an event to Firestore after generating and uploading its QR code.
+     *
+     * @param event    The event to save.
      * @param callback The callback to handle success or failure.
      */
-    private void saveEventWithQRCode(Event event, EventUpdateCallback callback) {
-        // Generate QR code bitmap
-        byte[] qrCodeData = event.bitmapToByteArray(event.generateQRCodeBitmap(event.getEventID()));
-        // Upload QR code to storage
-        uploadDataToStorage(qrCodeData, "qrcodes/" + event.getEventID() + ".png", task -> {
-            if (task.isSuccessful()) {
-                Uri downloadUri = task.getResult();
-                event.setQrCodeUrl(downloadUri.toString());
-                // Now save the event to Firestore
-                eventsRef.document(event.getEventID()).set(event)
-                        .addOnSuccessListener(aVoid -> {
-                            callback.onSuccess();
-                            Log.d(TAG, "Event saved successfully: " + event.getEventName());
-                        })
-                        .addOnFailureListener(e -> {
-                            callback.onFailure(e);
-                            Log.e(TAG, "Failed to save event: " + event.getEventName(), e);
-                        });
-            } else {
-                callback.onFailure(task.getException());
-            }
-        });
+    public void saveEventWithQRCode(Event event, EventUpdateCallback callback) {
+        Bitmap qrCodeBitmap = generateQRCodeBitmap(event.getEventID());
+        if (qrCodeBitmap != null) {
+            byte[] qrCodeData = bitmapToByteArray(qrCodeBitmap);
+            uploadDataToStorage(qrCodeData, "qrcodes/" + event.getEventID() + ".png", task -> {
+                if (task.isSuccessful()) {
+                    Uri downloadUri = task.getResult();
+                    event.setQrCode(downloadUri.toString());
+                    eventsRef.document(event.getEventID()).set(event)
+                            .addOnSuccessListener(aVoid -> {
+                                callback.onSuccess();
+                                Log.d(TAG, "Event saved successfully with QR code: " + event.getEventName());
+                            })
+                            .addOnFailureListener(e -> {
+                                callback.onFailure(e);
+                                Log.e(TAG, "Failed to save event: " + event.getEventName(), e);
+                            });
+                } else {
+                    callback.onFailure(task.getException());
+                }
+            });
+        } else {
+            callback.onFailure(new Exception("Failed to generate QR code"));
+        }
     }
 
     public void addParticipantToEvent(String eventId, String participantId, EventUpdateCallback callback) {
@@ -354,11 +385,9 @@ public class EventRepository {
             db.collection("notifications").document(notificationId)
                     .set(notification)
                     .addOnSuccessListener(aVoid -> {
-                        // Notification sent successfully
                         Log.d(TAG, "Notification sent to participant: " + participantId);
                     })
                     .addOnFailureListener(e -> {
-                        // Handle failure
                         Log.e(TAG, "Failed to send notification to participant: " + participantId, e);
                     });
         }

@@ -1,8 +1,8 @@
+// QRScanActivity.java
 package com.example.syntaxeventlottery;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,7 +34,7 @@ public class QRScanActivity extends AppCompatActivity implements QRCodeControlle
         IntentIntegrator integrator = new IntentIntegrator(this);
         integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
         integrator.setPrompt("Scan a QR code");
-        integrator.setCameraId(0);
+        integrator.setCameraId(0);  // Use a specific camera of the device
         integrator.setBeepEnabled(true);
         integrator.setBarcodeImageEnabled(true);
         integrator.initiateScan();
@@ -43,6 +43,8 @@ public class QRScanActivity extends AppCompatActivity implements QRCodeControlle
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        // Retrieve the result of the QR code scan
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
         if (result != null) {
             if (result.getContents() != null) {
@@ -56,12 +58,17 @@ public class QRScanActivity extends AppCompatActivity implements QRCodeControlle
         }
     }
 
+    // Callback when QR code is successfully scanned
     @Override
     public void onQRCodeScanned(String qrCode) {
-        qrCodeResult.setText("QR Code: " + qrCode);
-        Toast.makeText(this, "Scanned: " + qrCode, Toast.LENGTH_LONG).show();
+        // Assuming qrCode contains the eventID
+        Intent intent = new Intent(this, EventDetailActivity.class);
+        intent.putExtra("event_id", qrCode);
+        startActivity(intent);
+        finish(); // Close QRScanActivity if you don't want to return to it
     }
 
+    // Callback when there is an error scanning QR code
     @Override
     public void onError(String errorMessage) {
         qrCodeResult.setText("Error: " + errorMessage);

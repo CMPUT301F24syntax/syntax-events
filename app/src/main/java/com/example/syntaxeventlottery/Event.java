@@ -1,17 +1,8 @@
 package com.example.syntaxeventlottery;
 
-import android.graphics.Bitmap;
-import android.graphics.Color;
-
-import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.ServerTimestamp;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
 
-import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -40,7 +31,7 @@ public class Event implements Serializable {
 
     private String organizerId;
     private String posterUrl;
-    private String qrCodeUrl;
+    private String qrCode;
 
     /**
      * A list of participant IDs who have joined the event's waiting list.
@@ -95,16 +86,6 @@ public class Event implements Serializable {
         this.isDrawed = false;
         this.confirmedParticipants = new ArrayList<>();
     }
-
-    public Event(String eventID, String eventName, String description, String facility, Date startDate, Date endDate) {
-        this.eventID = eventID;
-        this.eventName = eventName;
-        this.description = description;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.confirmedParticipants = new ArrayList<>();
-    }
-
 
     // -------------------------------------------------------------------------
     // Getters and Setters
@@ -190,12 +171,12 @@ public class Event implements Serializable {
         this.posterUrl = posterUrl;
     }
 
-    public String getQrCodeUrl() {
-        return qrCodeUrl;
+    public String getQrCode() {
+        return qrCode;
     }
 
-    public void setQrCodeUrl(String qrCodeUrl) {
-        this.qrCodeUrl = qrCodeUrl;
+    public void setQrCode(String qrCode) {
+        this.qrCode = qrCode;
     }
 
     public List<String> getParticipants() {
@@ -214,10 +195,13 @@ public class Event implements Serializable {
         this.selectedParticipants = selectedParticipants;
     }
 
-    // -------------------------------------------------------------------------
-    // Participant Management Methods
-    // -------------------------------------------------------------------------
+    public List<String> getConfirmedParticipants() {
+        return confirmedParticipants;
+    }
 
+    public void setConfirmedParticipants(List<String> confirmedParticipants) {
+        this.confirmedParticipants = confirmedParticipants;
+    }
     /**
      * Adds a participant's ID to the event's participants list.
      *
@@ -229,7 +213,6 @@ public class Event implements Serializable {
             checkIfFull();
         }
     }
-
     /**
      * Removes a participant's ID from the event's participants list.
      *
@@ -239,7 +222,6 @@ public class Event implements Serializable {
         this.participants.remove(participantId);
         checkIfFull();
     }
-
     /**
      * Checks if the event is full based on capacity and updates the isFull flag.
      */
@@ -251,82 +233,6 @@ public class Event implements Serializable {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Utility Methods
-    // -------------------------------------------------------------------------
-
-    /**
-     * Generates a unique event ID based on the current timestamp and organizer ID.
-     *
-     * @param organizerId The ID of the organizer.
-     */
-    public void generateEventID(String organizerId) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
-        this.eventID = formatter.format(new Date()) + "_" + organizerId;
-    }
-
-    /**
-     * Generates a QR code bitmap for the event ID.
-     *
-     * @param content The content to encode in the QR code.
-     * @return The generated QR code bitmap.
-     */
-    @Exclude
-    public Bitmap generateQRCodeBitmap(String content) {
-        QRCodeWriter writer = new QRCodeWriter();
-        try {
-            BitMatrix bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, 300, 300);
-            Bitmap bmp = Bitmap.createBitmap(300, 300, Bitmap.Config.RGB_565);
-            for (int x = 0; x < 300; x++) {
-                for (int y = 0; y < 300; y++) {
-                    bmp.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
-                }
-            }
-            return bmp;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * Converts a bitmap image to a byte array.
-     *
-     * @param bitmap The bitmap image to convert.
-     * @return The byte array representation of the bitmap.
-     */
-    @Exclude
-    public byte[] bitmapToByteArray(Bitmap bitmap) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-        return baos.toByteArray();
-    }
-
-    /**
-     * Generates and sets the QR code URL for the event.
-     */
-    @Exclude
-    public void generateAndSetQRCodeUrl() {
-        Bitmap qrCodeBitmap = generateQRCodeBitmap(this.eventID);
-        if (qrCodeBitmap != null) {
-            // Code to upload QR code bitmap to Firebase Storage and set qrCodeUrl
-            // This should be handled in your repository or storage management code
-        }
-    }
-
-    public List<String> getConfirmedParticipants() {
-        return confirmedParticipants;
-    }
-
-    public void setConfirmedParticipants(List<String> confirmedParticipants) {
-        this.confirmedParticipants = confirmedParticipants;
-    }
-
-    /**
-     * String representation of the Event object.
-     *
-     * @return String detailing the event's attributes.
-     */
     @Override
     public String toString() {
         return "Event{" +
@@ -340,7 +246,7 @@ public class Event implements Serializable {
                 ", endDate=" + endDate +
                 ", organizerId='" + organizerId + '\'' +
                 ", posterUrl='" + posterUrl + '\'' +
-                ", qrCodeUrl='" + qrCodeUrl + '\'' +
+                ", qrCode='" + qrCode + '\'' +
                 ", participants=" + participants +
                 ", selectedParticipants=" + selectedParticipants +
                 '}';

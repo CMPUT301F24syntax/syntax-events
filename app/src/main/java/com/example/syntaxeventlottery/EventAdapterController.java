@@ -15,7 +15,7 @@ public class EventAdapterController {
         Intent intent = new Intent(context, EventDetailActivity.class);
         intent.putExtra("event_id", event.getEventID());
         intent.putExtra("poster_url", event.getPosterUrl());
-        intent.putExtra("qr_url", event.getQrCodeUrl());
+        intent.putExtra("qr_url", event.getQrCode());
         intent.putExtra("event_name", event.getEventName());
         intent.putExtra("event_description", event.getDescription());
         intent.putExtra("event_start_date", event.getStartDate().toString());
