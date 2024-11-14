@@ -2,6 +2,7 @@ package com.example.syntaxeventlottery;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,47 +20,27 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
 
-/**
- * The {@code AdminUserAdapter} class extends {@link ArrayAdapter} to provide a custom adapter
- * for displaying user profiles in a list view for administrators.
- */
 public class AdminUserAdapter extends ArrayAdapter<User> {
 
-    /** The context from which the adapter is created. */
-    private Context context;
+    private final Context context;
+    private final List<User> userList;
+    private final FirebaseFirestore db;
 
-    /** The list of users to display. */
-    private List<User> userList;
-
-    /**
-     * Constructs a new {@code AdminUserAdapter}.
-     *
-     * @param context  The current context.
-     * @param userList The list of users to be displayed.
-     */
     public AdminUserAdapter(Context context, List<User> userList) {
-        super(context, R.layout.item_admin_user, userList);
+        super(context, R.layout.admin_user_item, userList);
         this.context = context;
         this.userList = userList;
+        this.db = FirebaseFirestore.getInstance();
     }
 
-    /**
-     * Provides a view for an AdapterView.
-     *
-     * @param position    The position of the item within the adapter's data set.
-     * @param convertView The old view to reuse, if possible.
-     * @param parent      The parent that this view will eventually be attached to.
-     * @return A View corresponding to the data at the specified position.
-     */
     @NonNull
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        // Inflate the view if it's not already created
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.item_admin_user, parent, false);
+            convertView = LayoutInflater.from(context).inflate(R.layout.admin_user_item, parent, false);
         }
 
-        // Get the current user
+        // Get the current user based on position
         User user = userList.get(position);
 
         // Find and set views
@@ -70,22 +51,10 @@ public class AdminUserAdapter extends ArrayAdapter<User> {
         userName.setText(user.getUsername());
 
         // Load user profile image using Glide
-        Glide.with(context)
-                .load(user.getProfilePhotoUrl())
-                .placeholder(R.drawable.placeholder) // Optional placeholder
-                .error(R.drawable.error)             // Optional error image
-                .into(userImage);
+        Glide.with(context).load(user.getProfilePhotoUrl()).into(userImage);
 
-        // Set click listener to view user details
-        convertView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, AdminUserDetailActivity.class);
-            intent.putExtra("userID", user.getUserID());
-            intent.putExtra("username", user.getUsername());
-            intent.putExtra("email", user.getEmail());
-            intent.putExtra("phoneNumber", user.getPhoneNumber());
-            intent.putExtra("profilePhotoUrl", user.getProfilePhotoUrl());
-            context.startActivity(intent);
-        });
+        // Set click listener to fetch and show event details from the database
+        convertView.setOnClickListener(v -> fetchUserDetailsAndShow(user.getUserID()));
 
         // Delete button functionality
         deleteButton.setOnClickListener(v -> {
@@ -100,13 +69,30 @@ public class AdminUserAdapter extends ArrayAdapter<User> {
         return convertView;
     }
 
-    /**
-     * Deletes a user profile from the database and updates the adapter.
-     *
-     * @param userID The unique identifier of the user to delete.
-     */
+    private void fetchUserDetailsAndShow(String userID) {
+        db.collection("Users").document(userID)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        // Prepare intent to start AdminEventDetailActivity
+                        Intent intent = new Intent(context, AdminUserDetailActivity.class);
+                        intent.putExtra("userID", userID);
+                        intent.putExtra("username", documentSnapshot.getString("username"));
+                        intent.putExtra("email", documentSnapshot.getString("email"));
+                        intent.putExtra("facility", documentSnapshot.getString("facility"));
+                        intent.putExtra("phoneNumber", documentSnapshot.getString("phoneNumber"));
+                        intent.putExtra("profilePhotoUrl", documentSnapshot.getString("profilePhotoUrl"));
+                        context.startActivity(intent);
+                    } else {
+                        Toast.makeText(context, "User not found in the database.", Toast.LENGTH_SHORT).show();
+                        Log.d("AdminUserAdapter","user ID is :"+userID);
+                    }
+                })
+                .addOnFailureListener(e -> Toast.makeText(context, "Failed to load user details", Toast.LENGTH_SHORT).show());
+
+    }
+
     private void deleteUserProfile(String userID) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Users").document(userID)
                 .delete()
                 .addOnSuccessListener(aVoid -> {

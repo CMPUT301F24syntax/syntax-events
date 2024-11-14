@@ -81,14 +81,14 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         // Set click listener for each event item to open EventDetailActivity
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, EventDetailActivity.class);
-            intent.putExtra("event_id", event.getEventID()); // Pass the event ID to the detail activity
-            intent.putExtra("poster_url", event.getPosterUrl()); // Pass poster URL
-            intent.putExtra("qr_url", event.getQrCode()); // Pass QR code URL
-            intent.putExtra("event_name", event.getEventName());
-            intent.putExtra("event_description", event.getDescription()); // Pass description
-            intent.putExtra("event_start_date", event.getStartDate().toString());
-            intent.putExtra("event_end_date", event.getEndDate().toString());
-            intent.putExtra("event_capacity", event.getCapacity());
+            intent.putExtra("eventID", event.getEventID()); // Pass the event ID to the detail activity
+            intent.putExtra("posterUrl", event.getPosterUrl()); // Pass poster URL
+            intent.putExtra("qrCode", event.getQrCode()); // Pass QR code URL
+            intent.putExtra("eventName", event.getEventName());
+            intent.putExtra("description", event.getDescription()); // Pass description
+            intent.putExtra("startDate", event.getStartDate().toString());
+            intent.putExtra("endDate", event.getEndDate().toString());
+            intent.putExtra("capacity", event.getCapacity());
             context.startActivity(intent);
         });
     }

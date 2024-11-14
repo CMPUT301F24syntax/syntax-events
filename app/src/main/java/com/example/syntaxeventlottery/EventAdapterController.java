@@ -13,14 +13,14 @@ public class EventAdapterController {
 
     public void onEventItemClicked(Event event) {
         Intent intent = new Intent(context, EventDetailActivity.class);
-        intent.putExtra("event_id", event.getEventID());
-        intent.putExtra("poster_url", event.getPosterUrl());
-        intent.putExtra("qr_url", event.getQrCode());
-        intent.putExtra("event_name", event.getEventName());
-        intent.putExtra("event_description", event.getDescription());
-        intent.putExtra("event_start_date", event.getStartDate().toString());
-        intent.putExtra("event_end_date", event.getEndDate().toString());
-        intent.putExtra("event_capacity", event.getCapacity());
+        intent.putExtra("eventID", event.getEventID());
+        intent.putExtra("posterUrl", event.getPosterUrl());
+        intent.putExtra("qrCode", event.getQrCode());
+        intent.putExtra("eventName", event.getEventName());
+        intent.putExtra("description", event.getDescription());
+        intent.putExtra("startDate", event.getStartDate().toString());
+        intent.putExtra("endDate", event.getEndDate().toString());
+        intent.putExtra("capacity", event.getCapacity());
         context.startActivity(intent);
     }
 }

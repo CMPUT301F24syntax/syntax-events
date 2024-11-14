@@ -1,11 +1,20 @@
 package com.example.syntaxeventlottery;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.bumptech.glide.Glide;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.DocumentReference;
 
 /**
  * The {@code AdminUserDetailActivity} class displays detailed information about a user
@@ -13,59 +22,109 @@ import com.bumptech.glide.Glide;
  */
 public class AdminUserDetailActivity extends AppCompatActivity {
 
-    /** Button to navigate back to the previous activity. */
-    private Button backButton;
+    private Button backButton, deleteImageButton, deleteFacilityButton;
+    private TextView userName, userId, userEmail, userPhone, userFacility;
+    private ImageView profileImageView;
+    private FirebaseFirestore db;
+    private String userID;
 
-    /** TextView for displaying the user's name. */
-    private TextView userName;
-
-    /** TextView for displaying the user's ID. */
-    private TextView userId;
-
-    /** TextView for displaying the user's email. */
-    private TextView userEmail;
-
-    /** TextView for displaying the user's phone number. */
-    private TextView userPhone;
-
-    /** ImageView for displaying the user's profile image. */
-    private ImageView userImage;
-
-    /**
-     * Called when the activity is first created.
-     *
-     * @param savedInstanceState If the activity is being re-initialized after previously being shut down,
-     *                           then this Bundle contains the data it most recently supplied in
-     *                           {@link #onSaveInstanceState}. <b>Note: Otherwise, it is null.</b>
-     */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_admin_user_detail);
+        setContentView(R.layout.admin_user_detail);
 
-        // Back Button
-        backButton = findViewById(R.id.backButton);
-        backButton.setOnClickListener(v -> finish()); // Finish the activity to go back
+        // Initialize Firebase Firestore
+        db = FirebaseFirestore.getInstance();
 
         // Initialize views
+        backButton = findViewById(R.id.backButton);
+        deleteImageButton = findViewById(R.id.deleteImageButton);
+        deleteFacilityButton = findViewById(R.id.deleteFacilityButton);
         userName = findViewById(R.id.detailUserName);
         userId = findViewById(R.id.detailUserId);
         userEmail = findViewById(R.id.detailUserEmail);
         userPhone = findViewById(R.id.detailUserPhone);
-        userImage = findViewById(R.id.detailUserImage);
+        profileImageView = findViewById(R.id.detailUserImage);
+        userFacility = findViewById(R.id.detailUserFacility);
 
-        // Get data from intent
-        String name = getIntent().getStringExtra("username");
-        String id = getIntent().getStringExtra("userID");
-        String email = getIntent().getStringExtra("email");
-        String phone = getIntent().getStringExtra("phoneNumber");
-        String profilePhotoUrl = getIntent().getStringExtra("profilePhotoUrl");
+        // Get intent data
+        Intent intent = getIntent();
+        userID = intent.getStringExtra("userID");
+        String username = intent.getStringExtra("username");
+        String email = intent.getStringExtra("email");
+        String phoneNumber = intent.getStringExtra("phoneNumber");
+        String profilePhotoUrl = intent.getStringExtra("profilePhotoUrl");
+        String facility = intent.getStringExtra("facility");
 
         // Set data to views
-        userName.setText(name);
-        userId.setText(id);
+        userName.setText(username);
+        userId.setText(userID);
         userEmail.setText(email);
-        userPhone.setText(phone);
-        Glide.with(this).load(profilePhotoUrl).into(userImage);
+        userPhone.setText(phoneNumber);
+        userFacility.setText(facility);
+
+        // Load profile image using Glide
+        if (profilePhotoUrl != null && !profilePhotoUrl.isEmpty()) {
+            Glide.with(this)
+                    .load(profilePhotoUrl)
+                    .placeholder(R.drawable.ic_avatar_placeholder)
+                    .into(profileImageView);
+        } else {
+            profileImageView.setImageResource(R.drawable.ic_avatar_placeholder); // Set a default avatar if no URL
+        }
+
+        // Set up back button functionality
+        backButton.setOnClickListener(v -> finish());
+
+        // Set up delete image button functionality
+        deleteImageButton.setOnClickListener(v -> deleteProfileImage());
+
+        // Set up delete facility button functionality
+        deleteFacilityButton.setOnClickListener(v -> deleteFacility());
+    }
+
+    /**
+     * Deletes the facility information in Firestore and updates the UI.
+     */
+    private void deleteFacility() {
+        if (userID != null) {
+            DocumentReference userRef = db.collection("Users").document(userID);
+            userRef.update("facility", null)
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, "Facility deleted", Toast.LENGTH_SHORT).show();
+                        userFacility.setText("No Facility"); // Update the UI to indicate no facility
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("AdminUserDetailActivity", "Failed to delete facility", e);
+                        Toast.makeText(this, "Failed to delete facility", Toast.LENGTH_SHORT).show();
+                    });
+        } else {
+            Toast.makeText(this, "User ID not found", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Deletes the user's profile image URL from Firestore and sets a placeholder image.
+     */
+    private void deleteProfileImage() {
+        String defaultProfileUrl = "https://firebasestorage.googleapis.com/v0/b/scanapp-7e377.appspot.com/o/default_profile.png?alt=media&token=78049996-0de6-487f-85a8-53e5330f9896"; // Firebase Storage default URL
+        if (userId != null) {
+            DocumentReference eventRef = db.collection("Users").document(userID);
+            eventRef.update("profilePhotoUrl", defaultProfileUrl) // update Firestore QR code
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, "profile image reset to default", Toast.LENGTH_SHORT).show();
+                        // use Glide show default picture
+                        Glide.with(this)
+                                .load(defaultProfileUrl)
+                                .placeholder(R.drawable.ic_avatar_placeholder)
+                                .into(profileImageView);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("AdminUserDetailActivity", "Failed to reset profile URL in Firestore", e);
+                        Toast.makeText(this, "Failed to reset profile URL in Firestore", Toast.LENGTH_SHORT).show();
+                    });
+        } else {
+            Toast.makeText(this, "User ID not found", Toast.LENGTH_SHORT).show();
+        }
     }
 }

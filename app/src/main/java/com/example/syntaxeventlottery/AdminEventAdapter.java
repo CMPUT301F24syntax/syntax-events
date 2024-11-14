@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
@@ -29,6 +30,7 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
 
     private Context context;
     private List<Event> eventList;
+    private FirebaseFirestore db;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
 
     /**
@@ -38,9 +40,10 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
      * @param eventList The list of events to display.
      */
     public AdminEventAdapter(Context context, List<Event> eventList) {
-        super(context, R.layout.admin_item_event, eventList);
+        super(context, R.layout.admin_event_item, eventList);
         this.context = context;
         this.eventList = eventList;
+        this.db = FirebaseFirestore.getInstance();
     }
 
     /**
@@ -56,7 +59,7 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
     public View getView(int position, View convertView, ViewGroup parent) {
         // Inflate the view if it's not already created
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.admin_item_event, parent, false);
+            convertView = LayoutInflater.from(context).inflate(R.layout.admin_event_item, parent, false);
         }
 
         // Get the current event
@@ -75,16 +78,8 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
         // Load the event poster image using Glide
         Glide.with(context).load(event.getPosterUrl()).into(posterImage);
 
-        // Set click listener for the item to show event details
-        convertView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, AdminEventDetailActivity.class);
-            intent.putExtra("eventID", event.getEventID());
-            intent.putExtra("eventName", event.getEventName());
-            intent.putExtra("description", event.getDescription());
-            intent.putExtra("startDate", dateFormat.format(event.getStartDate()));
-            intent.putExtra("endDate", dateFormat.format(event.getEndDate()));
-            context.startActivity(intent);
-        });
+        // Set click listener to fetch and show event details from the database
+        convertView.setOnClickListener(v -> fetchEventDetailsAndShow(event.getEventID()));
 
         // Delete button functionality
         Button deleteButton = convertView.findViewById(R.id.deleteButton);
@@ -101,12 +96,40 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
     }
 
     /**
+     * Fetches event details from the database and starts the AdminEventDetailActivity to display them.
+     *
+     * @param eventID The unique identifier of the event to fetch.
+     */
+    private void fetchEventDetailsAndShow(String eventID) {
+        db.collection("events").document(eventID)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        // Prepare intent to start AdminEventDetailActivity
+                        Intent intent = new Intent(context, AdminEventDetailActivity.class);
+                        intent.putExtra("eventID", eventID);
+                        intent.putExtra("eventName", documentSnapshot.getString("eventName"));
+                        intent.putExtra("description", documentSnapshot.getString("description"));
+                        intent.putExtra("facility", documentSnapshot.getString("facility"));
+                        intent.putExtra("capacity", documentSnapshot.getLong("capacity").intValue());
+                        intent.putExtra("startDate", documentSnapshot.getDate("startDate"));
+                        intent.putExtra("endDate", documentSnapshot.getDate("endDate"));
+                        intent.putExtra("posterUrl", documentSnapshot.getString("posterUrl"));
+                        intent.putExtra("qrCode", documentSnapshot.getString("qrCode"));
+                        context.startActivity(intent);
+                    } else {
+                        Toast.makeText(context, "Event not found in the database.", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> Toast.makeText(context, "Failed to load event details", Toast.LENGTH_SHORT).show());
+    }
+
+    /**
      * Deletes an event from the database and updates the adapter.
      *
      * @param eventID The unique identifier of the event to delete.
      */
     private void deleteEvent(String eventID) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("events").document(eventID)
                 .delete()
                 .addOnSuccessListener(aVoid -> {

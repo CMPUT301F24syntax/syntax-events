@@ -65,13 +65,12 @@ public class Event implements Serializable {
      * @param eventID       Unique identifier for the event.
      * @param eventName     Name of the event.
      * @param description   Description of the event.
-     * @param facility      Location or facility where the event is held.
      * @param capacity      Maximum capacity of participants.
      * @param startDate     Start date and time of the event.
      * @param endDate       End date and time of the event.
      * @param organizerId   ID of the organizer creating the event.
      */
-    public Event(String eventID, String eventName, String description, String facility, int capacity,
+    public Event(String eventID, String eventName, String description, int capacity,
                  Date startDate, Date endDate, String organizerId) {
         this.eventID = eventID;
         this.eventName = eventName;

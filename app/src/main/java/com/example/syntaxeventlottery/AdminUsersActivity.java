@@ -16,34 +16,14 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * The {@code AdminUsersActivity} class displays a list of users to the administrator.
- * It fetches user data from Firebase Firestore and populates a ListView using an adapter.
- */
 public class AdminUsersActivity extends AppCompatActivity {
 
-    /** The ListView that displays the list of users. */
     private ListView listViewUsers;
-
-    /** The adapter that bridges between the ListView and the data source. */
     private AdminUserAdapter userAdapter;
-
-    /** The list of users fetched from the database. */
     private List<User> userList;
-
-    /** The back button to navigate to the previous activity. */
     private Button backButton;
-
-    /** The Firebase Firestore instance used to access the database. */
     private FirebaseFirestore db;
 
-    /**
-     * Called when the activity is first created.
-     *
-     * @param savedInstanceState If the activity is being re-initialized after previously being shut down,
-     *                           then this Bundle contains the data it most recently supplied in
-     *                           {@link #onSaveInstanceState}. <b>Note: Otherwise, it is null.</b>
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,9 +46,6 @@ public class AdminUsersActivity extends AppCompatActivity {
         loadUsersFromDatabase();
     }
 
-    /**
-     * Loads users from the Firestore database and updates the ListView.
-     */
     private void loadUsersFromDatabase() {
         // Reference to the "Users" collection
         CollectionReference usersRef = db.collection("Users");
@@ -91,7 +68,7 @@ public class AdminUsersActivity extends AppCompatActivity {
 
                                 // Make sure all required fields are present
                                 if (userID != null && username != null) {
-                                    User user = new User(userID, username, email, phoneNumber, profilePhotoUrl, facility);
+                                    User user = new User(userID, email, phoneNumber, profilePhotoUrl, username, facility);
                                     userList.add(user);
                                 }
                             }
@@ -99,6 +76,7 @@ public class AdminUsersActivity extends AppCompatActivity {
                             userAdapter.notifyDataSetChanged();
                         } else {
                             Toast.makeText(this, "No users found in the database.", Toast.LENGTH_SHORT).show();
+                            Log.d("AdminUserActivity","aaaaaaaaaaaaaaa");
                         }
                     } else {
                         Log.e("AdminUsersActivity", "Error getting documents: ", task.getException());

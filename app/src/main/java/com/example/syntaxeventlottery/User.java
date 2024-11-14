@@ -29,8 +29,9 @@ public class User {
 
     // Method to generate a unique, shorter userID
     private String generateUserID() {
-        long timestamp = System.currentTimeMillis() % 10000;
-        return username + "_" + timestamp;
+        // long timestamp = System.currentTimeMillis() % 10000;
+        // return username + "_" + timestamp;
+        return this.deviceCode;
     }
 
     // Getters and Setters
