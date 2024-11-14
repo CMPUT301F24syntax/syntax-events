@@ -1,12 +1,22 @@
+// UserRepository.java
+
 package com.example.syntaxeventlottery;
 
 import android.content.Context;
 import android.net.Uri;
 import android.provider.Settings;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
+
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+
+import java.util.Objects;
 
 /**
  * Manages data operations related to users, including Entrants.
@@ -14,9 +24,11 @@ import com.google.firebase.storage.StorageReference;
 public class UserRepository {
 
     private FirebaseFirestore db;
+    private FirebaseStorage storage;
 
     public UserRepository() {
-        db = FirebaseFirestore.getInstance();
+        this.db = FirebaseFirestore.getInstance();
+        this.storage = FirebaseStorage.getInstance();
     }
 
     // -------------------------------------------------------------------------
@@ -54,6 +66,31 @@ public class UserRepository {
     }
 
     /**
+     * Updates the Entrant's profile in Firestore.
+     *
+     * @param userId    The unique ID of the entrant.
+     * @param entrant   The Entrant object containing updated data.
+     * @param listener  Callback to handle success or failure.
+     */
+    public void updateEntrant(String userId, Entrant entrant, OnEntrantUpdateListener listener) {
+        if (userId == null || userId.isEmpty()) {
+            listener.onEntrantUpdateError(new IllegalArgumentException("User ID cannot be null or empty"));
+            return;
+        }
+
+        DocumentReference docRef = db.collection("Users").document(userId);
+        docRef.set(entrant)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("UserRepository", "Entrant updated successfully.");
+                    listener.onEntrantUpdateSuccess();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("UserRepository", "Error updating Entrant: ", e);
+                    listener.onEntrantUpdateError(e);
+                });
+    }
+
+    /**
      * Retrieves an Entrant's data from Firebase using the device ID.
      *
      * @param context  The context to access system services.
@@ -85,20 +122,21 @@ public class UserRepository {
     }
 
     /**
-     * Updates or creates an Entrant's data in Firebase.
+     * Updates a specific field of an Entrant's profile in Firestore.
      *
      * @param userId   The unique ID of the entrant.
-     * @param entrant  The Entrant object containing updated data.
-     * @param listener Callback to handle success or errors.
+     * @param field    The field to update.
+     * @param value    The new value for the field.
+     * @param listener Callback to handle success or failure.
      */
-    public void updateEntrant(String userId, Entrant entrant, OnEntrantUpdateListener listener) {
+    public void updateEntrant(String userId, String field, Object value, OnEntrantUpdateListener listener) {
         if (userId == null || userId.isEmpty()) {
-            listener.onEntrantUpdateError(new Exception("User ID is null or empty"));
+            listener.onEntrantUpdateError(new IllegalArgumentException("User ID cannot be null or empty"));
             return;
         }
 
         db.collection("Users").document(userId)
-                .set(entrant)
+                .update(field, value)
                 .addOnSuccessListener(aVoid -> listener.onEntrantUpdateSuccess())
                 .addOnFailureListener(listener::onEntrantUpdateError);
     }
@@ -111,8 +149,13 @@ public class UserRepository {
      * @param listener Callback to handle the upload result.
      */
     public void uploadProfilePhoto(String userId, Uri fileUri, OnUploadCompleteListener listener) {
+        if (userId == null || userId.isEmpty()) {
+            listener.onUploadFailure(new IllegalArgumentException("User ID cannot be null or empty"));
+            return;
+        }
+
         String fileName = "images/" + userId + "/profile.jpg";
-        StorageReference fileRef = FirebaseStorage.getInstance().getReference().child(fileName);
+        StorageReference fileRef = storage.getReference().child(fileName);
 
         fileRef.putFile(fileUri)
                 .addOnSuccessListener(taskSnapshot -> fileRef.getDownloadUrl().addOnSuccessListener(uri -> {
@@ -131,8 +174,13 @@ public class UserRepository {
      * @param listener Callback to handle the deletion result.
      */
     public void deleteProfilePhoto(String userId, OnDeleteCompleteListener listener) {
+        if (userId == null || userId.isEmpty()) {
+            listener.onDeleteFailure(new IllegalArgumentException("User ID cannot be null or empty"));
+            return;
+        }
+
         String fileName = "images/" + userId + "/profile.jpg";
-        StorageReference fileRef = FirebaseStorage.getInstance().getReference().child(fileName);
+        StorageReference fileRef = storage.getReference().child(fileName);
 
         fileRef.delete()
                 .addOnSuccessListener(aVoid -> listener.onDeleteSuccess())

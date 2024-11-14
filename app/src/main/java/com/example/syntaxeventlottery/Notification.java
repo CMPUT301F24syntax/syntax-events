@@ -1,5 +1,4 @@
-
-
+// Notification.java
 package com.example.syntaxeventlottery;
 
 import com.google.firebase.firestore.ServerTimestamp;
@@ -35,21 +34,31 @@ public class Notification {
         return deviceId;
     }
 
+    public void setDeviceId(String deviceId) { this.deviceId = deviceId; }
+
     public String getEventId() {
         return eventId;
     }
+
+    public void setEventId(String eventId) { this.eventId = eventId; }
 
     public String getMessage() {
         return message;
     }
 
+    public void setMessage(String message) { this.message = message; }
+
     public boolean isRead() {
         return read;
     }
 
+    public void setRead(boolean read) { this.read = read; }
+
     public Date getTimestamp() {
         return timestamp;
     }
+
+    public void setTimestamp(Date timestamp) { this.timestamp = timestamp; }
 
     public String getFormattedTimestamp() {
         if (timestamp != null) {
