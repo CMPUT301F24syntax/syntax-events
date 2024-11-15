@@ -1,26 +1,19 @@
 package com.example.syntaxeventlottery;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
-import android.widget.ListView;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldPath;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.google.android.material.snackbar.Snackbar;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,90 +21,110 @@ import java.util.List;
  */
 public class NotificationCenterActivity extends AppCompatActivity {
 
-    private FirebaseFirestore db;
-    private String deviceId;
-    private ListView notificationListView;
-    private ArrayAdapter<String> adapter;
-    private List<String> notificationMessages;
-    private List<String> notificationIds;
-    private ImageButton backButton; // Back Button
+    private static final String TAG = "NotificationCenterActivity";
+    RecyclerView notificationRecyclerView;
+    private NotificationAdapter adapter;
+    private ImageButton backButton;
+    private NotificationController notificationController;
+    private String userId; // Using Device ID
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notification_center);
 
-        // Initialize Firebase Firestore
-        db = FirebaseFirestore.getInstance();
+        // Initialize userId
+        userId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        Log.d(TAG, "User ID (Device ID): " + userId);
 
-        // Get deviceId
-        deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        notificationRecyclerView = findViewById(R.id.notificationRecyclerView);
+        backButton = findViewById(R.id.backButton);
 
-        // Initialize UI components
-        notificationListView = findViewById(R.id.notificationListView);
-        backButton = findViewById(R.id.backButton); // Initialize Back Button
+        adapter = new NotificationAdapter(this);
+        notificationRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        notificationRecyclerView.setAdapter(adapter);
 
-        notificationMessages = new ArrayList<>();
-        notificationIds = new ArrayList<>();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, notificationMessages);
-        notificationListView.setAdapter(adapter);
+        notificationController = new NotificationController();
 
-        // Load notifications
-        loadNotifications();
-
-        // Set item click listener to mark as read when clicked
-        notificationListView.setOnItemClickListener((parent, view, position, id) -> {
-            String notificationId = notificationIds.get(position);
-            markNotificationAsRead(notificationId);
-            Toast.makeText(NotificationCenterActivity.this, "Notification marked as read", Toast.LENGTH_SHORT).show();
-        });
-
-        // Set click listener for Back Button
+        // Set up back button
         backButton.setOnClickListener(v -> finish());
-    }
 
-    /**
-     * Loads unread notifications for the current user.
-     */
-    private void loadNotifications() {
-        db.collection("notifications")
-                .whereEqualTo("deviceId", deviceId)
-                .whereEqualTo("isRead", false)
-                .orderBy("timestamp", Query.Direction.DESCENDING)
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        QuerySnapshot snapshots = task.getResult();
-                        if (snapshots != null && !snapshots.isEmpty()) {
-                            notificationMessages.clear();
-                            notificationIds.clear();
-                            for (DocumentSnapshot doc : snapshots.getDocuments()) {
-                                String message = doc.getString("message");
-                                notificationMessages.add(message);
-                                notificationIds.add(doc.getId());
-                                Log.d("NotificationCenter", "Loaded notification: " + message);
-                            }
-                            adapter.notifyDataSetChanged();
-                        } else {
-                            Toast.makeText(NotificationCenterActivity.this, "No new notifications", Toast.LENGTH_SHORT).show();
-                            Log.d("NotificationCenter", "No notifications found for deviceId: " + deviceId);
-                        }
-                    } else {
-                        Log.w("NotificationCenter", "Error getting documents.", task.getException());
-                        Toast.makeText(NotificationCenterActivity.this, "Failed to load notifications", Toast.LENGTH_SHORT).show();
+        // Set up item click listener
+        adapter.setOnItemClickListener(new NotificationAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(Notification notification) {
+                // Optimistically remove the notification from the adapter
+                adapter.removeNotificationById(notification.getId());
+
+                // Mark the notification as read
+                notificationController.markAsRead(notification.getId(), new NotificationController.NotificationUpdateListener() {
+                    @Override
+                    public void onUpdateSuccess() {
+                        Toast.makeText(NotificationCenterActivity.this, "Notification marked as read", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onUpdateFailure(Exception e) {
+                        Toast.makeText(NotificationCenterActivity.this, "Failed to update notification", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Failed to mark notification as read", e);
+                        // Optionally, you can re-add the notification to the adapter if marking as read fails
+                        adapter.addNotification(notification);
                     }
                 });
+
+                // Navigate to EventDetailActivity with eventId
+                String eventId = notification.getEventId();
+                if (eventId != null && !eventId.isEmpty()) {
+                    Intent intent = new Intent(NotificationCenterActivity.this, EventDetailActivity.class);
+                    intent.putExtra("event_id", eventId);
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(NotificationCenterActivity.this, "Invalid event ID", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Notification has invalid eventId: " + eventId);
+                }
+            }
+        });
+
+        // Start listening for notifications
+        listenNotifications();
     }
 
     /**
-     * Marks a notification as read.
-     *
-     * @param notificationId The ID of the notification to mark as read.
+     * Start real-time listening for unread notifications
      */
-    private void markNotificationAsRead(String notificationId) {
-        db.collection("notifications").document(notificationId)
-                .update("isRead", true)
-                .addOnSuccessListener(aVoid -> Log.d("NotificationCenter", "Notification marked as read"))
-                .addOnFailureListener(e -> Log.e("NotificationCenter", "Failed to mark notification as read", e));
+    private void listenNotifications() {
+        Log.d(TAG, "Listening for notifications with userId: " + userId);
+        notificationController.listenUnreadNotifications(userId, new NotificationController.NotificationFetchListener() {
+            @Override
+            public void onFetchSuccess(List<Notification> notifications) {
+                runOnUiThread(() -> {
+                    if (notifications.isEmpty()) {
+                        showSnackbar("No new notifications");
+                        Log.d(TAG, "No notifications found for userId: " + userId);
+                    } else {
+                        adapter.setNotifications(notifications);
+                        Log.d(TAG, "Total notifications loaded: " + notifications.size());
+                    }
+                });
+            }
+
+            @Override
+            public void onFetchFailure(Exception e) {
+                runOnUiThread(() -> {
+                    showSnackbar("Failed to load notifications: " + e.getMessage());
+                    Log.e(TAG, "Error fetching notifications", e);
+                });
+            }
+        });
+    }
+
+    /**
+     * Display a Snackbar message
+     *
+     * @param message The message to display
+     */
+    private void showSnackbar(String message) {
+        View rootView = findViewById(android.R.id.content);
+        Snackbar.make(rootView, message, Snackbar.LENGTH_SHORT).show();
     }
 }

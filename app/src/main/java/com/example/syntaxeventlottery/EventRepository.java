@@ -315,7 +315,44 @@ public class EventRepository {
     }
 
     /**
-     * Performs the draw to select participants and sends notifications to unselected participants.
+     * Sends notifications to participants.
+     *
+     * @param participantIds List of participant device IDs.
+     * @param eventId        The ID of the event.
+     * @param eventName      The name of the event.
+     * @param isSelected     Flag indicating if the participants are selected.
+     */
+    private void sendNotifications(List<String> participantIds, String eventId, String eventName, boolean isSelected) {
+        for (String participantId : participantIds) {
+            Notification notification = new Notification();
+            notification.setDeviceId(participantId);
+            notification.setEventId(eventId);
+            if (isSelected) {
+                notification.setMessage("🎉 Congratulations! You have been selected for the event: " + eventName);
+            } else {
+                notification.setMessage("😞 Unfortunately, you were not selected for the event: " + eventName);
+            }
+            notification.setRead(false);
+            notification.setTimestamp(new Date());
+
+            // Generate a unique ID for the notification
+            String notificationId = db.collection("notifications").document().getId();
+            notification.setId(notificationId);
+
+            // Save the notification to Firestore
+            db.collection("notifications").document(notificationId)
+                    .set(notification)
+                    .addOnSuccessListener(aVoid -> {
+                        Log.d(TAG, "Notification sent to participant: " + participantId);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Failed to send notification to participant: " + participantId, e);
+                    });
+        }
+    }
+
+    /**
+     * Performs the draw to select participants and sends notifications to all participants.
      *
      * @param eventId  The ID of the event.
      * @param callback The callback to handle success or failure.
@@ -343,11 +380,16 @@ public class EventRepository {
                             // Update the event in Firestore
                             eventsRef.document(eventId).set(event)
                                     .addOnSuccessListener(aVoid -> {
-                                        // Send notifications to unselected participants
+                                        // Send notifications to selected participants
+                                        sendNotifications(selectedParticipants, eventId, event.getEventName(), true);
+
+                                        // Determine unselected participants
                                         List<String> unselectedParticipants = new ArrayList<>(participants);
                                         unselectedParticipants.removeAll(selectedParticipants);
 
-                                        sendNotificationsToUnselectedParticipants(unselectedParticipants, eventId, event.getEventName());
+                                        // Send notifications to unselected participants
+                                        sendNotifications(unselectedParticipants, eventId, event.getEventName(), false);
+
                                         callback.onSuccess();
                                     })
                                     .addOnFailureListener(e -> callback.onFailure(e));
@@ -359,38 +401,6 @@ public class EventRepository {
                     }
                 })
                 .addOnFailureListener(e -> callback.onFailure(e));
-    }
-
-    /**
-     * Sends notifications to unselected participants after the draw.
-     *
-     * @param unselectedParticipants List of participant IDs who were not selected.
-     * @param eventId                The ID of the event.
-     * @param eventName              The name of the event.
-     */
-    private void sendNotificationsToUnselectedParticipants(List<String> unselectedParticipants, String eventId, String eventName) {
-        for (String participantId : unselectedParticipants) {
-            Notification notification = new Notification();
-            notification.setDeviceId(participantId);
-            notification.setEventId(eventId);
-            notification.setMessage("You were not selected for the event: " + eventName);
-            notification.setRead(false);
-            notification.setTimestamp(new Date());
-
-            // Generate a unique ID for the notification
-            String notificationId = db.collection("notifications").document().getId();
-            notification.setId(notificationId);
-
-            // Save the notification to Firestore
-            db.collection("notifications").document(notificationId)
-                    .set(notification)
-                    .addOnSuccessListener(aVoid -> {
-                        Log.d(TAG, "Notification sent to participant: " + participantId);
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e(TAG, "Failed to send notification to participant: " + participantId, e);
-                    });
-        }
     }
 
     public void acceptInvitation(String eventId, String participantId, EventUpdateCallback callback) {

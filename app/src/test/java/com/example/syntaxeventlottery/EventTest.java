@@ -79,7 +79,7 @@ public class EventTest {
         // sleep for 1 second to create small time difference
         Thread.sleep(1000);
         // Generate event ID
-        event.generateEventID(event.getOrganizerId());
+        //event.generateEventID(event.getOrganizerId());
         String eventID = event.getEventID();
 
         String[] arrayEventID = eventID.split("_");
