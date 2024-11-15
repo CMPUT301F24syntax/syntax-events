@@ -138,7 +138,7 @@ public class UserHomeActivity extends AppCompatActivity {
                             if (startDate != null && endDate != null) {
                                 int capacity = document.getLong("capacity").intValue();
 
-                                Event event = new Event(eventID, eventName, description, facility, capacity, startDate, endDate, qrCode);
+                                Event event = new Event(eventID, eventName, description, capacity, startDate, endDate, qrCode);
                                 event.setEventID(eventID);
                                 event.setQrCode(qrCode);
                                 event.setPosterUrl(posterUrl);

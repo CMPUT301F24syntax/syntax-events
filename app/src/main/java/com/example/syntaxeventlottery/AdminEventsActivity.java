@@ -65,7 +65,6 @@ public class AdminEventsActivity extends AppCompatActivity {
                                 String eventID = document.getString("eventID");
                                 String eventName = document.getString("eventName");
                                 String description = document.getString("description");
-                                String facility = document.getString("facility");
                                 int capacity = document.getLong("capacity").intValue();
                                 Date startDate = document.getDate("startDate");
                                 Date endDate = document.getDate("endDate");
@@ -74,7 +73,9 @@ public class AdminEventsActivity extends AppCompatActivity {
                                 String qrCode = document.getString("qrCode");
 
                                 // Create Event object and add it to the list
-                                Event event = new Event(eventID, eventName, description, facility, capacity, startDate, endDate, organizerId);
+                                // public Event(String eventID, String eventName, String description, String facility, int capacity,
+                                //                 Date startDate, Date endDate, String organizerId)
+                                Event event = new Event(eventID, eventName, description, capacity, startDate, endDate, organizerId);
                                 event.setPosterUrl(posterUrl);
                                 event.setQrCode(qrCode);
 

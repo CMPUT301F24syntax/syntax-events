@@ -68,7 +68,7 @@ public class AdminUsersActivity extends AppCompatActivity {
 
                                 // Make sure all required fields are present
                                 if (userID != null && username != null) {
-                                    User user = new User(userID, username, email, phoneNumber, profilePhotoUrl,facility);
+                                    User user = new User(userID, email, phoneNumber, profilePhotoUrl, username, facility);
                                     userList.add(user);
                                 }
                             }
@@ -76,6 +76,7 @@ public class AdminUsersActivity extends AppCompatActivity {
                             userAdapter.notifyDataSetChanged();
                         } else {
                             Toast.makeText(this, "No users found in the database.", Toast.LENGTH_SHORT).show();
+                            Log.d("AdminUserActivity","aaaaaaaaaaaaaaa");
                         }
                     } else {
                         Log.e("AdminUsersActivity", "Error getting documents: ", task.getException());

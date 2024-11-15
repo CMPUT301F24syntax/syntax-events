@@ -131,7 +131,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         }
 
         // Create new Event object
-        Event event = new Event(eventID, eventName, eventDescription, "", capacity, startDate, endDate, organizerId);
+        Event event = new Event(eventID, eventName, eventDescription, capacity, startDate, endDate, organizerId);
 
         // Use EventController to create event
         eventController.createEvent(event, imageUri, eventCreateCallback);

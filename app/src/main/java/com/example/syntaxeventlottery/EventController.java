@@ -19,6 +19,7 @@ public class EventController {
     private EventControllerListener listener;
     private static Context context;
 
+
     /**
      * Constructor for EventController.
      *
@@ -28,6 +29,7 @@ public class EventController {
         this.eventRepository = new EventRepository();
         this.listener = listener;
     }
+
 
     /**
      * Constructor for EventController.
@@ -44,12 +46,13 @@ public class EventController {
     /**
      * Loads event details by event ID.
      *
-     * @param eventId The ID of the event to load.
+     * @param eventID The ID of the event to load.
      */
-    public void loadEventDetails(String eventId) {
-        eventRepository.getEventById(eventId, new EventRepository.EventCallback() {
+    public void loadEventDetails(String eventID) {
+        eventRepository.getEventById(eventID, new EventRepository.EventCallback() {
             @Override
             public void onSuccess(Event event) {
+                Log.d(TAG, "TTTTTTTTTTTTTT11111" + eventID);
                 if (listener != null) {
                     listener.onEventLoaded(event);
                 }
@@ -57,6 +60,7 @@ public class EventController {
 
             @Override
             public void onFailure(Exception e) {
+                Log.d(TAG, "TTTTTTTTTTTTTT222222" + eventID);
                 Log.e(TAG, "Error loading event details", e);
                 if (listener != null) {
                     listener.onError("Event not found. It may have been deleted.");
@@ -95,8 +99,9 @@ public class EventController {
      * @param event The event that was clicked.
      */
     public static void handleEventItemClick(Event event) {
+        Log.d("EventController", "TTTTTTTTTTTTTTAAAAABBBB" + event.getEventID());
         Intent intent = new Intent(context, EventDetailActivity.class);
-        intent.putExtra("event_id", event.getEventID());
+        intent.putExtra("eventID", event.getEventID());
         context.startActivity(intent);
     }
 
@@ -148,6 +153,7 @@ public class EventController {
             }
         });
     }
+
 
     /**
      * Interface for handling callbacks from the EventController.
@@ -360,6 +366,8 @@ public class EventController {
             }
         });
     }
+
+
 
 
 
