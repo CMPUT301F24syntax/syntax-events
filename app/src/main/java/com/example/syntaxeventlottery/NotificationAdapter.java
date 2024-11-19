@@ -1,10 +1,7 @@
-// NotificationAdapter.java
-
 package com.example.syntaxeventlottery;
 
 import android.content.Context;
-import android.content.Intent;
-import android.provider.Settings;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +11,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,19 +22,58 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
     private Context context;
     private List<Notification> notificationList;
-    private FirebaseFirestore db;
-    private String deviceId;
+    private OnItemClickListener listener;
 
     public NotificationAdapter(Context context) {
         this.context = context;
         this.notificationList = new ArrayList<>();
-        this.db = FirebaseFirestore.getInstance();
-        this.deviceId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
+    /**
+     * Sets the list of notifications and notifies the adapter.
+     *
+     * @param notifications List of notifications to display.
+     */
+    public void setNotifications(List<Notification> notifications) {
+        this.notificationList = notifications;
+        notifyDataSetChanged(); // Notify the adapter of data changes
+    }
+
+    /**
+     * Removes a notification by its ID and notifies the adapter.
+     *
+     * @param notificationId The ID of the notification to remove.
+     */
+    public void removeNotificationById(String notificationId) {
+        for (int i = 0; i < notificationList.size(); i++) {
+            if (notificationList.get(i).getId().equals(notificationId)) {
+                notificationList.remove(i);
+                notifyItemRemoved(i);
+                break;
+            }
+        }
+    }
+
+    /**
+     * Adds a notification back to the list and notifies the adapter.
+     *
+     * @param notification The notification to add.
+     */
     public void addNotification(Notification notification) {
-        notificationList.add(notification);
-        notifyItemInserted(notificationList.size() - 1);
+        notificationList.add(0, notification); // Add to the top of the list
+        notifyItemInserted(0);
+        if (context instanceof NotificationCenterActivity) {
+            ((NotificationCenterActivity) context).notificationRecyclerView.scrollToPosition(0);
+        }
+    }
+
+    /**
+     * Sets the item click listener.
+     *
+     * @param listener Listener to handle item clicks.
+     */
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
     }
 
     @NonNull
@@ -54,22 +89,19 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         holder.messageTextView.setText(notification.getMessage());
         holder.timestampTextView.setText(notification.getFormattedTimestamp());
 
-        holder.itemView.setOnClickListener(v -> {
-            // Mark notification as read
-            db.collection("notifications").document(notification.getId())
-                    .update("read", true)
-                    .addOnSuccessListener(aVoid -> {
-                        // Remove the notification from the list
-                        notificationList.remove(position);
-                        notifyItemRemoved(position);
-                        notifyItemRangeChanged(position, notificationList.size());
+        // Optional: Change text color based on notification type
+        if (notification.getMessage().startsWith("🎉")) {
+            holder.messageTextView.setTextColor(context.getResources().getColor(R.color.colorWin));
+        } else if (notification.getMessage().startsWith("😞")) {
+            holder.messageTextView.setTextColor(context.getResources().getColor(R.color.colorLose));
+        } else {
+            holder.messageTextView.setTextColor(Color.BLACK);
+        }
 
-                        // Navigate to event details
-                        Intent intent = new Intent(context, EventDetailActivity.class);
-                        intent.putExtra("event_id", notification.getEventId());
-                        context.startActivity(intent);
-                    })
-                    .addOnFailureListener(e -> Toast.makeText(context, "Failed to update notification", Toast.LENGTH_SHORT).show());
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onItemClick(notification);
+            }
         });
     }
 
@@ -78,6 +110,9 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         return notificationList.size();
     }
 
+    /**
+     * ViewHolder class for notifications.
+     */
     static class NotificationViewHolder extends RecyclerView.ViewHolder {
         TextView messageTextView, timestampTextView;
 
@@ -86,5 +121,12 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             messageTextView = itemView.findViewById(R.id.notificationMessageTextView);
             timestampTextView = itemView.findViewById(R.id.notificationTimestampTextView);
         }
+    }
+
+    /**
+     * Interface for handling item clicks.
+     */
+    public interface OnItemClickListener {
+        void onItemClick(Notification notification);
     }
 }

@@ -1,5 +1,3 @@
-<!-- activity_notification_center.xml -->
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -24,17 +22,18 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_toEndOf="@id/backButton"
+        android:layout_alignTop="@id/backButton"
         android:text="Notifications"
         android:textColor="@android:color/black"
         android:textSize="20sp"
         android:textStyle="bold" />
 
-    <!-- ListView to display notifications -->
-    <ListView
-        android:id="@+id/notificationListView"
+    <!-- RecyclerView to display notifications -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/notificationRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/backButton"
+        android:layout_below="@id/notificationTitle"
         android:layout_marginTop="16dp" />
 
 </RelativeLayout>

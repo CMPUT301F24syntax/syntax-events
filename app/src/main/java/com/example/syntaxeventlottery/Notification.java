@@ -1,25 +1,25 @@
-// Notification.java
 package com.example.syntaxeventlottery;
 
 import com.google.firebase.firestore.ServerTimestamp;
+import com.google.firebase.firestore.Exclude;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 /**
- * Model class for a notification.
+ * Model class representing a Notification.
  */
 public class Notification {
     private String id;
     private String deviceId;
     private String eventId;
     private String message;
-    private boolean read;
+    private boolean isRead;
     @ServerTimestamp
     private Date timestamp;
 
-    // Required empty constructor
+    // Default constructor required for Firestore deserialization
     public Notification() {}
 
     // Getters and Setters
@@ -49,10 +49,12 @@ public class Notification {
     public void setMessage(String message) { this.message = message; }
 
     public boolean isRead() {
-        return read;
+        return isRead;
     }
 
-    public void setRead(boolean read) { this.read = read; }
+    public void setRead(boolean isRead) {
+        this.isRead = isRead;
+    }
 
     public Date getTimestamp() {
         return timestamp;
@@ -60,6 +62,12 @@ public class Notification {
 
     public void setTimestamp(Date timestamp) { this.timestamp = timestamp; }
 
+    /**
+     * Returns a formatted timestamp string.
+     *
+     * @return Formatted timestamp.
+     */
+    @Exclude
     public String getFormattedTimestamp() {
         if (timestamp != null) {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
@@ -68,4 +76,6 @@ public class Notification {
             return "";
         }
     }
+
+
 }

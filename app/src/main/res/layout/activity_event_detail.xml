@@ -217,5 +217,34 @@
             android:layout_marginTop="16dp"
             android:visibility="gone" />
 
+        <!-- Accepted TextView -->
+        <TextView
+            android:id="@+id/acceptedTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="You have accepted the invitation."
+            android:textSize="18sp"
+            android:textColor="@color/colorWin"
+            android:layout_below="@id/eventCapacityTextView"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            android:paddingTop="16dp"/>
+
+        <!-- Declined TextView -->
+        <TextView
+            android:id="@+id/declinedTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="You have declined the invitation."
+            android:textSize="18sp"
+            android:textColor="@color/colorLose"
+            android:layout_below="@id/eventCapacityTextView"
+            android:layout_toEndOf="@id/acceptedTextView"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            android:paddingTop="16dp"/>
+
     </RelativeLayout>
 </ScrollView>

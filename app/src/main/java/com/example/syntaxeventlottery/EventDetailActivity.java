@@ -28,6 +28,7 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
     private Button joinWaitingListButton, leaveWaitingListButton, acceptInvitationButton, declineInvitationButton;
     private Button drawButton, updatePosterButton, editInfoButton, waitingListButton;
     private ImageButton backButton;
+    private TextView acceptedTextView, declinedTextView;
 
     // Controller and Data
     private EventController eventController;
@@ -84,11 +85,39 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
         editInfoButton = findViewById(R.id.editInfoButton);
         waitingListButton = findViewById(R.id.waitingListButton);
         backButton = findViewById(R.id.backButton);
+
+        acceptedTextView = findViewById(R.id.acceptedTextView);
+        declinedTextView = findViewById(R.id.declinedTextView);
     }
 
     private void setupButtonListeners() {
         joinWaitingListButton.setOnClickListener(v -> eventController.joinWaitingList(eventID, deviceID));
         leaveWaitingListButton.setOnClickListener(v -> eventController.leaveWaitingList(eventID, deviceID));
+
+        acceptInvitationButton.setOnClickListener(v -> {
+            eventController.acceptInvitation(eventID, deviceID);
+
+            acceptedTextView.setVisibility(View.VISIBLE);
+
+            declinedTextView.setVisibility(View.GONE);
+
+            acceptInvitationButton.setVisibility(View.GONE);
+            declineInvitationButton.setVisibility(View.GONE);
+
+        });
+
+        declineInvitationButton.setOnClickListener(v -> {
+            eventController.declineInvitation(eventID, deviceID);
+
+            declinedTextView.setVisibility(View.VISIBLE);
+
+            acceptedTextView.setVisibility(View.GONE);
+
+            acceptInvitationButton.setVisibility(View.GONE);
+            declineInvitationButton.setVisibility(View.GONE);
+
+        });
+
 
         acceptInvitationButton.setOnClickListener(v -> eventController.acceptInvitation(eventID, deviceID));
         declineInvitationButton.setOnClickListener(v -> eventController.declineInvitation(eventID, deviceID));
@@ -128,6 +157,30 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
                 Toast.makeText(EventDetailActivity.this, "You are not authorized to view the waiting list.", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "User is not authorized to view the waiting list.");
             }
+        });
+
+        acceptInvitationButton.setOnClickListener(v -> {
+            eventController.acceptInvitation(eventID, deviceID);
+
+            acceptedTextView.setVisibility(View.VISIBLE);
+
+            declinedTextView.setVisibility(View.GONE);
+
+            acceptInvitationButton.setVisibility(View.GONE);
+            declineInvitationButton.setVisibility(View.GONE);
+
+        });
+
+        declineInvitationButton.setOnClickListener(v -> {
+            eventController.declineInvitation(eventID, deviceID);
+
+            declinedTextView.setVisibility(View.VISIBLE);
+
+            acceptedTextView.setVisibility(View.GONE);
+
+            acceptInvitationButton.setVisibility(View.GONE);
+            declineInvitationButton.setVisibility(View.GONE);
+
         });
     }
 
@@ -285,6 +338,16 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
             Uri imageUri = data.getData();
             eventController.updateEventPoster(eventID, imageUri);
             Log.d(TAG, "Selected new poster URI: " + imageUri.toString());
+        }
+    }
+
+    private void updateStatusTextViews(boolean accepted) {
+        if (accepted) {
+            acceptedTextView.setVisibility(View.VISIBLE);
+            declinedTextView.setVisibility(View.GONE);
+        } else {
+            acceptedTextView.setVisibility(View.GONE);
+            declinedTextView.setVisibility(View.VISIBLE);
         }
     }
 

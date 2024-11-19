@@ -1,15 +1,12 @@
 // EventRepository.java
 package com.example.syntaxeventlottery;
 
-
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
 
-
 import androidx.annotation.NonNull;
-
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.firestore.CollectionReference;
@@ -22,13 +19,11 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
-
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-
 
 /**
  * The EventRepository class provides methods to interact with Firebase Firestore
@@ -39,7 +34,6 @@ public class EventRepository {
     private FirebaseFirestore db;
     private CollectionReference eventsRef;
 
-
     /**
      * Constructor for EventRepository.
      * Initializes Firestore references.
@@ -49,7 +43,6 @@ public class EventRepository {
         this.eventsRef = db.collection("events"); // Ensure this matches the collection name used when saving events
     }
 
-
     /**
      * Callback interface for fetching a list of events.
      */
@@ -57,7 +50,6 @@ public class EventRepository {
         void onSuccess(List<Event> eventList);
         void onFailure(Exception e);
     }
-
 
     /**
      * Retrieves events by organizer ID.
@@ -79,7 +71,6 @@ public class EventRepository {
                 });
     }
 
-
     /**
      * Saves a new event to Firestore.
      *
@@ -93,7 +84,6 @@ public class EventRepository {
             return;
         }
 
-
         eventsRef.document(event.getEventID()).set(event)
                 .addOnSuccessListener(aVoid -> {
                     callback.onSuccess();
@@ -104,7 +94,6 @@ public class EventRepository {
                     Log.e(TAG, "Failed to save event: " + event.getEventName(), e);
                 });
     }
-
 
     /**
      * Uploads a file to Firebase Storage.
@@ -124,7 +113,6 @@ public class EventRepository {
                 })
                 .addOnCompleteListener(onCompleteListener);
     }
-
 
     /**
      * Uploads data to Firebase Storage.
@@ -151,7 +139,6 @@ public class EventRepository {
                 .addOnCompleteListener(onCompleteListener);
     }
 
-
     /**
      * Callback interface for fetching event details.
      */
@@ -159,7 +146,6 @@ public class EventRepository {
         void onSuccess(Event event);
         void onFailure(Exception e);
     }
-
 
     /**
      * Callback interface for updating an event.
@@ -169,41 +155,32 @@ public class EventRepository {
         void onFailure(Exception e);
     }
 
-
     /**
      * Retrieves an event by its ID.
      *
      * @param eventId  The ID of the event to retrieve.
      * @param callback The callback to handle success or failure.
      */
-    // EventRepository.java
     public void getEventById(String eventId, EventCallback callback) {
-        Log.d("EventRepository", "Fetching event with ID: " + eventId);
         eventsRef.document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         Event event = documentSnapshot.toObject(Event.class);
-                        Log.d("EventRepository", "Event found: " + event.getEventName());
                         if (callback != null) {
                             callback.onSuccess(event);
                         }
                     } else {
-                        Log.e("EventRepository", "Event does not exist in Firestore");
                         if (callback != null) {
                             callback.onFailure(new Exception("Event not found"));
                         }
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("EventRepository", "Error fetching event: " + e.getMessage());
                     if (callback != null) {
                         callback.onFailure(e);
                     }
                 });
     }
-
-
-
 
     /**
      * Updates an existing event in the Firestore database.
@@ -238,7 +215,6 @@ public class EventRepository {
             return;
         }
 
-
         if (imageUri != null) {
             // Upload image and then save event
             uploadImageToStorage(imageUri, "event_images/" + event.getEventID(), task -> {
@@ -257,10 +233,7 @@ public class EventRepository {
     }
 
 
-
-
     // QR code generation and saving functionality
-
 
     /**
      * Generates a QR code bitmap from the provided content.
@@ -285,7 +258,6 @@ public class EventRepository {
         }
     }
 
-
     /**
      * Converts a bitmap image to a byte array.
      *
@@ -297,7 +269,6 @@ public class EventRepository {
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
         return baos.toByteArray();
     }
-
 
     /**
      * Saves an event to Firestore after generating and uploading its QR code.
@@ -331,13 +302,11 @@ public class EventRepository {
         }
     }
 
-
     public void addParticipantToEvent(String eventId, String participantId, EventUpdateCallback callback) {
         eventsRef.document(eventId).update("participants", FieldValue.arrayUnion(participantId))
                 .addOnSuccessListener(aVoid -> callback.onSuccess())
                 .addOnFailureListener(e -> callback.onFailure(e));
     }
-
 
     public void removeParticipantFromEvent(String eventId, String participantId, EventUpdateCallback callback) {
         eventsRef.document(eventId).update("participants", FieldValue.arrayRemove(participantId))
@@ -345,9 +314,45 @@ public class EventRepository {
                 .addOnFailureListener(e -> callback.onFailure(e));
     }
 
+    /**
+     * Sends notifications to participants.
+     *
+     * @param participantIds List of participant device IDs.
+     * @param eventId        The ID of the event.
+     * @param eventName      The name of the event.
+     * @param isSelected     Flag indicating if the participants are selected.
+     */
+    private void sendNotifications(List<String> participantIds, String eventId, String eventName, boolean isSelected) {
+        for (String participantId : participantIds) {
+            Notification notification = new Notification();
+            notification.setDeviceId(participantId);
+            notification.setEventId(eventId);
+            if (isSelected) {
+                notification.setMessage("🎉 Congratulations! You have been selected for the event: " + eventName);
+            } else {
+                notification.setMessage("😞 Unfortunately, you were not selected for the event: " + eventName);
+            }
+            notification.setRead(false);
+            notification.setTimestamp(new Date());
+
+            // Generate a unique ID for the notification
+            String notificationId = db.collection("notifications").document().getId();
+            notification.setId(notificationId);
+
+            // Save the notification to Firestore
+            db.collection("notifications").document(notificationId)
+                    .set(notification)
+                    .addOnSuccessListener(aVoid -> {
+                        Log.d(TAG, "Notification sent to participant: " + participantId);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Failed to send notification to participant: " + participantId, e);
+                    });
+        }
+    }
 
     /**
-     * Performs the draw to select participants and sends notifications to unselected participants.
+     * Performs the draw to select participants and sends notifications to all participants.
      *
      * @param eventId  The ID of the event.
      * @param callback The callback to handle success or failure.
@@ -362,28 +367,31 @@ public class EventRepository {
                                 callback.onFailure(new Exception("Draw has already been performed."));
                                 return;
                             }
+                            else{
+                                event.setDrawed(true); // Mark the event as drawn
+                            }
                             List<String> participants = event.getParticipants();
                             int capacity = event.getCapacity();
-
 
                             // Shuffle and select participants
                             Collections.shuffle(participants);
                             List<String> selectedParticipants = new ArrayList<>(participants.subList(0, Math.min(capacity, participants.size())));
 
-
                             event.setSelectedParticipants(selectedParticipants);
-                            event.setDrawed(true); // Mark the event as drawn
-
 
                             // Update the event in Firestore
                             eventsRef.document(eventId).set(event)
                                     .addOnSuccessListener(aVoid -> {
-                                        // Send notifications to unselected participants
+                                        // Send notifications to selected participants
+                                        sendNotifications(selectedParticipants, eventId, event.getEventName(), true);
+
+                                        // Determine unselected participants
                                         List<String> unselectedParticipants = new ArrayList<>(participants);
                                         unselectedParticipants.removeAll(selectedParticipants);
 
+                                        // Send notifications to unselected participants
+                                        sendNotifications(unselectedParticipants, eventId, event.getEventName(), false);
 
-                                        sendNotificationsToUnselectedParticipants(unselectedParticipants, eventId, event.getEventName());
                                         callback.onSuccess();
                                     })
                                     .addOnFailureListener(e -> callback.onFailure(e));
@@ -397,55 +405,17 @@ public class EventRepository {
                 .addOnFailureListener(e -> callback.onFailure(e));
     }
 
-
-    /**
-     * Sends notifications to unselected participants after the draw.
-     *
-     * @param unselectedParticipants List of participant IDs who were not selected.
-     * @param eventId                The ID of the event.
-     * @param eventName              The name of the event.
-     */
-    private void sendNotificationsToUnselectedParticipants(List<String> unselectedParticipants, String eventId, String eventName) {
-        for (String participantId : unselectedParticipants) {
-            Notification notification = new Notification();
-            notification.setDeviceId(participantId);
-            notification.setEventId(eventId);
-            notification.setMessage("You were not selected for the event: " + eventName);
-            notification.setRead(false);
-            notification.setTimestamp(new Date());
-
-
-            // Generate a unique ID for the notification
-            String notificationId = db.collection("notifications").document().getId();
-            notification.setId(notificationId);
-
-
-            // Save the notification to Firestore
-            db.collection("notifications").document(notificationId)
-                    .set(notification)
-                    .addOnSuccessListener(aVoid -> {
-                        Log.d(TAG, "Notification sent to participant: " + participantId);
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e(TAG, "Failed to send notification to participant: " + participantId, e);
-                    });
-        }
-    }
-
-
     public void acceptInvitation(String eventId, String participantId, EventUpdateCallback callback) {
         eventsRef.document(eventId).update("confirmedParticipants", FieldValue.arrayUnion(participantId))
                 .addOnSuccessListener(aVoid -> callback.onSuccess())
                 .addOnFailureListener(e -> callback.onFailure(e));
     }
 
-
     public void declineInvitation(String eventId, String participantId, EventUpdateCallback callback) {
         eventsRef.document(eventId).update("selectedParticipants", FieldValue.arrayRemove(participantId))
                 .addOnSuccessListener(aVoid -> callback.onSuccess())
                 .addOnFailureListener(e -> callback.onFailure(e));
     }
-
 
     public void updateEventPoster(String eventId, Uri imageUri, EventUpdateCallback callback) {
         if (imageUri != null) {
@@ -466,4 +436,3 @@ public class EventRepository {
         }
     }
 }
-

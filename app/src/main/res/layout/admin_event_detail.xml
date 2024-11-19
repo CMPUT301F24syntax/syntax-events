@@ -166,5 +166,32 @@
                 android:textStyle="bold"/>
         </LinearLayout>
 
+        <!-- Accepted Textview -->
+        <TextView
+            android:id="@+id/acceptedTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="You accept the invitation already, please wait for furthor nofication."
+            android:visibility="gone"/>
+
+        <ListView
+            android:id="@+id/acceptedListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"/>
+
+        <!-- Textview after decline -->
+        <TextView
+            android:id="@+id/declinedTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="You decline the invitation already."
+            android:visibility="gone"/>
+
+        <ListView
+            android:id="@+id/declinedListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"/>
     </LinearLayout>
 </ScrollView>
