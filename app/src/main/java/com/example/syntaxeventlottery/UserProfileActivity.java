@@ -2,6 +2,8 @@
 
 package com.example.syntaxeventlottery;
 
+import static java.lang.System.in;
+
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -66,6 +68,8 @@ public class UserProfileActivity extends AppCompatActivity {
 
     /** Unique device ID used to identify the user. */
     private String deviceId;
+
+    private char[] letters = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
 
     /**
      * ActivityResultLauncher for the image picker intent.
@@ -206,7 +210,27 @@ public class UserProfileActivity extends AppCompatActivity {
                             if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
                                 loadImageWithGlide(profileImageUrl);
                             } else {
-                                profileImageView.setImageResource(R.drawable.ic_avatar_placeholder); // Set default avatar
+                                if (username != null && !username.isEmpty()) {
+                                    char firstChar = Character.toLowerCase(username.charAt(0));
+                                    boolean isLetterIncluded = false;
+                                    for (char letter : letters) {
+                                        if (letter == firstChar) {
+                                            isLetterIncluded = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (isLetterIncluded) {
+                                        char uppercaseFirstChar = Character.toUpperCase(firstChar);
+                                        String DefaultImageUrl = "https://firebasestorage.googleapis.com/v0/b/scanapp-7e377.appspot.com/o/"+uppercaseFirstChar+".png?alt=media&token=cb8a2589-5092-46bc-acc9-0fc31b9799e8";
+                                        loadImageWithGlide(DefaultImageUrl);
+                                    } else {
+                                        String DefaultImageUrl = "https://firebasestorage.googleapis.com/v0/b/scanapp-7e377.appspot.com/o/default.png?alt=media&token=cb8a2589-5092-46bc-acc9-0fc31b9799e8";
+                                        loadImageWithGlide(DefaultImageUrl);
+                                    }
+                                } else {
+                                    Toast.makeText(UserProfileActivity.this, "Username is invalid or empty.", Toast.LENGTH_SHORT).show();
+                                }
                             }
                         } else {
                             Toast.makeText(UserProfileActivity.this, "User data not found", Toast.LENGTH_SHORT).show();
