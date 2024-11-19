@@ -53,12 +53,13 @@ public class EditEventActivity extends AppCompatActivity implements EventControl
         eventController = new EventController(this);
 
         // Get event ID from Intent
-        eventId = getIntent().getStringExtra("event_id");
+        eventId = getIntent().getStringExtra("eventID");
         Log.d(TAG, "Event ID received: " + eventId);
 
         if (eventId != null && !eventId.isEmpty()) {
             eventController.loadEventDetails(eventId);
         } else {
+            Log.d("EditEventActivity","MMMMMMMMM"+eventId);
             Toast.makeText(this, "Event ID is missing", Toast.LENGTH_SHORT).show();
             finish();
         }
