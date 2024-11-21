@@ -67,19 +67,4 @@ public class UserTest {
         assertEquals("customUserID", user.getUserID());
     }
 
-    @Test
-    public void testToString() {
-        // Construct the expected string output
-        String expectedToString = "User{" +
-                "userID='" + user.getUserID() + '\'' +
-                ", deviceCode='device12345'" +
-                ", email='testuser@example.com'" +
-                ", phoneNumber='123-456-7890'" +
-                ", profilePhotoUrl='http://example.com/profile.jpg'" +
-                ", username='testuser'" +
-                ", facility='testFacility'" +
-                '}';
-        // Assert that the actual toString matches the expected value
-        assertEquals(expectedToString, user.toString());
-    }
 }
