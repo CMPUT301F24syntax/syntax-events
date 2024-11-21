@@ -67,22 +67,8 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         uploadButton = findViewById(R.id.uploadButton);
         eventImageView = findViewById(R.id.eventImageView);
 
-        // Initialize EventController
-        eventController = new EventController(null);
-
-        // Initialize EventCreateCallback
-        eventCreateCallback = new EventController.EventCreateCallback() {
-            @Override
-            public void onEventCreated() {
-                Toast.makeText(OrganizerCreateEvent.this, "Event Created and Saved to Database", Toast.LENGTH_SHORT).show();
-                clearInputFields();
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                Toast.makeText(OrganizerCreateEvent.this, errorMessage, Toast.LENGTH_SHORT).show();
-            }
-        };
+        // Initialize EventController with repository
+        eventController = new EventController(new EventRepository());
 
         // Back button listener
         backButton.setOnClickListener(v -> finish());
@@ -98,7 +84,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
     }
 
     private void saveEvent() {
-        String eventID = UUID.randomUUID().toString();
+        //String eventID = UUID.randomUUID().toString();
         String eventName = eventNameEditText.getText().toString();
         String eventDescription = eventDescriptionEditText.getText().toString();
         String eventStartDateText = eventStartDateEditText.getText().toString();

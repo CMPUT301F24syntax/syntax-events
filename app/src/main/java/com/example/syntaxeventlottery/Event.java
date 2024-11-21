@@ -63,7 +63,6 @@ public class Event implements Serializable {
     /**
      * Parameterized constructor to create an Event with specific details.
      *
-     * @param eventID       Unique identifier for the event.
      * @param eventName     Name of the event.
      * @param description   Description of the event.
      * @param capacity      Maximum capacity of participants.
@@ -71,9 +70,9 @@ public class Event implements Serializable {
      * @param endDate       End date and time of the event.
      * @param organizerId   ID of the organizer creating the event.
      */
-    public Event(String eventID, String eventName, String facility, String description, int capacity,
+    public Event(String eventName, String facility, String description, int capacity,
                  Date startDate, Date endDate, String organizerId) {
-        this.eventID = eventID;
+        this.eventID = null;
         this.eventName = eventName;
         this.facility = facility;
         this.description = description;
@@ -198,6 +197,10 @@ public class Event implements Serializable {
 
     public List<String> getSelectedParticipants() {
         return selectedParticipants;
+    }
+
+    public void generateEventID() {
+
     }
 
     public void setSelectedParticipants(List<String> selectedParticipants) {
