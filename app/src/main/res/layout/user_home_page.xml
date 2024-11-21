@@ -8,29 +8,6 @@
     android:background="@android:color/white"
     tools:context=".MainActivity">
 
-    <!-- Top Section with Location and Log out -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="16dp">
-
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:contentDescription="Location Icon"
-            android:src="@drawable/ic_location" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:paddingStart="8dp"
-            android:text="Location"
-            android:textColor="@android:color/black"
-            android:textSize="16sp" />
-    </LinearLayout>
 
     <TextView
         android:id="@+id/dateTextView"

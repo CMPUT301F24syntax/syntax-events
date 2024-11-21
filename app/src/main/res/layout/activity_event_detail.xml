@@ -99,26 +99,28 @@
             android:textColor="@android:color/black"
             android:layout_marginTop="4dp" />
 
-        <!-- Event Facility -->
-        <TextView
-            android:id="@+id/eventFacilityTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/eventEndDateTextView"
-            android:layout_alignParentStart="true"
-            android:text="Location: "
-            android:textSize="16sp"
-            android:textColor="@android:color/black"
-            android:layout_marginTop="4dp" />
+
 
         <!-- Event Capacity -->
         <TextView
             android:id="@+id/eventCapacityTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/eventFacilityTextView"
+            android:layout_below="@id/eventEndDateTextView"
             android:layout_alignParentStart="true"
             android:text="Capacity: "
+            android:textSize="16sp"
+            android:textColor="@android:color/black"
+            android:layout_marginTop="4dp" />
+
+        <!--Event Geolocation -->
+        <TextView
+            android:id="@+id/eventGeo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/eventCapacityTextView"
+            android:layout_alignParentStart="true"
+            android:text="Need GeoLocation: "
             android:textSize="16sp"
             android:textColor="@android:color/black"
             android:layout_marginTop="4dp" />
@@ -129,7 +131,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Update Poster"
-            android:layout_below="@id/eventCapacityTextView"
+            android:layout_below="@id/eventGeo"
             android:layout_alignParentStart="true"
             android:layout_marginTop="16dp"
             android:visibility="gone" />
@@ -140,7 +142,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Edit Info"
-            android:layout_below="@id/eventCapacityTextView"
+            android:layout_below="@id/eventGeo"
             android:layout_toEndOf="@id/updatePosterButton"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
@@ -152,7 +154,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Join Event"
-            android:layout_below="@id/eventCapacityTextView"
+            android:layout_below="@id/eventGeo"
             android:layout_alignParentStart="true"
             android:layout_marginTop="16dp"
             android:visibility="gone" />
@@ -163,7 +165,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Leave Event"
-            android:layout_below="@id/eventCapacityTextView"
+            android:layout_below="@id/eventGeo"
             android:layout_toEndOf="@id/joinEventButton"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
@@ -175,7 +177,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Draw"
-            android:layout_below="@id/eventCapacityTextView"
+            android:layout_below="@id/eventGeo"
             android:layout_toEndOf="@id/editInfoButton"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
@@ -187,7 +189,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Accept"
-            android:layout_below="@id/eventCapacityTextView"
+            android:layout_below="@id/eventGeo"
             android:layout_alignParentStart="true"
             android:layout_marginTop="16dp"
             android:visibility="gone" />
@@ -198,7 +200,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Reject"
-            android:layout_below="@id/eventCapacityTextView"
+            android:layout_below="@id/eventGeo"
             android:layout_toEndOf="@id/acceptButton"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
@@ -212,7 +214,7 @@
             android:text="Draw Ended"
             android:textSize="16sp"
             android:textColor="@android:color/black"
-            android:layout_below="@id/eventCapacityTextView"
+            android:layout_below="@id/eventGeo"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="16dp"
             android:visibility="gone" />
@@ -225,7 +227,7 @@
             android:text="You have accepted the invitation."
             android:textSize="18sp"
             android:textColor="@color/colorWin"
-            android:layout_below="@id/eventCapacityTextView"
+            android:layout_below="@id/eventGeo"
             android:layout_alignParentStart="true"
             android:layout_marginTop="16dp"
             android:visibility="gone"
@@ -239,7 +241,7 @@
             android:text="You have declined the invitation."
             android:textSize="18sp"
             android:textColor="@color/colorLose"
-            android:layout_below="@id/eventCapacityTextView"
+            android:layout_below="@id/eventGeo"
             android:layout_toEndOf="@id/acceptedTextView"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"

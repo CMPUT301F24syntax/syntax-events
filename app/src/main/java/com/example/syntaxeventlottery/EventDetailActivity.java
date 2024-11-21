@@ -24,7 +24,7 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
 
     // UI Components
     private ImageView posterImageView, qrCodeImageView;
-    private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView, eventEndDateTextView, eventCapacityTextView;
+    private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView, eventEndDateTextView, eventCapacityTextView, eventGeoTextView;
     private Button joinWaitingListButton, leaveWaitingListButton, acceptInvitationButton, declineInvitationButton;
     private Button drawButton, updatePosterButton, editInfoButton, waitingListButton;
     private ImageButton backButton;
@@ -34,6 +34,7 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
     private EventController eventController;
     private String eventID, deviceID;
     private Event event;
+    private boolean geolocation;
 
     private static final int REQUEST_CODE_SELECT_POSTER = 1001;
     private static final String TAG = "EventDetailActivity";
@@ -74,6 +75,7 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
         eventStartDateTextView = findViewById(R.id.eventStartDateTextView);
         eventEndDateTextView = findViewById(R.id.eventEndDateTextView);
         eventCapacityTextView = findViewById(R.id.eventCapacityTextView);
+        eventGeoTextView = findViewById(R.id.eventGeo);
 
         joinWaitingListButton = findViewById(R.id.joinEventButton);
         leaveWaitingListButton = findViewById(R.id.leaveEventButton);
@@ -197,6 +199,8 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
         Log.d(TAG, "Event loaded: " + event.getEventName());
         displayEventDetails(event);
 
+
+
         if (deviceID.equals(event.getOrganizerId())) {
             showOrganizerButtons();
         } else {
@@ -262,10 +266,12 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
 
     private void displayEventDetails(Event event) {
         eventNameTextView.setText(event.getEventName());
-        eventDescriptionTextView.setText(event.getDescription());
-        eventStartDateTextView.setText(event.getStartDate().toString());
-        eventEndDateTextView.setText(event.getEndDate().toString());
-        eventCapacityTextView.setText(String.valueOf(event.getCapacity()));
+        eventDescriptionTextView.setText("Description: "+event.getDescription());
+        eventStartDateTextView.setText("StartDate :"+event.getStartDate().toString());
+        eventEndDateTextView.setText("EndDate："+event.getEndDate().toString());
+        eventCapacityTextView.setText("Capacity: "+String.valueOf(event.getCapacity()));
+        eventGeoTextView.setText(event.isLocationRequired() ? "Location Required" : "No Location Required");
+
 
         if (event.getPosterUrl() != null && !event.getPosterUrl().isEmpty()) {
             Glide.with(this).load(event.getPosterUrl()).into(posterImageView);

@@ -92,11 +92,13 @@ public class AdminEventsActivity extends AppCompatActivity {
                                 String organizerId = document.getString("organizerId");
                                 String posterUrl = document.getString("posterUrl");
                                 String qrCode = document.getString("qrCode");
+                                boolean isLocationRequired = document.getBoolean("isLocationRequired");
+
 
                                 // Create Event object and add it to the list
                                 // public Event(String eventID, String eventName, String description, String facility, int capacity,
                                 //                 Date startDate, Date endDate, String organizerId)
-                                Event event = new Event(eventID, eventName, description, capacity, startDate, endDate, organizerId);
+                                Event event = new Event(eventID, eventName, description, capacity, startDate, endDate, organizerId, isLocationRequired);
                                 event.setPosterUrl(posterUrl);
                                 event.setQrCode(qrCode);
 

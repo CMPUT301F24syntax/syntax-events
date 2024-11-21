@@ -5,7 +5,9 @@ import com.google.firebase.firestore.ServerTimestamp;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents an event in the Event Lottery System.
@@ -22,6 +24,9 @@ public class Event implements Serializable {
     private int capacity;
     private boolean isFull;
     private boolean isDrawed;
+    private boolean isLocationRequired;
+    private List<Map<String, String>> locationDetails;
+
 
     @ServerTimestamp
     private Date startDate;
@@ -57,21 +62,24 @@ public class Event implements Serializable {
         this.selectedParticipants = new ArrayList<>();
         this.isFull = false;
         this.isDrawed = false;
+        this.isLocationRequired = false;
     }
+
 
     /**
      * Parameterized constructor to create an Event with specific details.
      *
-     * @param eventID       Unique identifier for the event.
-     * @param eventName     Name of the event.
-     * @param description   Description of the event.
-     * @param capacity      Maximum capacity of participants.
-     * @param startDate     Start date and time of the event.
-     * @param endDate       End date and time of the event.
-     * @param organizerId   ID of the organizer creating the event.
+     * @param eventID            Unique identifier for the event.
+     * @param eventName          Name of the event.
+     * @param description        Description of the event.
+     * @param capacity           Maximum capacity of participants.
+     * @param startDate          Start date and time of the event.
+     * @param endDate            End date and time of the event.
+     * @param organizerId        ID of the organizer creating the event.
+     * @param isLocationRequired Boolean indicating if location is required.
      */
     public Event(String eventID, String eventName, String description, int capacity,
-                 Date startDate, Date endDate, String organizerId) {
+                 Date startDate, Date endDate, String organizerId, boolean isLocationRequired) {
         this.eventID = eventID;
         this.eventName = eventName;
         this.description = description;
@@ -79,8 +87,10 @@ public class Event implements Serializable {
         this.startDate = startDate;
         this.endDate = endDate;
         this.organizerId = organizerId;
+        this.isLocationRequired = isLocationRequired;
         this.participants = new ArrayList<>();
         this.selectedParticipants = new ArrayList<>();
+        this.locationDetails = new ArrayList<>();
         this.isFull = false;
         this.isDrawed = false;
         this.confirmedParticipants = new ArrayList<>();
@@ -89,6 +99,27 @@ public class Event implements Serializable {
     // -------------------------------------------------------------------------
     // Getters and Setters
     // -------------------------------------------------------------------------
+    public boolean isLocationRequired() {
+        return isLocationRequired;
+    }
+
+    public void setLocationRequired(boolean locationRequired) {
+        isLocationRequired = locationRequired;
+    }
+
+    public List<Map<String, String>> getLocationDetails() {
+        return locationDetails;
+    }
+
+    public void setLocationDetails(List<Map<String, String>> locationDetails) {
+        this.locationDetails = locationDetails;
+    }
+
+    public void addLocationDetail(String eventID, String location) {
+        Map<String, String> locationDetail = new HashMap<>();
+        locationDetail.put(eventID, location);
+        this.locationDetails.add(locationDetail);
+    }
 
     public String getEventID() {
         return eventID;

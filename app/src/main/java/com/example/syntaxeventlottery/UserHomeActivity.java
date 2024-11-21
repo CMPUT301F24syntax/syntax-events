@@ -131,14 +131,15 @@ public class UserHomeActivity extends AppCompatActivity {
                             String facility = document.getString("facility");
                             String qrCode = document.getString("qrCode");
                             String posterUrl = document.getString("posterUrl");
-
+                            String organizerId = document.getString("organizerId");
+                            boolean isLocationRequired = document.getBoolean("locationRequired");
                             Date startDate = document.getDate("startDate");
                             Date endDate = document.getDate("endDate");
 
                             if (startDate != null && endDate != null) {
                                 int capacity = document.getLong("capacity").intValue();
 
-                                Event event = new Event(eventID, eventName, description, capacity, startDate, endDate, qrCode);
+                                Event event = new Event(eventID, eventName, description, capacity, startDate, endDate, organizerId, isLocationRequired);
                                 event.setEventID(eventID);
                                 event.setQrCode(qrCode);
                                 event.setPosterUrl(posterUrl);

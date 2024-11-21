@@ -3,7 +3,6 @@ package com.example.syntaxeventlottery;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -27,6 +26,7 @@ public class AdminUserDetailActivity extends AppCompatActivity {
     private ImageView profileImageView;
     private FirebaseFirestore db;
     private String userID;
+    private char[] letters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -107,16 +107,42 @@ public class AdminUserDetailActivity extends AppCompatActivity {
      * Deletes the user's profile image URL from Firestore and sets a placeholder image.
      */
     private void deleteProfileImage() {
-        String defaultProfileUrl = "https://firebasestorage.googleapis.com/v0/b/scanapp-7e377.appspot.com/o/default_profile.png?alt=media&token=78049996-0de6-487f-85a8-53e5330f9896"; // Firebase Storage default URL
-        if (userId != null) {
-            DocumentReference eventRef = db.collection("Users").document(userID);
-            eventRef.update("profilePhotoUrl", defaultProfileUrl) // update Firestore QR code
+        if (userID != null) {
+            Intent intent = getIntent();
+            String username = intent.getStringExtra("username");
+            String defaultProfileUrl;
+
+            if (username != null && !username.isEmpty()) {
+                char firstChar = Character.toLowerCase(username.charAt(0));
+                boolean isLetterIncluded = false;
+
+                for (char letter : letters) {
+                    if (letter == firstChar) {
+                        isLetterIncluded = true;
+                        break;
+                    }
+                }
+
+                if (isLetterIncluded) {
+                    char uppercaseFirstChar = Character.toUpperCase(firstChar);
+                    defaultProfileUrl = "https://firebasestorage.googleapis.com/v0/b/scanapp-7e377.appspot.com/o/"
+                            + uppercaseFirstChar + ".png?alt=media&token=cb8a2589-5092-46bc-acc9-0fc31b9799e8";
+                } else {
+                    defaultProfileUrl = "https://firebasestorage.googleapis.com/v0/b/scanapp-7e377.appspot.com/o/default.png?alt=media&token=cb8a2589-5092-46bc-acc9-0fc31b9799e8";
+                }
+            } else {
+                defaultProfileUrl = "https://firebasestorage.googleapis.com/v0/b/scanapp-7e377.appspot.com/o/default.png?alt=media&token=cb8a2589-5092-46bc-acc9-0fc31b9799e8";
+            }
+
+            // Update profilePhotoUrl in Firestore
+            DocumentReference userRef = db.collection("Users").document(userID);
+            userRef.update("profilePhotoUrl", defaultProfileUrl)
                     .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(this, "profile image reset to default", Toast.LENGTH_SHORT).show();
-                        // use Glide show default picture
+                        Toast.makeText(this, "Profile image reset to default", Toast.LENGTH_SHORT).show();
+
+                        // Use Glide to show the default picture
                         Glide.with(this)
                                 .load(defaultProfileUrl)
-                                .placeholder(R.drawable.ic_avatar_placeholder)
                                 .into(profileImageView);
                     })
                     .addOnFailureListener(e -> {

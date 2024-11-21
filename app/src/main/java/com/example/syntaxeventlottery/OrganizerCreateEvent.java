@@ -7,9 +7,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import android.view.View;
@@ -20,7 +22,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -33,6 +39,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
     private EditText eventEndDateEditText;
     private EditText capacityEditText;
     private EditText eventDescriptionEditText;
+    private Switch locationRequiredSwitch;
     private Button createEventButton;
     private Button backButton;
     private Button uploadButton;
@@ -63,6 +70,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         eventEndDateEditText = findViewById(R.id.eventEndDateEditText);
         capacityEditText = findViewById(R.id.capacityEditText);
         eventDescriptionEditText = findViewById(R.id.eventDescriptionEditText);
+        locationRequiredSwitch = findViewById(R.id.locationRequiredSwitch);
         createEventButton = findViewById(R.id.createEventButton);
         backButton = findViewById(R.id.backButton);
         uploadButton = findViewById(R.id.uploadButton);
@@ -105,6 +113,8 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         String eventStartDateText = eventStartDateEditText.getText().toString();
         String eventEndDateText = eventEndDateEditText.getText().toString();
         String capacityStr = capacityEditText.getText().toString();
+        boolean isLocationRequired = locationRequiredSwitch.isChecked();
+        Log.d("Oragensj","TTATATAT"+isLocationRequired);
         String organizerId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
         if (eventName.isEmpty() || eventDescription.isEmpty() || eventStartDateText.isEmpty() || eventEndDateText.isEmpty() || capacityStr.isEmpty()) {
@@ -131,7 +141,8 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         }
 
         // Create new Event object
-        Event event = new Event(eventID, eventName, eventDescription, capacity, startDate, endDate, organizerId);
+        //isLocationRequired = locationRequiredSwitch.isChecked(); // Get the state of the Switch
+        Event event = new Event(eventID, eventName, eventDescription, capacity, startDate, endDate, organizerId, isLocationRequired);
 
         // Use EventController to create event
         eventController.createEvent(event, imageUri, eventCreateCallback);
@@ -143,8 +154,11 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         eventStartDateEditText.setText("");
         eventEndDateEditText.setText("");
         capacityEditText.setText("");
+        locationRequiredSwitch.setChecked(false);
         eventImageView.setImageURI(null);
         uploadButton.setVisibility(View.VISIBLE);
         imageUri = null;
     }
+
+
 }
