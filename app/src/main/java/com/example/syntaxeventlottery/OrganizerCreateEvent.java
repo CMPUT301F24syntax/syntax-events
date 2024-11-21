@@ -84,7 +84,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
     }
 
     private void saveEvent() {
-        //String eventID = UUID.randomUUID().toString();
+
         String eventName = eventNameEditText.getText().toString();
         String eventDescription = eventDescriptionEditText.getText().toString();
         String eventStartDateText = eventStartDateEditText.getText().toString();
@@ -115,11 +115,23 @@ public class OrganizerCreateEvent extends AppCompatActivity {
             return;
         }
 
+        //public Event(String eventName, String facility, String description, int capacity, Date startDate, Date endDate, String organizerId)
+
         // Create new Event object
-        Event event = new Event(eventID, eventName, eventDescription, capacity, startDate, endDate, organizerId);
+        Event event = new Event(eventName, null, eventDescription, capacity, startDate, endDate, organizerId);
 
         // Use EventController to create event
-        eventController.createEvent(event, imageUri, eventCreateCallback);
+        eventController.addEvent(event, imageUri, new DataCallback<Event>() {
+            @Override
+            public void onSuccess(Event result) {
+                Toast.makeText(OrganizerCreateEvent.this, "event created successfully", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(OrganizerCreateEvent.this, "could not save the event", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void clearInputFields() {

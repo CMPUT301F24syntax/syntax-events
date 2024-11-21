@@ -3,6 +3,7 @@ package com.example.syntaxeventlottery;
 import com.google.firebase.firestore.ServerTimestamp;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -191,16 +192,22 @@ public class Event implements Serializable {
         return participants;
     }
 
+    /**
+     * Generates a unique event ID based on the current timestamp and organizer ID.
+     *
+     * @param organizerId The ID of the organizer.
+     */
+    public void generateEventID(String organizerId) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        this.eventID = formatter.format(new Date()) + "_" + organizerId;
+    }
+
     public void setParticipants(List<String> participants) {
         this.participants = participants;
     }
 
     public List<String> getSelectedParticipants() {
         return selectedParticipants;
-    }
-
-    public void generateEventID() {
-
     }
 
     public void setSelectedParticipants(List<String> selectedParticipants) {
