@@ -22,7 +22,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.UUID;
 
 /**
  * The {@code OrganizerCreateEvent} class allows event organizers to create new events.
@@ -117,7 +116,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
             return;
         }
 
-        //public Event(String eventName, String facility, String description, int capacity, Date startDate, Date endDate, String organizerId)
+        //Event event = new Event(eventName, eventDescription, capacity, startDate, endDate, organizerId);
 
         // Create new Event object
         Event event = new Event(eventName, null, eventDescription, capacity, startDate, endDate, organizerId);
