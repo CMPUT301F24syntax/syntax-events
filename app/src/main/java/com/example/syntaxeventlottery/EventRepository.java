@@ -1,110 +1,180 @@
 package com.example.syntaxeventlottery;
 
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.net.Uri;
+import android.util.Log;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
-public class EventController {
-    private EventRepository repository;
+public class EventRepository  {
+    private static final String TAG = "EventRepository";
+    private FirebaseFirestore db;
+    private FirebaseStorage imageDb;
+    private CollectionReference eventsRef;
+    private StorageReference eventsImageRef;
+    private ArrayList<Event> eventsDataList;
 
-    public EventController(EventRepository repository) {
-        this.repository = repository;
+    public EventRepository() {
+        this.db = FirebaseFirestore.getInstance();
+        this.imageDb = FirebaseStorage.getInstance();
+        this.eventsRef = db.collection("events");
+        this.eventsImageRef = imageDb.getReference();
+        this.eventsDataList = new ArrayList<>();
+
     }
 
-    public void getAllEvents(DataCallback<List<Event>> callback) {
-        repository.fetchAllEvents(callback);
+    // Return the cached list - this is synchronous
+    public List<Event> getLocalEventsList() {
+        return new ArrayList<>(eventsDataList); // Return a copy to prevent modification
     }
 
-    public void addEvent(Event event, @Nullable Uri imageUri, DataCallback<Event> callback) {
-        try {
-            validateEvent(event);
-            event.generateEventID(event.getOrganizerId());
-            Bitmap qrCodeBitmap = generateQRCodeBitmap(event.getEventID());
-            repository.addEventToRepo(event, imageUri, qrCodeBitmap, callback);
-        } catch (IllegalArgumentException e) {
-            callback.onError(e);
+    public void fetchAllEvents(DataCallback<List<Event>> callback) {
+        eventsRef.get()
+                .addOnSuccessListener(querySnapshot -> {
+                    eventsDataList.clear();
+                    for (QueryDocumentSnapshot doc : querySnapshot) {
+                        Event event = doc.toObject(Event.class);
+                        eventsDataList.add(event);
+                    }
+                    callback.onSuccess(eventsDataList);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error fetching events", e);
+                    callback.onError(e);
+                });
+    }
+
+    public void addEventToRepo(Event event, @Nullable Uri imageUri, Bitmap qrCodeBitmap, DataCallback<Event> callback) {
+        eventsDataList.add(event);
+        HashMap<String, Object> data = eventToHashData(event);
+
+        if (imageUri != null) {
+            uploadImage(event, data, imageUri, qrCodeBitmap, callback);
+        } else {
+            uploadQrCode(event, data, qrCodeBitmap, callback);
         }
     }
 
-    public void updateEvent(Event event, @Nullable Uri imageUri,
-                            @Nullable Bitmap qrCodeBitmap, DataCallback<Event> callback) {
-        try {
-            validateEvent(event);
-            repository.updateEventDetails(event, imageUri, qrCodeBitmap, callback);
-        } catch (IllegalArgumentException e) {
-            callback.onError(e);
-        }
+    private void uploadImage(Event event, HashMap<String, Object> data, Uri imageUri,
+                             Bitmap qrCodeBitmap, DataCallback<Event> callback) {
+        StorageReference posterRef = eventsImageRef.child("event_images/" + event.getEventID());
+        posterRef.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot ->
+                        posterRef.getDownloadUrl()
+                                .addOnSuccessListener(url -> {
+                                    data.put("posterUrl", url.toString());
+                                    event.setPosterUrl(url.toString());
+                                    uploadQrCode(event, data, qrCodeBitmap, callback);
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Failed to get poster URL", e);
+                                    callback.onError(e);
+                                }))
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to upload image", e);
+                    callback.onError(e);
+                });
     }
 
-    public void deleteEvent(Event event, DataCallback<Void> callback) {
-        repository.deleteEventFromRepo(event, callback);
+    private void uploadQrCode(Event event, HashMap<String, Object> data,
+                              Bitmap qrCodeBitmap, DataCallback<Event> callback) {
+        StorageReference qrCodeRef = eventsImageRef.child("qrcodes/" + event.getEventID() + ".png");
+        qrCodeRef.putBytes(bitmapToByteArray(qrCodeBitmap))
+                .addOnSuccessListener(taskSnapshot ->
+                        qrCodeRef.getDownloadUrl()
+                                .addOnSuccessListener(url -> {
+                                    data.put("qrCodeUrl", url.toString());
+                                    event.setQrCodeUrl(url.toString());
+                                    uploadEventData(event, data, callback);
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Failed to get QR Code URL", e);
+                                    callback.onError(e);
+                                }))
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to upload QR code", e);
+                    callback.onError(e);
+                });
     }
 
-    // Synchronous method to get event by ID from local cache
-    public Event getEventById(String eventId) {
-        List<Event> events = repository.getLocalEventsList();
-        for (Event event : events) {
-            if (event.getEventID().equals(eventId)) {
-                return event;
+    private void uploadEventData(Event event, HashMap<String, Object> data, DataCallback<Event> callback) {
+        eventsRef.document(event.getEventID()).set(data)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d(TAG, "Event saved successfully");
+                    callback.onSuccess(event);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to save event", e);
+                    callback.onError(e);
+                });
+    }
+
+    public void deleteEventFromRepo(Event event, DataCallback<Void> callback) {
+        eventsRef.document(event.getEventID()).delete()
+                .addOnSuccessListener(aVoid -> {
+                    eventsDataList.remove(event);
+                    callback.onSuccess(null);
+                })
+                .addOnFailureListener(callback::onError);
+    }
+
+    public void updateEventDetails(Event event, @Nullable Uri imageUri,
+                                   @Nullable Bitmap qrCodeBitmap, DataCallback<Event> callback) {
+        // Update local list
+        for (int i = 0; i < eventsDataList.size(); i++) {
+            if (eventsDataList.get(i).getEventID().equals(event.getEventID())) {
+                eventsDataList.set(i, event);
+                break;
             }
         }
-        return null;
-    }
 
-    /**
-     * Validate event data
-     */
-    private void validateEvent(Event event) {
-        if (event == null) {
-            throw new IllegalArgumentException("Event cannot be null");
-        }
-        if (event.getEventName() == null || event.getEventName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Event name cannot be empty");
-        }
-        if (event.getCapacity() <= 0) {
-            throw new IllegalArgumentException("Event capacity must be greater than 0");
-        }
-        if (event.getStartDate() == null || event.getEndDate() == null) {
-            throw new IllegalArgumentException("Event dates cannot be null");
-        }
-        if (event.getStartDate().after(event.getEndDate())) {
-            throw new IllegalArgumentException("Start date cannot be after end date");
-        }
-        if (event.getStartDate().before(new Date())) {
-            throw new IllegalArgumentException("Start date cannot be in the past");
-        }
-    }
+        HashMap<String, Object> data = eventToHashData(event);
 
-    /**
-     * Generates a QR Code bitmap for the given event ID.
-     *
-     * @param eventId The ID of the event.
-     * @return The generated QR Code bitmap.
-     */
-    public Bitmap generateQRCodeBitmap(String eventId) {
-        QRCodeWriter writer = new QRCodeWriter();
-        try {
-            BitMatrix bitMatrix = writer.encode(eventId, BarcodeFormat.QR_CODE, 300, 300);
-            Bitmap bmp = Bitmap.createBitmap(300, 300, Bitmap.Config.RGB_565);
-            for (int x = 0; x < 300; x++) {
-                for (int y = 0; y < 300; y++) {
-                    bmp.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
-                }
+        if (imageUri != null || qrCodeBitmap != null) {
+            if (imageUri != null) {
+                uploadImage(event, data, imageUri, qrCodeBitmap, callback);
+            } else {
+                uploadQrCode(event, data, qrCodeBitmap, callback);
             }
-            return bmp;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+        } else {
+            uploadEventData(event, data, callback);
         }
     }
+
+    // Convert Bitmap to ByteArray
+    private byte[] bitmapToByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        return baos.toByteArray();
+    }
+
+    // Event to HashMap
+    public HashMap<String, Object> eventToHashData(Event event) {
+        HashMap<String, Object> data = new HashMap<>(); // initialize hashmap
+        data.put("eventID", event.getEventID());
+        data.put("eventName", event.getEventName());
+        data.put("facility", event.getFacility());
+        data.put("description", event.getDescription());
+        data.put("capacity", event.getCapacity());
+        data.put("startDate", new com.google.firebase.Timestamp(event.getStartDate()));  // Use Firebase Timestamp
+        data.put("endDate", new com.google.firebase.Timestamp(event.getEndDate()));      // Use Firebase Timestamp
+        data.put("organizerId", event.getOrganizerId());
+        data.put("participants", event.getParticipants());
+        data.put("selectedParticipants", event.getSelectedParticipants());
+        data.put("isFull", event.isFull());
+        data.put("isDrawed", event.isDrawed());
+        return data;
+    }
+
 }
