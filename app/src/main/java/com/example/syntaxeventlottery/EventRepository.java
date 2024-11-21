@@ -95,7 +95,7 @@ public class EventRepository  {
                         qrCodeRef.getDownloadUrl()
                                 .addOnSuccessListener(url -> {
                                     data.put("qrCodeUrl", url.toString());
-                                    event.setQrCodeUrl(url.toString());
+                                    event.setQrCode(url.toString());
                                     uploadEventData(event, data, callback);
                                 })
                                 .addOnFailureListener(e -> {

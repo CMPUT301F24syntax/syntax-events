@@ -18,6 +18,7 @@ public class Event implements Serializable {
 
     private String eventID;
     private String eventName;
+    private String facility;
     private String description;
     private int capacity;
     private boolean isFull;
@@ -70,10 +71,11 @@ public class Event implements Serializable {
      * @param endDate       End date and time of the event.
      * @param organizerId   ID of the organizer creating the event.
      */
-    public Event(String eventID, String eventName, String description, int capacity,
+    public Event(String eventID, String eventName, String facility, String description, int capacity,
                  Date startDate, Date endDate, String organizerId) {
         this.eventID = eventID;
         this.eventName = eventName;
+        this.facility = facility;
         this.description = description;
         this.capacity = capacity;
         this.startDate = startDate;
@@ -104,6 +106,14 @@ public class Event implements Serializable {
 
     public void setEventName(String eventName) {
         this.eventName = eventName;
+    }
+
+    public String getFacility() {
+        return facility;
+    }
+
+    public void setFacility(String facilityName) {
+        this.facility = facilityName;
     }
 
     public String getDescription() {
