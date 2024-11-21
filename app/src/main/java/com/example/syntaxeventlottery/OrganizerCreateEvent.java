@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -27,6 +28,7 @@ import java.util.UUID;
  * The {@code OrganizerCreateEvent} class allows event organizers to create new events.
  */
 public class OrganizerCreateEvent extends AppCompatActivity {
+    private static final String TAG = "Organizer Create Event";
 
     private EditText eventNameEditText;
     private EditText eventStartDateEditText;
@@ -124,12 +126,14 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         eventController.addEvent(event, imageUri, new DataCallback<Event>() {
             @Override
             public void onSuccess(Event result) {
-                Toast.makeText(OrganizerCreateEvent.this, "event created successfully", Toast.LENGTH_SHORT).show();
+                Toast.makeText(OrganizerCreateEvent.this, "Event creation successfull", Toast.LENGTH_SHORT).show();
+                clearInputFields();
             }
 
             @Override
             public void onError(Exception e) {
-                Toast.makeText(OrganizerCreateEvent.this, "could not save the event", Toast.LENGTH_SHORT).show();
+                Toast.makeText(OrganizerCreateEvent.this, "Event creation Error!", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, e.toString());
             }
         });
     }
