@@ -26,7 +26,7 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
     private ImageView posterImageView, qrCodeImageView;
     private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView, eventEndDateTextView, eventCapacityTextView;
     private Button joinWaitingListButton, leaveWaitingListButton, acceptInvitationButton, declineInvitationButton;
-    private Button drawButton, updatePosterButton, editInfoButton, waitingListButton;
+    private Button drawButton, updatePosterButton, editInfoButton, viewParticipantsButton;
     private ImageButton backButton;
 
     // Controller and Data
@@ -82,7 +82,7 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
         drawButton = findViewById(R.id.drawButton);
         updatePosterButton = findViewById(R.id.updatePosterButton);
         editInfoButton = findViewById(R.id.editInfoButton);
-        waitingListButton = findViewById(R.id.waitingListButton);
+        viewParticipantsButton = findViewById(R.id.viewParticipantsButton);
         backButton = findViewById(R.id.backButton);
     }
 
@@ -119,7 +119,7 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
             startActivityForResult(intent, REQUEST_CODE_SELECT_POSTER);
         });
 
-        waitingListButton.setOnClickListener(v -> {
+        viewParticipantsButton.setOnClickListener(v -> {
             if (event != null && deviceID.equals(event.getOrganizerId())) {
                 Intent intent = new Intent(EventDetailActivity.this, EventWaitingListActivity.class);
                 intent.putExtra("eventID", eventID);
@@ -145,7 +145,7 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
         displayEventDetails(event);
 
         if (deviceID.equals(event.getOrganizerId())) {
-            showOrganizerButtons();
+            showOrganizerButtons(event);
         } else {
             hideOrganizerButtons();
             eventController.checkParticipantStatus(eventID, deviceID);
@@ -184,7 +184,7 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
         hideAllParticipantButtons();
     }
 
-    @Override
+    //@Override
     public void onInvitationDeclined() {
         Log.d(TAG, "Invitation declined");
         hideAllParticipantButtons();
@@ -229,11 +229,16 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
                 ", Capacity: " + event.getCapacity() + ", Organizer ID: " + event.getOrganizerId());
     }
 
-    private void showOrganizerButtons() {
+    private void showOrganizerButtons(Event event) {
         drawButton.setVisibility(View.VISIBLE);
         updatePosterButton.setVisibility(View.VISIBLE);
         editInfoButton.setVisibility(View.VISIBLE);
-        waitingListButton.setVisibility(View.VISIBLE);
+        viewParticipantsButton.setVisibility(View.VISIBLE);
+        if (event.isDrawed()) {
+            viewParticipantsButton.setText("View Waiting List");
+        } else {
+            viewParticipantsButton.setText("View Invited Participants");
+        }
         hideAllParticipantButtons();
         Log.d(TAG, "Organizer buttons are now visible.");
     }
@@ -242,7 +247,7 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
         drawButton.setVisibility(View.GONE);
         updatePosterButton.setVisibility(View.GONE);
         editInfoButton.setVisibility(View.GONE);
-        waitingListButton.setVisibility(View.GONE);
+        viewParticipantsButton.setVisibility(View.GONE);
         Log.d(TAG, "Organizer buttons are now hidden.");
     }
 

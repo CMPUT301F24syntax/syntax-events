@@ -8,16 +8,16 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+
         <Button
-            android:id="@+id/waitingListButton"
+            android:id="@+id/viewParticipantsButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Waiting List"
-            android:backgroundTint="@android:color/black"
-            android:textColor="@android:color/white"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:layout_margin="8dp" />
+            android:layout_margin="8dp"
+            android:backgroundTint="@android:color/black"
+            android:textColor="@android:color/white" />
 
         <!-- Back Button -->
         <ImageButton
