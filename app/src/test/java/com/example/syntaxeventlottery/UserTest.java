@@ -69,7 +69,7 @@ public class UserTest {
 
     @Test
     public void testToString() {
-        // Verify that the toString method returns the expected string format
+        // Construct the expected string output
         String expectedToString = "User{" +
                 "userID='" + user.getUserID() + '\'' +
                 ", deviceCode='device12345'" +
@@ -79,6 +79,7 @@ public class UserTest {
                 ", username='testuser'" +
                 ", facility='testFacility'" +
                 '}';
+        // Assert that the actual toString matches the expected value
         assertEquals(expectedToString, user.toString());
     }
 }
