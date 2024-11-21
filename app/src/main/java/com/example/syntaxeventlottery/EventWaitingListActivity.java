@@ -33,7 +33,7 @@ public class EventWaitingListActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         // Retrieve event ID passed from EventDetailActivity
-        eventId = getIntent().getStringExtra("event_id");
+        eventId = getIntent().getStringExtra("eventID");
 
         // Initialize RecyclerView and Adapter
         waitingListRecyclerView = findViewById(R.id.waitingListRecyclerView);
@@ -92,4 +92,6 @@ public class EventWaitingListActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> Log.e("EventWaitingList", "Error loading user info for deviceCode: " + deviceCode, e));
     }
+
+    
 }
