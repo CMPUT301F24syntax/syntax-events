@@ -2,6 +2,8 @@
 
 package com.example.syntaxeventlottery;
 
+import static java.lang.System.in;
+
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -27,18 +29,52 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
+/**
+ * The {@code UserProfileActivity} class displays the user's profile information, including
+ * name, email, phone number, facility, and profile picture. Users can edit their profile
+ * or update their profile picture by selecting a new image from their device.
+ */
 public class UserProfileActivity extends AppCompatActivity {
 
-    private Button backButton, editButton;
+    /** Button to navigate back to the previous screen. */
+    private Button backButton;
+
+    /** Button to navigate to the edit profile screen. */
+    private Button editButton;
+
+    /** ImageView to display the user's profile picture. */
     private ImageView profileImageView;
-    private TextView nameTextView, emailTextView, phoneTextView, facilityTextView; // Added facilityTextView
+
+    /** TextView to display the user's name. */
+    private TextView nameTextView;
+
+    /** TextView to display the user's email address. */
+    private TextView emailTextView;
+
+    /** TextView to display the user's phone number. */
+    private TextView phoneTextView;
+
+    /** TextView to display the user's facility information. */
+    private TextView facilityTextView;
+
+    /** URI of the selected image from the image picker. */
     private Uri selectedImageUri;
 
+    /** Firebase Firestore instance for database operations. */
     private FirebaseFirestore db;
+
+    /** UserRepository instance for handling user-related database operations. */
     private UserRepository userRepository;
+
+    /** Unique device ID used to identify the user. */
     private String deviceId;
 
-    // Image picker launcher
+    private char[] letters = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
+
+    /**
+     * ActivityResultLauncher for the image picker intent.
+     * Allows the user to select a new profile picture from the device's gallery.
+     */
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -50,6 +86,13 @@ public class UserProfileActivity extends AppCompatActivity {
             }
     );
 
+    /**
+     * Called when the activity is first created.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously
+     *                           being shut down, then this Bundle contains the data it most
+     *                           recently supplied in {@link #onSaveInstanceState}. Otherwise, it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -167,7 +210,27 @@ public class UserProfileActivity extends AppCompatActivity {
                             if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
                                 loadImageWithGlide(profileImageUrl);
                             } else {
-                                profileImageView.setImageResource(R.drawable.ic_avatar_placeholder); // Set default avatar
+                                if (username != null && !username.isEmpty()) {
+                                    char firstChar = Character.toLowerCase(username.charAt(0));
+                                    boolean isLetterIncluded = false;
+                                    for (char letter : letters) {
+                                        if (letter == firstChar) {
+                                            isLetterIncluded = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (isLetterIncluded) {
+                                        char uppercaseFirstChar = Character.toUpperCase(firstChar);
+                                        String DefaultImageUrl = "https://firebasestorage.googleapis.com/v0/b/scanapp-7e377.appspot.com/o/"+uppercaseFirstChar+".png?alt=media&token=cb8a2589-5092-46bc-acc9-0fc31b9799e8";
+                                        loadImageWithGlide(DefaultImageUrl);
+                                    } else {
+                                        String DefaultImageUrl = "https://firebasestorage.googleapis.com/v0/b/scanapp-7e377.appspot.com/o/default.png?alt=media&token=cb8a2589-5092-46bc-acc9-0fc31b9799e8";
+                                        loadImageWithGlide(DefaultImageUrl);
+                                    }
+                                } else {
+                                    Toast.makeText(UserProfileActivity.this, "Username is invalid or empty.", Toast.LENGTH_SHORT).show();
+                                }
                             }
                         } else {
                             Toast.makeText(UserProfileActivity.this, "User data not found", Toast.LENGTH_SHORT).show();
@@ -198,7 +261,8 @@ public class UserProfileActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, com.bumptech.glide.load.DataSource dataSource, boolean isFirstResource) {
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target,
+                                                   com.bumptech.glide.load.DataSource dataSource, boolean isFirstResource) {
                         Log.d("GlideSuccess", "Image loaded successfully for URL: " + imageUrl);
                         return false;
                     }
