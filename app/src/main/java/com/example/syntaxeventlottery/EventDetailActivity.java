@@ -150,6 +150,7 @@ public class EventDetailActivity extends AppCompatActivity {
             }
         }));
 
+        /*
         acceptInvitationButton.setOnClickListener(v -> eventController.acceptInvitation(event, deviceID));
         declineInvitationButton.setOnClickListener(v -> eventController.declineInvitation(event, deviceID));
 
@@ -161,7 +162,7 @@ public class EventDetailActivity extends AppCompatActivity {
                 Log.d(TAG, "Draw has already been performed.");
             }
         });
-
+        */
         if (backButton != null) {
             backButton.setOnClickListener(v -> finish());
         } else {
@@ -274,7 +275,7 @@ public class EventDetailActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_SELECT_POSTER && resultCode == RESULT_OK && data != null) {
             Uri imageUri = data.getData();
-            eventController.updateEventPoster(eventID, imageUri);
+            eventController.updateEvent(event, imageUri);
             Log.d(TAG, "Selected new poster URI: " + imageUri.toString());
         }
     }

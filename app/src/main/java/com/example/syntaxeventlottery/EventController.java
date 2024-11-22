@@ -70,7 +70,21 @@ public class EventController {
         return null;
     }
 
-
+    // get all organizer events
+    public ArrayList<Event> getOrganizerEvents(String organizerID) {
+        if (organizerID == null || organizerID.isEmpty()) {
+            return null; 
+        }
+        // get all events where the passed id is the event's organizer
+        ArrayList<Event> organizerEvents = new ArrayList<>();
+        for (Event event : repository.getLocalEventsList()) {
+            if (event.getOrganizerId().equals(organizerID)) {
+                organizerEvents.add(event);
+            }
+        }
+        return organizerEvents;
+    }
+    
     /**
      * User methods
      */
