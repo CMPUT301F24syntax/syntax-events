@@ -107,4 +107,30 @@ public class EventController {
             return null;
         }
     }
+    /**
+     * User methods
+     */
+    // adds user to list of participants
+    public void joinWaitingList(Event event, String userID) {
+        if (event != null) {
+            ArrayList<String> currentParticipants = event.getParticipants();
+            if (currentParticipants.)
+        }
+    }
+
+    public void leaveWaitingList(Event event, String userID) {
+        if (event != null) {
+            event.removeParticipant(userID);
+        }
+    }
+
+    public void acceptInvitation(Event event, String userID) {
+        if (event.getParticipants().contains(userID) && !event.getSelectedParticipants().contains(userID)) {
+            ArrayList<String> currentSelectedParticipants = event.getSelectedParticipants();
+            currentSelectedParticipants.add(userID);
+            event.setSelectedParticipants(currentSelectedParticipants);
+        }
+    }
+
+    public void
 }

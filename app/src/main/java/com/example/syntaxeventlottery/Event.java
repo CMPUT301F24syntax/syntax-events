@@ -38,14 +38,14 @@ public class Event implements Serializable {
     /**
      * A list of participant IDs who have joined the event's waiting list.
      */
-    private List<String> participants;
+    private ArrayList<String> participants;
 
     /**
      * A list of participant IDs who have been selected for the event.
      */
-    private List<String> selectedParticipants;
+    private ArrayList<String> selectedParticipants;
 
-    private List<String> confirmedParticipants;
+    private ArrayList<String> confirmedParticipants;
 
     // -------------------------------------------------------------------------
     // Constructors
@@ -188,7 +188,7 @@ public class Event implements Serializable {
         this.qrCode = qrCode;
     }
 
-    public List<String> getParticipants() {
+    public ArrayList<String> getParticipants() {
         return participants;
     }
 
@@ -202,45 +202,26 @@ public class Event implements Serializable {
         this.eventID = formatter.format(new Date()) + "_" + organizerId;
     }
 
-    public void setParticipants(List<String> participants) {
+    public void setParticipants(ArrayList<String> participants) {
         this.participants = participants;
     }
 
-    public List<String> getSelectedParticipants() {
+    public ArrayList<String> getSelectedParticipants() {
         return selectedParticipants;
     }
 
-    public void setSelectedParticipants(List<String> selectedParticipants) {
+    public void setSelectedParticipants(ArrayList<String> selectedParticipants) {
         this.selectedParticipants = selectedParticipants;
     }
 
-    public List<String> getConfirmedParticipants() {
+    public ArrayList<String> getConfirmedParticipants() {
         return confirmedParticipants;
     }
 
-    public void setConfirmedParticipants(List<String> confirmedParticipants) {
+    public void setConfirmedParticipants(ArrayList<String> confirmedParticipants) {
         this.confirmedParticipants = confirmedParticipants;
     }
-    /**
-     * Adds a participant's ID to the event's participants list.
-     *
-     * @param participantId The ID of the participant to add.
-     */
-    public void addParticipant(String participantId) {
-        if (!this.participants.contains(participantId) && !this.isFull) {
-            this.participants.add(participantId);
-            checkIfFull();
-        }
-    }
-    /**
-     * Removes a participant's ID from the event's participants list.
-     *
-     * @param participantId The ID of the participant to remove.
-     */
-    public void removeParticipant(String participantId) {
-        this.participants.remove(participantId);
-        checkIfFull();
-    }
+
     /**
      * Checks if the event is full based on capacity and updates the isFull flag.
      */

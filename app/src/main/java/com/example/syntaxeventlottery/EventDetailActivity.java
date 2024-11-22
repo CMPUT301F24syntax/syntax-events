@@ -24,7 +24,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
     // UI Components
     private ImageView posterImageView, qrCodeImageView;
-    private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView, eventEndDateTextView, eventCapacityTextView;
+    private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView, eventEndDateTextView, eventCapacityTextView, eventFacilityTextView;
     private Button joinWaitingListButton, leaveWaitingListButton, acceptInvitationButton, declineInvitationButton;
     private Button drawButton, updatePosterButton, editInfoButton, viewParticipantsButton;
     private ImageButton backButton;
@@ -41,9 +41,13 @@ public class EventDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
-
-        initializeUI();
+        // initialize controller
         eventController = new EventController(new EventRepository());
+
+        // Get device ID
+        deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        Log.d(TAG, "Device ID: " + deviceID);
+
 
         // Get event ID from intent
         eventID = getIntent().getStringExtra("eventID");
@@ -55,17 +59,22 @@ public class EventDetailActivity extends AppCompatActivity {
             event = eventController.getEventById(eventID);
             initializeUI();
             displayEventDetails(event);
+            // display buttons depending on if the current user is an organizer
+            if (event.getEventID().equals(deviceID)) { // user is the organizer
+                hideAllParticipantButtons();
+                showOrganizerButtons(event);
+            } else {
+                hideOrganizerButtons();
+                showJoinWaitingListButton();
+                showAcceptDeclineButtons();
+                showLeaveWaitingListButton();
+            }
+            setupButtonListeners();
         } else {
             Log.d(TAG, "TTTTTTTTTTTTTTAAAAA" + eventID);
             Toast.makeText(this, "Event ID is missing", Toast.LENGTH_SHORT).show();
             finish();
         }
-
-        // Get device ID
-        deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        Log.d(TAG, "Device ID: " + deviceID);
-
-        setupButtonListeners();
     }
 
     private void initializeUI() {
@@ -90,11 +99,11 @@ public class EventDetailActivity extends AppCompatActivity {
     }
 
     private void setupButtonListeners() {
-        joinWaitingListButton.setOnClickListener(v -> eventController.joinWaitingList(eventID, deviceID));
-        leaveWaitingListButton.setOnClickListener(v -> eventController.leaveWaitingList(eventID, deviceID));
+        joinWaitingListButton.setOnClickListener(v -> eventController.joinWaitingList(event, deviceID));
+        leaveWaitingListButton.setOnClickListener(v -> eventController.leaveWaitingList(event, deviceID));
 
-        acceptInvitationButton.setOnClickListener(v -> eventController.acceptInvitation(eventID, deviceID));
-        declineInvitationButton.setOnClickListener(v -> eventController.declineInvitation(eventID, deviceID));
+        acceptInvitationButton.setOnClickListener(v -> eventController.acceptInvitation(event, deviceID));
+        declineInvitationButton.setOnClickListener(v -> eventController.declineInvitation(event, deviceID));
 
         drawButton.setOnClickListener(v -> {
             if (event != null && !event.isDrawed()) {
@@ -137,6 +146,7 @@ public class EventDetailActivity extends AppCompatActivity {
     private void displayEventDetails(Event event) {
         eventNameTextView.setText(event.getEventName());
         eventDescriptionTextView.setText(event.getDescription());
+        eventFacilityTextView.setText(event.getFacility());
         eventStartDateTextView.setText(event.getStartDate().toString());
         eventEndDateTextView.setText(event.getEndDate().toString());
         eventCapacityTextView.setText(String.valueOf(event.getCapacity()));

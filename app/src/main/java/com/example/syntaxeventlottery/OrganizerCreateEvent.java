@@ -40,7 +40,6 @@ public class OrganizerCreateEvent extends AppCompatActivity {
     private ImageView eventImageView;
     private Uri imageUri;
     private EventController eventController;
-    private EventRepository repo;
 
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
