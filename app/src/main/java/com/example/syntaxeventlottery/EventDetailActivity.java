@@ -54,26 +54,53 @@ public class EventDetailActivity extends AppCompatActivity {
         Log.d(TAG, "Received eventID: " + eventID);
 
         if (eventID != null && !eventID.isEmpty()) {
-            Log.d(TAG, "TTTTTTTTTTTTTT" + eventID);
-            // find the event to display through the controller
-            event = eventController.getEventById(eventID);
-            initializeUI();
-            displayEventDetails(event);
-            // display buttons depending on if the current user is an organizer
-            if (event.getEventID().equals(deviceID)) { // user is the organizer
-                hideAllParticipantButtons();
-                showOrganizerButtons(event);
-            } else {
-                hideOrganizerButtons();
-                showJoinWaitingListButton();
-                showAcceptDeclineButtons();
-                showLeaveWaitingListButton();
-            }
-            setupButtonListeners();
+            Log.d(TAG, "Event ID found: " + eventID);
+
+            // Refresh repository to get the latest data
+            eventController.refreshRepository(new DataCallback<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                    // Fetch the event by ID from the controller
+                    event = eventController.getEventById(eventID);
+
+                    // If the event is not found, show an error and finish
+                    if (event == null) {
+                        Log.d(TAG, "Failed to find event in repository");
+                        Toast.makeText(EventDetailActivity.this, "Failed to find the event", Toast.LENGTH_SHORT).show();
+                        finish();  // Exit the activity as the event wasn't found
+                        return;    // Early return to prevent the rest of the code from executing
+                    }
+
+                    // Initialize UI and display event details
+                    initializeUI();
+                    displayEventDetails(event);
+
+                    // Display buttons based on whether the user is the organizer or not
+                    if (event.getEventID().equals(deviceID)) { // User is the organizer
+                        hideAllParticipantButtons();
+                        showOrganizerButtons(event);
+                    } else { // User is a potential entrant
+                        hideOrganizerButtons();
+                        showJoinWaitingListButton();
+                        showAcceptDeclineButtons();
+                        showLeaveWaitingListButton();
+                    }
+
+                    // Set up button listeners after the UI is updated
+                    setupButtonListeners();
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Log.d(TAG, e.toString());
+                    Toast.makeText(EventDetailActivity.this, "Failed to get updated data", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            });
         } else {
-            Log.d(TAG, "TTTTTTTTTTTTTTAAAAA" + eventID);
-            Toast.makeText(this, "Event ID is missing", Toast.LENGTH_SHORT).show();
-            finish();
+            Log.d(TAG, "Event ID is missing");
+            Toast.makeText(this, "Couldn't retrieve event id", Toast.LENGTH_SHORT).show();
+            finish();  // Exit the activity as there's no event ID to fetch
         }
     }
 
@@ -99,8 +126,29 @@ public class EventDetailActivity extends AppCompatActivity {
     }
 
     private void setupButtonListeners() {
-        joinWaitingListButton.setOnClickListener(v -> eventController.joinWaitingList(event, deviceID));
-        leaveWaitingListButton.setOnClickListener(v -> eventController.leaveWaitingList(event, deviceID));
+        joinWaitingListButton.setOnClickListener(v -> eventController.addUserToEventParticipants(event, deviceID, new DataCallback<Event>() {
+            @Override
+            public void onSuccess(Event result) {
+                Toast.makeText(EventDetailActivity.this, "You have joined the waiting list", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(EventDetailActivity.this, "Error joining the waiting list", Toast.LENGTH_SHORT).show();
+            }
+        }));
+
+        leaveWaitingListButton.setOnClickListener(v -> eventController.leaveWaitingList(event, deviceID, new DataCallback<Event>() {
+            @Override
+            public void onSuccess(Event result) {
+                Toast.makeText(EventDetailActivity.this, "You have left the waiting list", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(EventDetailActivity.this, "Error joining the waiting list", Toast.LENGTH_SHORT).show();
+            }
+        }));
 
         acceptInvitationButton.setOnClickListener(v -> eventController.acceptInvitation(event, deviceID));
         declineInvitationButton.setOnClickListener(v -> eventController.declineInvitation(event, deviceID));
@@ -220,6 +268,7 @@ public class EventDetailActivity extends AppCompatActivity {
         Log.d(TAG, "All participant buttons are now hidden.");
     }
 
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -230,9 +279,4 @@ public class EventDetailActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onPosterUpdated() {
-        Log.d(TAG, "Poster updated successfully.");
-        eventController.loadEventDetails(eventID);
-    }
 }
