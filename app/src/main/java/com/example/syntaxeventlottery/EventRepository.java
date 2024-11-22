@@ -35,11 +35,11 @@ public class EventRepository  {
     }
 
     // Return the cached list - this is synchronous
-    public List<Event> getLocalEventsList() {
+    public ArrayList<Event> getLocalEventsList() {
         return new ArrayList<>(eventsDataList); // Return a copy to prevent modification
     }
 
-    public void fetchAllEvents(DataCallback<List<Event>> callback) {
+    public void updateLocalEventsList(DataCallback<Void> callback) {
         eventsRef.get()
                 .addOnSuccessListener(querySnapshot -> {
                     eventsDataList.clear();
@@ -47,7 +47,6 @@ public class EventRepository  {
                         Event event = doc.toObject(Event.class);
                         eventsDataList.add(event);
                     }
-                    callback.onSuccess(eventsDataList);
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error fetching events", e);

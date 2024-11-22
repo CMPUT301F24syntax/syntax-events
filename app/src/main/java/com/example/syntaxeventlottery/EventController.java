@@ -21,8 +21,12 @@ public class EventController {
         this.repository = repository;
     }
 
-    public void getAllEvents(DataCallback<List<Event>> callback) {
-        repository.fetchAllEvents(callback);
+    public ArrayList<Event> getLocalEventsList() {
+        return repository.getLocalEventsList();
+    }
+
+    public void refreshRepository(DataCallback<Void> callback) {
+        repository.updateLocalEventsList(callback);
     }
 
     public void addEvent(Event event, @Nullable Uri imageUri, DataCallback<Event> callback) {
