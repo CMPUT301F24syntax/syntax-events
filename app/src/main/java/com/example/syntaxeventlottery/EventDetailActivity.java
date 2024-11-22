@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Activity to display event details and manage event actions.
  */
-public class EventDetailActivity extends AppCompatActivity implements EventController.EventControllerListener {
+public class EventDetailActivity extends AppCompatActivity {
 
     // UI Components
     private ImageView posterImageView, qrCodeImageView;
@@ -35,7 +35,7 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
     private Event event;
 
     private static final int REQUEST_CODE_SELECT_POSTER = 1001;
-    private static final String TAG = "EventDetailActivity";
+    private static final String TAG = "Event Detail Activity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +43,7 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
         setContentView(R.layout.activity_event_detail);
 
         initializeUI();
-        eventController = new EventController(this);
+        eventController = new EventController(new EventRepository());
 
         // Get event ID from intent
         eventID = getIntent().getStringExtra("eventID");
@@ -51,7 +51,10 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
 
         if (eventID != null && !eventID.isEmpty()) {
             Log.d(TAG, "TTTTTTTTTTTTTT" + eventID);
-            eventController.loadEventDetails(eventID);
+            // find the event to display through the controller
+            event = eventController.getEventById(eventID);
+            initializeUI();
+            displayEventDetails(event);
         } else {
             Log.d(TAG, "TTTTTTTTTTTTTTAAAAA" + eventID);
             Toast.makeText(this, "Event ID is missing", Toast.LENGTH_SHORT).show();
@@ -129,82 +132,6 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
                 Log.d(TAG, "User is not authorized to view the waiting list.");
             }
         });
-    }
-
-    @Override
-    public void onEventLoaded(Event event) {
-        if (event == null) {
-            Log.e(TAG, "Event is null.");
-            Toast.makeText(this, "Failed to load event details.", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
-        this.event = event;
-        Log.d(TAG, "Event loaded: " + event.getEventName());
-        displayEventDetails(event);
-
-        if (deviceID.equals(event.getOrganizerId())) {
-            showOrganizerButtons(event);
-        } else {
-            hideOrganizerButtons();
-            eventController.checkParticipantStatus(eventID, deviceID);
-        }
-    }
-
-    @Override
-    public void onParticipantStatusChecked(boolean isInWaitingList, boolean isSelected, Event event) {
-        if (isSelected) {
-            showAcceptDeclineButtons();
-            Log.d(TAG, "Participant has been selected.");
-        } else if (isInWaitingList) {
-            showLeaveWaitingListButton();
-            Log.d(TAG, "Participant is in waiting list.");
-        } else {
-            showJoinWaitingListButton();
-            Log.d(TAG, "Participant is not in waiting list.");
-        }
-    }
-
-    @Override
-    public void onWaitingListJoined() {
-        Log.d(TAG, "Joined waiting list");
-        eventController.checkParticipantStatus(eventID, deviceID);
-    }
-
-    @Override
-    public void onWaitingListLeft() {
-        Log.d(TAG, "Left waiting list");
-        eventController.checkParticipantStatus(eventID, deviceID);
-    }
-
-    @Override
-    public void onInvitationAccepted() {
-        Log.d(TAG, "Invitation accepted");
-        hideAllParticipantButtons();
-    }
-
-    //@Override
-    public void onInvitationDeclined() {
-        Log.d(TAG, "Invitation declined");
-        hideAllParticipantButtons();
-    }
-
-    @Override
-    public void onDrawPerformed() {
-        Log.d(TAG, "Draw has been performed successfully.");
-        drawButton.setEnabled(false);
-    }
-
-    @Override
-    public void onEventSaved() {}
-
-    @Override
-    public void onEventListLoaded(List<Event> eventList) {}
-
-    @Override
-    public void onError(String errorMessage) {
-        Log.e(TAG, "Error: " + errorMessage);
     }
 
     private void displayEventDetails(Event event) {

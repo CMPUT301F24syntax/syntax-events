@@ -116,7 +116,6 @@ public class OrganizerCreateEvent extends AppCompatActivity {
             return;
         }
 
-        //Event event = new Event(eventName, eventDescription, capacity, startDate, endDate, organizerId);
 
         // Create new Event object
         Event event = new Event(eventName, null, eventDescription, capacity, startDate, endDate, organizerId);

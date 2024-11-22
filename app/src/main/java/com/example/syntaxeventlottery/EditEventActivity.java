@@ -19,7 +19,7 @@ import java.util.List;
  * The EditEventActivity class allows organizers to edit event details.
  * It uses the EventController to handle business logic.
  */
-public class EditEventActivity extends AppCompatActivity implements EventController.EventControllerListener {
+public class EditEventActivity extends AppCompatActivity {
 
     private static final String TAG = "EditEventActivity";
 
@@ -50,14 +50,20 @@ public class EditEventActivity extends AppCompatActivity implements EventControl
         backButton = findViewById(R.id.backButton);
 
         // Initialize EventController
-        eventController = new EventController(this);
+        eventController = new EventController(new EventRepository());
 
         // Get event ID from Intent
         eventId = getIntent().getStringExtra("eventID");
         Log.d(TAG, "Event ID received: " + eventId);
 
         if (eventId != null && !eventId.isEmpty()) {
-            eventController.loadEventDetails(eventId);
+            currentEvent = eventController.getEventById(eventId);
+            if (currentEvent != null) {
+                populateEventDetails();
+            } else {
+                Log.d(TAG, "Error fetching event from the controller");
+            }
+            populateEventDetails();
         } else {
             Log.d("EditEventActivity","MMMMMMMMM"+eventId);
             Toast.makeText(this, "Event ID is missing", Toast.LENGTH_SHORT).show();
@@ -75,19 +81,18 @@ public class EditEventActivity extends AppCompatActivity implements EventControl
     /**
      * Populates the UI fields with the event details.
      *
-     * @param event The event object containing details.
      */
-    private void populateEventDetails(Event event) {
-        currentEvent = event;
-        editEventName.setText(event.getEventName());
-        editEventDescription.setText(event.getDescription());
+    private void populateEventDetails() {
+
+        editEventName.setText(currentEvent.getEventName());
+        editEventDescription.setText(currentEvent.getDescription());
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        String startDateStr = (event.getStartDate() != null) ? dateFormat.format(event.getStartDate()) : "";
-        String endDateStr = (event.getEndDate() != null) ? dateFormat.format(event.getEndDate()) : "";
+        String startDateStr = (currentEvent.getStartDate() != null) ? dateFormat.format(currentEvent.getStartDate()) : "";
+        String endDateStr = (currentEvent.getEndDate() != null) ? dateFormat.format(currentEvent.getEndDate()) : "";
         editStartDate.setText(startDateStr);
         editEndDate.setText(endDateStr);
-        editCapacity.setText(String.valueOf(event.getCapacity()));
+        editCapacity.setText(String.valueOf(currentEvent.getCapacity()));
     }
 
     /**
@@ -146,78 +151,7 @@ public class EditEventActivity extends AppCompatActivity implements EventControl
         currentEvent.setCapacity(capacity);
 
         // Save the event via controller
-        eventController.saveEventDetails(currentEvent);
+        eventController.updateEvent(currentEvent);
     }
 
-    // EventControllerListener methods
-
-    @Override
-    public void onEventLoaded(Event event) {
-        runOnUiThread(() -> {
-            if (event != null) {
-                populateEventDetails(event);
-                saveEventButton.setEnabled(true); // Enable save button after loading
-            } else {
-                Toast.makeText(EditEventActivity.this, "Failed to load event details.", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    @Override
-    public void onEventSaved() {
-        runOnUiThread(() -> {
-            Toast.makeText(EditEventActivity.this, "Event updated successfully", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(EditEventActivity.this, UserHomeActivity.class);
-            startActivity(intent);
-            finish();
-        });
-    }
-
-    @Override
-    public void onError(String errorMessage) {
-        runOnUiThread(() -> {
-            Toast.makeText(EditEventActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
-            saveEventButton.setEnabled(false);
-        });
-    }
-
-    @Override
-    public void onPosterUpdated() {
-
-    }
-
-    @Override
-    public void onEventListLoaded(List<Event> eventList) {
-        // Since EditEventActivity doesn't need to handle event lists,  leave this empty
-    }
-
-    @Override
-    public void onParticipantStatusChecked(boolean isInWaitingList, boolean isSelected, Event event) {
-
-    }
-
-    @Override
-    public void onWaitingListJoined() {
-
-    }
-
-    @Override
-    public void onWaitingListLeft() {
-
-    }
-
-    @Override
-    public void onInvitationAccepted() {
-
-    }
-
-    @Override
-    public void onInvitationDeclined() {
-
-    }
-
-    @Override
-    public void onDrawPerformed() {
-
-    }
 }
