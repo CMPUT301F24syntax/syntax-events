@@ -13,7 +13,6 @@ import com.google.firebase.storage.StorageReference;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -181,7 +180,10 @@ public class EventRepository  {
         data.put("organizerId", event.getOrganizerId());
         data.put("participants", event.getParticipants());
         data.put("selectedParticipants", event.getSelectedParticipants());
-        data.put("isFull", event.isFull());
+        data.put("confirmedParticipants", event.getConfirmedParticipants());
+        data.put("waitingListLimit", event.getWaitingListLimit());
+        data.put("capacityFull", event.getCapacityFull());
+        data.put("waitingListFull", event.getWaitingListFull());
         data.put("isDrawed", event.isDrawed());
         return data;
     }

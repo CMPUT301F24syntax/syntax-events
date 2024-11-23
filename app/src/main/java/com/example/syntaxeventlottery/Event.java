@@ -22,7 +22,9 @@ public class Event implements Serializable {
     private String facility;
     private String description;
     private int capacity;
-    private boolean isFull;
+    private Integer waitingListLimit; // Integer class so that it can be null;
+    private boolean capacityFull;
+    private boolean waitingListFull;
     private boolean isDrawed;
 
     @ServerTimestamp
@@ -34,18 +36,9 @@ public class Event implements Serializable {
     private String organizerId;
     private String posterUrl;
     private String qrCode;
-
-    /**
-     * A list of participant IDs who have joined the event's waiting list.
-     */
-    private ArrayList<String> participants;
-
-    /**
-     * A list of participant IDs who have been selected for the event.
-     */
-    private ArrayList<String> selectedParticipants;
-
-    private ArrayList<String> confirmedParticipants;
+    private ArrayList<String> participants; // those who have joined waiting list
+    private ArrayList<String> selectedParticipants; // those who have been selected by lottery
+    private ArrayList<String> confirmedParticipants; // those who have confirmed to take part of event
 
     // -------------------------------------------------------------------------
     // Constructors
@@ -57,7 +50,7 @@ public class Event implements Serializable {
     public Event() {
         this.participants = new ArrayList<>();
         this.selectedParticipants = new ArrayList<>();
-        this.isFull = false;
+        this.capacityFull = false;
         this.isDrawed = false;
     }
 
@@ -70,9 +63,10 @@ public class Event implements Serializable {
      * @param startDate     Start date and time of the event.
      * @param endDate       End date and time of the event.
      * @param organizerId   ID of the organizer creating the event.
+     * @param waitingListLimit Limit of the waiting list (i.e., participants list). No limit if null
      */
     public Event(String eventName, String facility, String description, int capacity,
-                 Date startDate, Date endDate, String organizerId) {
+                 Date startDate, Date endDate, String organizerId, Integer waitingListLimit) {
         this.eventID = null;
         this.eventName = eventName;
         this.facility = facility;
@@ -83,9 +77,11 @@ public class Event implements Serializable {
         this.organizerId = organizerId;
         this.participants = new ArrayList<>();
         this.selectedParticipants = new ArrayList<>();
-        this.isFull = false;
-        this.isDrawed = false;
         this.confirmedParticipants = new ArrayList<>();
+        this.waitingListLimit = waitingListLimit;
+        this.capacityFull = false;
+        this.waitingListFull = false;
+        this.isDrawed = false;
     }
 
     // -------------------------------------------------------------------------
@@ -132,12 +128,31 @@ public class Event implements Serializable {
         this.capacity = capacity;
     }
 
-    public boolean isFull() {
-        return isFull;
+    public boolean getCapacityFull() {
+        return confirmedParticipants.size() >= capacity;
     }
 
-    public void setFull(boolean full) {
-        isFull = full;
+    public void setCapacityFull(boolean full) {
+        this.capacityFull = full;
+    }
+
+    public Integer getWaitingListLimit() {
+        return waitingListLimit;
+    }
+
+    public void setWaitingListLimit(Integer waitingListLimit) {
+        this.waitingListLimit = waitingListLimit;
+    }
+
+    public boolean getWaitingListFull() {
+        if (waitingListLimit == null) { // if limit is null, cannot be full
+            return false;
+        }
+        return participants.size() >= waitingListLimit;
+    }
+
+    public void setWaitingListFull(boolean full) {
+        this.waitingListFull = full;
     }
 
     public boolean isDrawed() {
@@ -222,16 +237,6 @@ public class Event implements Serializable {
         this.confirmedParticipants = confirmedParticipants;
     }
 
-    /**
-     * Checks if the event is full based on capacity and updates the isFull flag.
-     */
-    private void checkIfFull() {
-        if (this.participants.size() >= this.capacity) {
-            this.isFull = true;
-        } else {
-            this.isFull = false;
-        }
-    }
 
     @Override
     public String toString() {
@@ -240,7 +245,9 @@ public class Event implements Serializable {
                 ", eventName='" + eventName + '\'' +
                 ", description='" + description + '\'' +
                 ", capacity=" + capacity +
-                ", isFull=" + isFull +
+                ", capacityFull=" + capacityFull +
+                ", waitingListLimit=" + (waitingListLimit == null ? "No limit set" : waitingListLimit) +
+                ", waitingListFull=" + waitingListFull +
                 ", isDrawed=" + isDrawed +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
