@@ -24,7 +24,6 @@ public class OrganizerActivity extends AppCompatActivity {
     private Button createEventButton;
     private Button backButton;
     private RecyclerView eventRecyclerView;
-    private ArrayList<Event> eventsDataList;
     private EventAdapter eventAdapter;
     private String deviceID;
     private EventController eventController;
@@ -39,15 +38,12 @@ public class OrganizerActivity extends AppCompatActivity {
         backButton = findViewById(R.id.backButton);
         eventRecyclerView = findViewById(R.id.eventRecyclerView);
 
-        // initalize events data list
-        eventsDataList = new ArrayList<>();
-
         // Get device ID
         deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
         // Set up RecyclerView
         eventRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        eventAdapter = new EventAdapter(eventsDataList, this);
+        eventAdapter = new EventAdapter(new ArrayList<>(), this);
         eventRecyclerView.setAdapter(eventAdapter);
 
         // Initialize EventController
@@ -74,19 +70,16 @@ public class OrganizerActivity extends AppCompatActivity {
     }
 
     private void loadEvents() {
-        // get the most updated events
         eventController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                // clear local list and retrieve newest data
-                eventsDataList.clear();
-                eventsDataList.addAll(eventController.getOrganizerEvents(deviceID));
-                eventAdapter.notifyDataSetChanged();
+                List<Event> updatedEvents = eventController.getOrganizerEvents(deviceID);
+                eventAdapter.updateEvents(updatedEvents);
             }
 
             @Override
             public void onError(Exception e) {
-                Log.d(TAG, "Failed to load events",e);
+                Log.e(TAG, "Error refreshing events: " + e.getMessage(), e);
                 Toast.makeText(OrganizerActivity.this, "Failed to load events. Please try again.", Toast.LENGTH_SHORT).show();
             }
         });

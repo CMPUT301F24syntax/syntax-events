@@ -109,36 +109,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
      * @param newEvents A new list of {@link Event} objects to replace the current list.
      */
     public void updateEvents(List<Event> newEvents) {
+        eventsList.clear();
         if (newEvents != null) {
-            this.eventsList.clear();
-            this.eventsList.addAll(newEvents);
-        } else {
-            this.eventsList.clear();
+            eventsList.addAll(newEvents);
         }
         notifyDataSetChanged();
     }
 
-    /**
-     * Adds a single event to the list and notifies the adapter.
-     *
-     * @param event The {@link Event} object to be added.
-     */
-    public void addEvent(Event event) {
-        this.eventsList.add(event);
-        notifyItemInserted(eventsList.size() - 1);
-    }
-
-    /**
-     * Removes an event from the list by its position and notifies the adapter.
-     *
-     * @param position The position of the event to be removed.
-     */
-    public void removeEvent(int position) {
-        if (position >= 0 && position < eventsList.size()) {
-            this.eventsList.remove(position);
-            notifyItemRemoved(position);
-        }
-    }
 
     /**
      * The {@code EventViewHolder} class holds references to the views for each event item.
@@ -160,27 +137,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             eventNameTextView = itemView.findViewById(R.id.eventNameTextView);
             eventPosterImageView = itemView.findViewById(R.id.eventPosterImageView);
 
-        }
-
-        public void bind(Event event) {
-            eventNameTextView.setText(event.getEventName());
-
-            // Load poster image using Glide
-            if (event.getPosterUrl() != null && !event.getPosterUrl().isEmpty()) {
-                Glide.with(context)
-                        .load(event.getPosterUrl())
-                        .into(eventPosterImageView);
-            } else {
-                // Use a placeholder image if posterUrl is null or empty
-                Glide.with(context)
-                        .load(R.drawable.ic_avatar_placeholder)
-                        .into(eventPosterImageView);
-            }
-
-            // Set click listener to delegate to the EventController
-            itemView.setOnClickListener(v -> {
-                EventController.handleEventItemClick(event);
-            });
         }
     }
 }

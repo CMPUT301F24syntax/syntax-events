@@ -47,6 +47,8 @@ public class EventRepository  {
                         Event event = doc.toObject(Event.class);
                         eventsDataList.add(event);
                     }
+                    Log.d(TAG, "Local Events List updated");
+                    callback.onSuccess(null);
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error fetching events", e);
@@ -67,7 +69,7 @@ public class EventRepository  {
 
     private void uploadImage(Event event, HashMap<String, Object> data, Uri imageUri,
                              Bitmap qrCodeBitmap, DataCallback<Event> callback) {
-        StorageReference posterRef = eventsImageRef.child("event_images/" + event.getEventID());
+        StorageReference posterRef = eventsImageRef.child("event_poster_images/" + event.getEventID());
         posterRef.putFile(imageUri)
                 .addOnSuccessListener(taskSnapshot ->
                         posterRef.getDownloadUrl()
@@ -88,7 +90,7 @@ public class EventRepository  {
 
     private void uploadQrCode(Event event, HashMap<String, Object> data,
                               Bitmap qrCodeBitmap, DataCallback<Event> callback) {
-        StorageReference qrCodeRef = eventsImageRef.child("qrcodes/" + event.getEventID() + ".png");
+        StorageReference qrCodeRef = eventsImageRef.child("event_qrcode_images/" + event.getEventID() + ".png");
         qrCodeRef.putBytes(bitmapToByteArray(qrCodeBitmap))
                 .addOnSuccessListener(taskSnapshot ->
                         qrCodeRef.getDownloadUrl()

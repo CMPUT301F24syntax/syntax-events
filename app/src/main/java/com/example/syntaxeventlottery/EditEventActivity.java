@@ -49,29 +49,24 @@ public class EditEventActivity extends AppCompatActivity {
         saveEventButton = findViewById(R.id.saveEventButton);
         backButton = findViewById(R.id.backButton);
 
-        // Initialize EventController
+        // initialize event controller
         eventController = new EventController(new EventRepository());
 
         // Get event ID from Intent
         eventId = getIntent().getStringExtra("eventID");
-        Log.d(TAG, "Event ID received: " + eventId);
+        currentEvent = (Event) getIntent().getSerializableExtra("event"); // get event using intent
 
-        if (eventId != null && !eventId.isEmpty()) {
-            currentEvent = eventController.getEventById(eventId);
-            if (currentEvent != null) {
-                populateEventDetails();
-            } else {
-                Log.d(TAG, "Error fetching event from the controller");
-            }
-            populateEventDetails();
-        } else {
+        if (currentEvent == null || eventId == null || eventId.isEmpty()) { // if event cannot be found
             Log.d("EditEventActivity","MMMMMMMMM"+eventId);
             Toast.makeText(this, "Event ID is missing", Toast.LENGTH_SHORT).show();
             finish();
+            return;
         }
 
+        populateEventDetails();
+
         // Disable the save button until the event is loaded
-        saveEventButton.setEnabled(false);
+        //saveEventButton.setEnabled(false);
 
         // Set up button listeners
         backButton.setOnClickListener(v -> finish());
@@ -150,8 +145,19 @@ public class EditEventActivity extends AppCompatActivity {
         currentEvent.setEndDate(endDate);
         currentEvent.setCapacity(capacity);
 
-        // Save the event via controller
-        eventController.updateEvent(currentEvent);
-    }
+        eventController.updateEvent(currentEvent, null, null, new DataCallback<Event>() {
+            @Override
+            public void onSuccess(Event result) {
+                Toast.makeText(EditEventActivity.this, "Event details updated successfully", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Event updated successfully");
+                finish();
+            }
 
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error updating event information");
+                finish();
+            }
+        });
+    }
 }

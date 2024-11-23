@@ -2,6 +2,7 @@
 package com.example.syntaxeventlottery;
 import android.content.Intent;
 import android.net.Uri;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.Settings;
@@ -35,7 +36,7 @@ public class EventDetailActivity extends AppCompatActivity {
     private Event event;
 
     private static final int REQUEST_CODE_SELECT_POSTER = 1001;
-    private static final String TAG = "Event Detail Activity";
+    private static final String TAG = "EventDetailActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,12 +61,14 @@ public class EventDetailActivity extends AppCompatActivity {
             eventController.refreshRepository(new DataCallback<Void>() {
                 @Override
                 public void onSuccess(Void result) {
+                    Log.d(TAG, "Refreshed repository");
                     // Fetch the event by ID from the controller
                     event = eventController.getEventById(eventID);
+                    //Log.d(TAG, eventController.getLocalEventsList().toString());
 
                     // If the event is not found, show an error and finish
                     if (event == null) {
-                        Log.d(TAG, "Failed to find event in repository");
+                        Log.e(TAG, "Failed to find event in repository");
                         Toast.makeText(EventDetailActivity.this, "Failed to find the event", Toast.LENGTH_SHORT).show();
                         finish();  // Exit the activity as the event wasn't found
                         return;    // Early return to prevent the rest of the code from executing
@@ -76,7 +79,8 @@ public class EventDetailActivity extends AppCompatActivity {
                     displayEventDetails(event);
 
                     // Display buttons based on whether the user is the organizer or not
-                    if (event.getEventID().equals(deviceID)) { // User is the organizer
+                    if (event.getOrganizerId().equals(deviceID)) { // User is the organizer
+                        Log.d(TAG, "Current user is the organizer");
                         hideAllParticipantButtons();
                         showOrganizerButtons(event);
                     } else { // User is a potential entrant
@@ -112,6 +116,7 @@ public class EventDetailActivity extends AppCompatActivity {
         eventStartDateTextView = findViewById(R.id.eventStartDateTextView);
         eventEndDateTextView = findViewById(R.id.eventEndDateTextView);
         eventCapacityTextView = findViewById(R.id.eventCapacityTextView);
+        eventFacilityTextView = findViewById(R.id.eventFacilityTextView);
 
         joinWaitingListButton = findViewById(R.id.joinEventButton);
         leaveWaitingListButton = findViewById(R.id.leaveEventButton);
@@ -171,7 +176,8 @@ public class EventDetailActivity extends AppCompatActivity {
 
         editInfoButton.setOnClickListener(v -> {
             Intent intent = new Intent(EventDetailActivity.this, EditEventActivity.class);
-            intent.putExtra("eventID", eventID);
+            intent.putExtra("eventID", eventID); // pass event ID
+            intent.putExtra("event", event); // pass event object
             startActivity(intent);
         });
 
@@ -195,19 +201,19 @@ public class EventDetailActivity extends AppCompatActivity {
     private void displayEventDetails(Event event) {
         eventNameTextView.setText(event.getEventName());
         eventDescriptionTextView.setText(event.getDescription());
-        eventFacilityTextView.setText(event.getFacility());
-        eventStartDateTextView.setText(event.getStartDate().toString());
-        eventEndDateTextView.setText(event.getEndDate().toString());
-        eventCapacityTextView.setText(String.valueOf(event.getCapacity()));
+        eventFacilityTextView.setText("Location: " + event.getFacility() == null ? "No Facility Available" : event.getFacility());
+        eventStartDateTextView.setText("Start: "+ event.getStartDate().toString());
+        eventEndDateTextView.setText("End: " + event.getEndDate().toString());
+        eventCapacityTextView.setText("Capacity: " + String.valueOf(event.getCapacity()));
 
         if (event.getPosterUrl() != null && !event.getPosterUrl().isEmpty()) {
             Glide.with(this).load(event.getPosterUrl()).into(posterImageView);
-            Log.d(TAG, "Loaded poster image.");
+            Log.d(TAG, "Loaded poster image. poster url: " + event.getPosterUrl());
         }
 
         if (event.getQrCode() != null && !event.getQrCode().isEmpty()) {
             Glide.with(this).load(event.getQrCode()).into(qrCodeImageView);
-            Log.d(TAG, "Loaded QR code image.");
+            Log.d(TAG, "Loaded QR code image. qr code url: " + event.getQrCode());
         }
 
         Log.d(TAG, "Event Details - Name: " + event.getEventName() + ", Description: " + event.getDescription() +
@@ -275,9 +281,22 @@ public class EventDetailActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_SELECT_POSTER && resultCode == RESULT_OK && data != null) {
             Uri imageUri = data.getData();
-            eventController.updateEvent(event, imageUri);
-            Log.d(TAG, "Selected new poster URI: " + imageUri.toString());
+            eventController.updateEvent(event, imageUri, null, new DataCallback<Event>() {
+                @Override
+                public void onSuccess(Event result) {
+                    event = result;
+                    displayEventDetails(event);
+                    Toast.makeText(EventDetailActivity.this, "Event updated successfully.", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Toast.makeText(EventDetailActivity.this, "Failed to update event.", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Error updating event: " + e.getMessage(), e);
+                }
+            });
+        } else {
+            Log.d(TAG, "Result not OK or data is null");
         }
     }
-
 }

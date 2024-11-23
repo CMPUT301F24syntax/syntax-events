@@ -1,8 +1,10 @@
 package com.example.syntaxeventlottery;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.util.Log;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.common.BitMatrix;
@@ -60,7 +62,7 @@ public class EventController {
         if (eventId == null) {
             return null;
         }
-        ArrayList<Event> events = repository.getLocalEventsList();
+        ArrayList<Event> events = getLocalEventsList();
         for (Event event : events) {
             if (event.getEventID().equals(eventId)) {
                 return event;
@@ -164,8 +166,6 @@ public class EventController {
         }
     }
 
-    public void
-
 
     //------------ event object helper methods -----------//
     /**
@@ -214,4 +214,5 @@ public class EventController {
             return null;
         }
     }
+
 }
