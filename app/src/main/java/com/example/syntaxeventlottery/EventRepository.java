@@ -76,7 +76,12 @@ public class EventRepository  {
                                 .addOnSuccessListener(url -> {
                                     data.put("posterUrl", url.toString());
                                     event.setPosterUrl(url.toString());
-                                    uploadQrCode(event, data, qrCodeBitmap, callback);
+                                    // Upload QR code only if qrCodeBitmap is not null
+                                    if (qrCodeBitmap != null) {
+                                        uploadQrCode(event, data, qrCodeBitmap, callback);
+                                    } else {
+                                        uploadEventData(event, data, callback);
+                                    }
                                 })
                                 .addOnFailureListener(e -> {
                                     Log.e(TAG, "Failed to get poster URL", e);
@@ -142,14 +147,17 @@ public class EventRepository  {
 
         HashMap<String, Object> data = eventToHashData(event);
 
-        if (imageUri != null || qrCodeBitmap != null) {
-            if (imageUri != null) {
-                uploadImage(event, data, imageUri, qrCodeBitmap, callback);
-            } else {
-                uploadQrCode(event, data, qrCodeBitmap, callback);
-            }
-        } else {
+        // Case 1: If both imageUri and qrCodeBitmap are null, just upload event data
+        if (imageUri == null && qrCodeBitmap == null) {
             uploadEventData(event, data, callback);
+        }
+        // Case 2: If imageUri is null and qrCodeBitmap is not null, upload QR code
+        else if (imageUri == null && qrCodeBitmap != null) {
+            uploadQrCode(event, data, qrCodeBitmap, callback);
+        }
+        // Case 3: If imageUri is not null, upload image and potentially QR code
+        else {
+            uploadImage(event, data, imageUri, qrCodeBitmap, callback);
         }
     }
 

@@ -23,18 +23,21 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 public class UserHomeActivity extends AppCompatActivity {
+    private final String TAG = "UserHomeActivity";
 
     private TextView dateTextView;
     private RecyclerView futureEventsRecyclerView;
     private EventAdapter eventAdapter;
-    private List<Event> eventList;
-    private FirebaseFirestore db;
+    private EventController eventController;
     private ImageButton organizerButton;
     private ImageButton profileButton;
     private ImageButton newsButton;
     private ImageButton scanButton; // New QR Scan Button
     private String deviceId;
     private ImageButton scanButton2;
+
+    // refactor this!!!!!
+    private FirebaseFirestore db;
 
 
     @Override
@@ -50,8 +53,11 @@ public class UserHomeActivity extends AppCompatActivity {
         scanButton = findViewById(R.id.qrScanButton1);
         scanButton2 = findViewById(R.id.qrScanButton2);
 
-        // Initialize Firebase Firestore
+        // refactor this!!!!
         db = FirebaseFirestore.getInstance();
+
+        // Initialize event controller
+        eventController = new EventController(new EventRepository());
 
         // Get deviceId
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -59,12 +65,11 @@ public class UserHomeActivity extends AppCompatActivity {
         // Set up RecyclerView for Future Events
         futureEventsRecyclerView = findViewById(R.id.futureEventsRecyclerView);
         futureEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        eventList = new ArrayList<>();
-        eventAdapter = new EventAdapter(eventList, this);
+        eventAdapter = new EventAdapter(new ArrayList<>(), this);
         futureEventsRecyclerView.setAdapter(eventAdapter);
 
-        // Load events from Firestore
-        loadEventsFromFirestore();
+        // load all events
+        loadEvents();
 
         // Set click listener for Organizer button
         organizerButton.setOnClickListener(v -> checkUserAndNavigate());
@@ -95,6 +100,13 @@ public class UserHomeActivity extends AppCompatActivity {
         updateDateTime();
     }
 
+    // reload events when activity is resumed
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadEvents();
+    }
+
     private void checkUserAndNavigate() {
         db.collection("Users").document(deviceId).get()
                 .addOnSuccessListener(document -> {
@@ -117,43 +129,22 @@ public class UserHomeActivity extends AppCompatActivity {
                 });
     }
 
-    private void loadEventsFromFirestore() {
-        db.collection("events")
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful() && task.getResult() != null) {
-                        eventList.clear();
-                        Log.d("Firestore", "Fetched " + task.getResult().size() + " events from Firestore.");
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            String eventName = document.getString("eventName");
-                            String eventID = document.getId();
-                            String description = document.getString("description");
-                            String facility = document.getString("facility");
-                            String qrCode = document.getString("qrCode");
-                            String posterUrl = document.getString("posterUrl");
+    private void loadEvents() {
+        eventController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                Log.d(TAG, "Events Refreshed");
+                ArrayList<Event> eventsDataList = eventController.getLocalEventsList();
+                eventAdapter.updateEvents(eventsDataList);
 
-                            Date startDate = document.getDate("startDate");
-                            Date endDate = document.getDate("endDate");
+            }
 
-                            if (startDate != null && endDate != null) {
-                                int capacity = document.getLong("capacity").intValue();
-
-                                Event event = new Event(eventID, eventName, description, capacity, startDate, endDate, qrCode);
-                                event.setEventID(eventID);
-                                event.setQrCode(qrCode);
-                                event.setPosterUrl(posterUrl);
-                                eventList.add(event);
-                                Log.d("Firestore", "Added event: " + eventName);
-                            } else {
-                                Log.e("Firestore", "startDate or endDate is null for event: " + eventName);
-                            }
-                        }
-                        eventAdapter.notifyDataSetChanged();
-                        Log.d("RecyclerView", "Adapter updated with item count: " + eventAdapter.getItemCount());
-                    } else {
-                        Log.e("Firestore", "Error loading events: ", task.getException());
-                    }
-                });
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error Refreshing Events");
+                Toast.makeText(UserHomeActivity.this, "Error refreshing events, try to relaunch app", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void updateDateTime() {

@@ -201,7 +201,7 @@ public class EventDetailActivity extends AppCompatActivity {
     private void displayEventDetails(Event event) {
         eventNameTextView.setText(event.getEventName());
         eventDescriptionTextView.setText(event.getDescription());
-        eventFacilityTextView.setText("Location: " + event.getFacility() == null ? "No Facility Available" : event.getFacility());
+        eventFacilityTextView.setText("Location: " + (event.getFacility() == null ? "No Facility Available" : event.getFacility()));
         eventStartDateTextView.setText("Start: "+ event.getStartDate().toString());
         eventEndDateTextView.setText("End: " + event.getEndDate().toString());
         eventCapacityTextView.setText("Capacity: " + String.valueOf(event.getCapacity()));
@@ -275,12 +275,49 @@ public class EventDetailActivity extends AppCompatActivity {
         Log.d(TAG, "All participant buttons are now hidden.");
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Refresh the repository to get the latest event data
+        if (eventID != null && !eventID.isEmpty()) {
+            eventController.refreshRepository(new DataCallback<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                    // Fetch the event by ID from the controller
+                    event = eventController.getEventById(eventID);
+
+                    // If the event is found, update the UI with the latest details
+                    if (event != null) {
+                        displayEventDetails(event);
+                    } else {
+                        Log.e(TAG, "Failed to find event in repository");
+                        Toast.makeText(EventDetailActivity.this, "Failed to find the event", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Log.d(TAG, "Failed to refresh event details: " + e.toString());
+                    Toast.makeText(EventDetailActivity.this, "Failed to get updated data", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            });
+        }
+    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_SELECT_POSTER && resultCode == RESULT_OK && data != null) {
             Uri imageUri = data.getData();
+            if (imageUri == null) {
+                Log.e(TAG, "Selected image URI is null");
+                Toast.makeText(EventDetailActivity.this, "Failed to select image", Toast.LENGTH_SHORT).show();
+                return;  // Early return if the URI is invalid
+            }
             eventController.updateEvent(event, imageUri, null, new DataCallback<Event>() {
                 @Override
                 public void onSuccess(Event result) {

@@ -73,7 +73,7 @@ public class OrganizerActivity extends AppCompatActivity {
         eventController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                List<Event> updatedEvents = eventController.getOrganizerEvents(deviceID);
+                ArrayList<Event> updatedEvents = eventController.getOrganizerEvents(deviceID);
                 eventAdapter.updateEvents(updatedEvents);
             }
 
