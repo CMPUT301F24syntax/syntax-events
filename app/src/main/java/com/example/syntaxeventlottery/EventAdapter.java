@@ -31,7 +31,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     private List<Event> eventsList;
 
     /** Context from which the adapter is created, used for inflating layouts and starting activities. */
-    private static Context context;
+    private Context context;
 
     /**
      * Constructs a new {@code EventAdapter}.
@@ -157,6 +157,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             eventLocationTextView = itemView.findViewById(R.id.eventLocationTextView);
         }
     }
+
 }
 
 

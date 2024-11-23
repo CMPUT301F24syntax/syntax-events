@@ -2,9 +2,7 @@
 package com.example.syntaxeventlottery;
 import android.content.Intent;
 import android.net.Uri;
-import android.nfc.Tag;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -16,7 +14,6 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
-import java.util.List;
 
 /**
  * Activity to display event details and manage event actions.
@@ -27,7 +24,7 @@ public class EventDetailActivity extends AppCompatActivity {
     private ImageView posterImageView, qrCodeImageView;
     private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView, eventEndDateTextView, eventCapacityTextView, eventFacilityTextView;
     private Button joinWaitingListButton, leaveWaitingListButton, acceptInvitationButton, declineInvitationButton;
-    private Button drawButton, updatePosterButton, editInfoButton, viewParticipantsButton;
+    private Button drawButton, editInfoButton, viewParticipantsButton;
     private ImageButton backButton;
 
     // Controller and Data
@@ -124,7 +121,6 @@ public class EventDetailActivity extends AppCompatActivity {
         declineInvitationButton = findViewById(R.id.rejectButton);
 
         drawButton = findViewById(R.id.drawButton);
-        updatePosterButton = findViewById(R.id.updatePosterButton);
         editInfoButton = findViewById(R.id.editInfoButton);
         viewParticipantsButton = findViewById(R.id.viewParticipantsButton);
         backButton = findViewById(R.id.backButton);
@@ -176,14 +172,8 @@ public class EventDetailActivity extends AppCompatActivity {
 
         editInfoButton.setOnClickListener(v -> {
             Intent intent = new Intent(EventDetailActivity.this, EditEventActivity.class);
-            intent.putExtra("eventID", eventID); // pass event ID
             intent.putExtra("event", event); // pass event object
             startActivity(intent);
-        });
-
-        updatePosterButton.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            startActivityForResult(intent, REQUEST_CODE_SELECT_POSTER);
         });
 
         viewParticipantsButton.setOnClickListener(v -> {
@@ -215,15 +205,10 @@ public class EventDetailActivity extends AppCompatActivity {
             Glide.with(this).load(event.getQrCode()).into(qrCodeImageView);
             Log.d(TAG, "Loaded QR code image. qr code url: " + event.getQrCode());
         }
-
-        Log.d(TAG, "Event Details - Name: " + event.getEventName() + ", Description: " + event.getDescription() +
-                ", Start Date: " + event.getStartDate() + ", End Date: " + event.getEndDate() +
-                ", Capacity: " + event.getCapacity() + ", Organizer ID: " + event.getOrganizerId());
     }
 
     private void showOrganizerButtons(Event event) {
         drawButton.setVisibility(View.VISIBLE);
-        updatePosterButton.setVisibility(View.VISIBLE);
         editInfoButton.setVisibility(View.VISIBLE);
         viewParticipantsButton.setVisibility(View.VISIBLE);
         if (event.isDrawed()) {
@@ -237,7 +222,6 @@ public class EventDetailActivity extends AppCompatActivity {
 
     private void hideOrganizerButtons() {
         drawButton.setVisibility(View.GONE);
-        updatePosterButton.setVisibility(View.GONE);
         editInfoButton.setVisibility(View.GONE);
         viewParticipantsButton.setVisibility(View.GONE);
         Log.d(TAG, "Organizer buttons are now hidden.");
@@ -304,36 +288,6 @@ public class EventDetailActivity extends AppCompatActivity {
                     finish();
                 }
             });
-        }
-    }
-
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_SELECT_POSTER && resultCode == RESULT_OK && data != null) {
-            Uri imageUri = data.getData();
-            if (imageUri == null) {
-                Log.e(TAG, "Selected image URI is null");
-                Toast.makeText(EventDetailActivity.this, "Failed to select image", Toast.LENGTH_SHORT).show();
-                return;  // Early return if the URI is invalid
-            }
-            eventController.updateEvent(event, imageUri, null, new DataCallback<Event>() {
-                @Override
-                public void onSuccess(Event result) {
-                    event = result;
-                    displayEventDetails(event);
-                    Toast.makeText(EventDetailActivity.this, "Event updated successfully.", Toast.LENGTH_SHORT).show();
-                }
-
-                @Override
-                public void onError(Exception e) {
-                    Toast.makeText(EventDetailActivity.this, "Failed to update event.", Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, "Error updating event: " + e.getMessage(), e);
-                }
-            });
-        } else {
-            Log.d(TAG, "Result not OK or data is null");
         }
     }
 }

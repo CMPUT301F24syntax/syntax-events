@@ -2,12 +2,18 @@
 package com.example.syntaxeventlottery;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.text.ParseException;
@@ -30,10 +36,22 @@ public class EditEventActivity extends AppCompatActivity {
     private EditText editCapacity;
     private Button saveEventButton;
     private Button backButton;
+    private Button updatePosterButton;
+    private ImageView updatePosterView;
+    private Uri imageUri;
 
     private EventController eventController;
-    private String eventId;
     private Event currentEvent;
+
+    private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    imageUri = result.getData().getData();
+                    updatePosterView.setImageURI(imageUri);
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,17 +66,18 @@ public class EditEventActivity extends AppCompatActivity {
         editCapacity = findViewById(R.id.editCapacity);
         saveEventButton = findViewById(R.id.saveEventButton);
         backButton = findViewById(R.id.backButton);
+        updatePosterButton = findViewById(R.id.updatePosterButton);
+        updatePosterView = findViewById(R.id.updatePosterView);
 
         // initialize event controller
         eventController = new EventController(new EventRepository());
 
-        // Get event ID from Intent
-        eventId = getIntent().getStringExtra("eventID");
-        currentEvent = (Event) getIntent().getSerializableExtra("event"); // get event using intent
+        // get event using intent
+        currentEvent = (Event) getIntent().getSerializableExtra("event");
 
-        if (currentEvent == null || eventId == null || eventId.isEmpty()) { // if event cannot be found
-            Log.d("EditEventActivity","MMMMMMMMM"+eventId);
-            Toast.makeText(this, "Event ID is missing", Toast.LENGTH_SHORT).show();
+        if (currentEvent == null || currentEvent.getEventID() == null || currentEvent.getEventID().isEmpty()) { // if event cannot be found
+            Log.d("EditEventActivity","Event Object was null");
+            Toast.makeText(this, "Error Loading Event", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -71,6 +90,11 @@ public class EditEventActivity extends AppCompatActivity {
         // Set up button listeners
         backButton.setOnClickListener(v -> finish());
         saveEventButton.setOnClickListener(v -> saveEventDetails());
+        updatePosterButton.setOnClickListener(v -> {
+            // listener for selecting new event poster
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            imagePickerLauncher.launch(intent);
+        });
     }
 
     /**
@@ -145,7 +169,7 @@ public class EditEventActivity extends AppCompatActivity {
         currentEvent.setEndDate(endDate);
         currentEvent.setCapacity(capacity);
 
-        eventController.updateEvent(currentEvent, null, null, new DataCallback<Event>() {
+        eventController.updateEvent(currentEvent, imageUri, null, new DataCallback<Event>() {
             @Override
             public void onSuccess(Event result) {
                 Toast.makeText(EditEventActivity.this, "Event details updated successfully", Toast.LENGTH_SHORT).show();

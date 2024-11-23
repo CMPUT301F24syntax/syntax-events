@@ -116,7 +116,7 @@
 
                 <!-- Event Image -->
                 <ImageView
-                    android:id="@+id/eventImageView"
+                    android:id="@+id/updatePosterView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:contentDescription="Event Image"
@@ -125,7 +125,7 @@
 
                 <!-- Button to Upload Image -->
                 <Button
-                    android:id="@+id/uploadButton"
+                    android:id="@+id/updatePosterButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"

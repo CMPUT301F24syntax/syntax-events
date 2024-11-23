@@ -1,10 +1,8 @@
 package com.example.syntaxeventlottery;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
-import android.util.Log;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.common.BitMatrix;
@@ -12,7 +10,6 @@ import com.google.zxing.qrcode.QRCodeWriter;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import javax.annotation.Nullable;
 

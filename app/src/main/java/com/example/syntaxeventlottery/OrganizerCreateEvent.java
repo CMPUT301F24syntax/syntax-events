@@ -2,7 +2,6 @@
 package com.example.syntaxeventlottery;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -64,8 +63,8 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         eventDescriptionEditText = findViewById(R.id.eventDescriptionEditText);
         createEventButton = findViewById(R.id.createEventButton);
         backButton = findViewById(R.id.backButton);
-        uploadButton = findViewById(R.id.uploadButton);
-        eventImageView = findViewById(R.id.eventImageView);
+        uploadButton = findViewById(R.id.updatePosterButton);
+        eventImageView = findViewById(R.id.updatePosterView);
 
         // Initialize EventController with repository
         eventController = new EventController(new EventRepository());
