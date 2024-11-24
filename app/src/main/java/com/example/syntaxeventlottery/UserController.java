@@ -8,14 +8,27 @@ import android.provider.Settings;
 public class UserController {
 
     private UserRepository userRepository;
-    private Context context;
-    private String deviceId;
-    private String userId;
+    //private Context context;
+    //private String deviceId;
+    //private String userId;
 
-    public UserController(Context context) {
-        this.context = context;
-        userRepository = new UserRepository();
-        this.deviceId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+    public UserController(UserRepository userRepository) {
+        //this.context = context;
+        this.userRepository = userRepository;
+        //this.deviceId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
+
+    public void getAllUsers(DataCallback<List<User>> callback) {
+        userRepository.fetchAllUsers(callback);
+    }
+
+    public void addUser(User user, @Nullablr Uri imageUri, DataCallback<User> callback) {
+        try {
+            validateUser(user);
+            userRepository.addUserToRepo(user, imageUri, callback);
+        } catch (IllegalArgumentException e) {
+            callback.onError(e);
+        }
     }
 
     /**
