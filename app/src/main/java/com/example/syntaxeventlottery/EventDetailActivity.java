@@ -199,13 +199,18 @@ public class EventDetailActivity extends AppCompatActivity {
         if (event.getPosterUrl() != null && !event.getPosterUrl().isEmpty()) {
             Glide.with(this).load(event.getPosterUrl()).into(posterImageView);
             Log.d(TAG, "Loaded poster image. poster url: " + event.getPosterUrl());
+        } else {
+            // load default poster
+            Glide.with(this).load(R.drawable.ic_default_poster).into(posterImageView);
         }
 
-        Log.d(TAG, "qrcodeurl:" +event.getQrCode());
+
         if (event.getQrCode() != null && !event.getQrCode().isEmpty()) {
             Glide.with(this).load(event.getQrCode()).into(qrCodeImageView);
-            Glide.with(this).load(event.getQrCode()).into(qrCodeImageView);
             Log.d(TAG, "Loaded QR code image. qr code url: " + event.getQrCode());
+        } else {
+            // load missing qr code image
+            Glide.with(this).load(R.drawable.default_qrcode).into(qrCodeImageView);
         }
     }
 
