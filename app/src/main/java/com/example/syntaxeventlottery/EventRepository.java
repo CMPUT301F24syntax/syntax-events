@@ -99,7 +99,7 @@ public class EventRepository  {
                 .addOnSuccessListener(taskSnapshot ->
                         qrCodeRef.getDownloadUrl()
                                 .addOnSuccessListener(url -> {
-                                    data.put("qrCodeUrl", url.toString());
+                                    data.put("qrCode", url.toString());
                                     event.setQrCode(url.toString());
                                     uploadEventData(event, data, callback);
                                 })

@@ -201,7 +201,9 @@ public class EventDetailActivity extends AppCompatActivity {
             Log.d(TAG, "Loaded poster image. poster url: " + event.getPosterUrl());
         }
 
+        Log.d(TAG, "qrcodeurl:" +event.getQrCode());
         if (event.getQrCode() != null && !event.getQrCode().isEmpty()) {
+            Glide.with(this).load(event.getQrCode()).into(qrCodeImageView);
             Glide.with(this).load(event.getQrCode()).into(qrCodeImageView);
             Log.d(TAG, "Loaded QR code image. qr code url: " + event.getQrCode());
         }
