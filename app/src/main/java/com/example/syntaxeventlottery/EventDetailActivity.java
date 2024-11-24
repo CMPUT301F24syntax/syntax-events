@@ -127,7 +127,7 @@ public class EventDetailActivity extends AppCompatActivity {
     }
 
     private void setupButtonListeners() {
-        joinWaitingListButton.setOnClickListener(v -> eventController.addUserToEventParticipants(event, deviceID, new DataCallback<Event>() {
+        joinWaitingListButton.setOnClickListener(v -> eventController.addUserToWaitingList(event, deviceID, new DataCallback<Event>() {
             @Override
             public void onSuccess(Event result) {
                 Toast.makeText(EventDetailActivity.this, "You have joined the waiting list", Toast.LENGTH_SHORT).show();
@@ -139,7 +139,7 @@ public class EventDetailActivity extends AppCompatActivity {
             }
         }));
 
-        leaveWaitingListButton.setOnClickListener(v -> eventController.leaveWaitingList(event, deviceID, new DataCallback<Event>() {
+        leaveWaitingListButton.setOnClickListener(v -> eventController.removeUserFromWaitingList(event, deviceID, new DataCallback<Event>() {
             @Override
             public void onSuccess(Event result) {
                 Toast.makeText(EventDetailActivity.this, "You have left the waiting list", Toast.LENGTH_SHORT).show();

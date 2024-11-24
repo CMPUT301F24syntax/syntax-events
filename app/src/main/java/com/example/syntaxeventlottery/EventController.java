@@ -29,24 +29,20 @@ public class EventController {
     }
 
     public void addEvent(Event event, @Nullable Uri imageUri, DataCallback<Event> callback) {
-        try {
-            validateEvent(event);
-            event.generateEventID(event.getOrganizerId());
-            Bitmap qrCodeBitmap = generateQRCodeBitmap(event.getEventID());
-            repository.addEventToRepo(event, imageUri, qrCodeBitmap, callback);
-        } catch (IllegalArgumentException e) {
-            callback.onError(e);
+        if (!validateEvent(event, callback)) {
+            return;
         }
+        event.generateEventID(event.getOrganizerId());
+        Bitmap qrCodeBitmap = generateQRCodeBitmap(event.getEventID());
+        repository.addEventToRepo(event, imageUri, qrCodeBitmap, callback);
     }
 
     public void updateEvent(Event event, @Nullable Uri imageUri,
                             @Nullable Bitmap qrCodeBitmap, DataCallback<Event> callback) {
-        try {
-            validateEvent(event);
-            repository.updateEventDetails(event, imageUri, qrCodeBitmap, callback);
-        } catch (IllegalArgumentException e) {
-            callback.onError(e);
+        if (!validateEvent(event, callback)) {
+            return;
         }
+        repository.updateEventDetails(event, imageUri, qrCodeBitmap, callback);
     }
 
     public void deleteEvent(Event event, DataCallback<Void> callback) {
@@ -87,73 +83,63 @@ public class EventController {
     /**
      * User methods
      */
-    // adds user to list of participants
-    public void addUserToEventParticipants(Event event, String userID, DataCallback<Event> callback) {
+    // removes user id from participants list
+    // and updates the repository
+    /**
+     * Removes a user from an event's waiting list
+     */
+    public void removeUserFromWaitingList(Event event, String userID, DataCallback<Event> callback) {
+        // Validate inputs
         if (event == null || userID == null || userID.isEmpty()) {
-            // Early exit if input is invalid
             callback.onError(new IllegalArgumentException("Invalid event or user ID"));
             return;
         }
 
-        // Add user to participants list
-        ArrayList<String> currentParticipants = event.getParticipants();
-        if (!currentParticipants.contains(userID)) {
-            currentParticipants.add(userID);
-            event.setParticipants(currentParticipants);
-
-            // Now we need to update the repository with the updated event
-            updateEvent(event, null, null, new DataCallback<Event>() {
-                @Override
-                public void onSuccess(Event updatedEvent) {
-                    // Once the event update is successful, we call the original callback
-                    callback.onSuccess(updatedEvent);  // Pass the updated event to the original callback
-                }
-
-                @Override
-                public void onError(Exception e) {
-                    // If the update fails, we propagate the error to the original callback
-                    callback.onError(e);  // Pass error to the original callback
-                }
-            });
-        } else {
-            // If the user is already in the list, we just return
-            callback.onError(new IllegalArgumentException("User is already a participant"));
+        ArrayList<String> participants = event.getParticipants();
+        if (!participants.contains(userID)) {
+            callback.onError(new IllegalArgumentException("User not found in events list"));
+            return;
         }
+
+        // Update participants list and save
+        participants.remove(userID);
+        event.setParticipants(participants);
+        updateEvent(event, null, null, callback);
     }
 
-
-    public void leaveWaitingList(Event event, String userID, DataCallback<Event> callback) {
+    // adds user id to participants list
+    // and updates repository
+    /**
+     * Adds a user to an event's waiting list
+     */
+    public void addUserToWaitingList(Event event, String userID, DataCallback<Event> callback) {
+        // Validate inputs
         if (event == null || userID == null || userID.isEmpty()) {
-            // Early exit if input is invalid
             callback.onError(new IllegalArgumentException("Invalid event or user ID"));
             return;
         }
 
-        // Add user to participants list
-        ArrayList<String> currentParticipants = event.getParticipants();
-        if (!currentParticipants.contains(userID)) {
-            currentParticipants.remove(userID);
-            event.setParticipants(currentParticipants);
-
-            // Now we need to update the repository with the updated event
-            updateEvent(event, null, null, new DataCallback<Event>() {
-                @Override
-                public void onSuccess(Event updatedEvent) {
-                    // Once the event update is successful, we call the original callback
-                    callback.onSuccess(updatedEvent);  // Pass the updated event to the original callback
-                }
-
-                @Override
-                public void onError(Exception e) {
-                    // If the update fails, we propagate the error to the original callback
-                    callback.onError(e);  // Pass error to the original callback
-                }
-            });
-        } else {
-            // If the user is already in the list, we just return
+        ArrayList<String> participants = event.getParticipants();
+        if (participants.contains(userID)) {
             callback.onError(new IllegalArgumentException("User is already a participant"));
+            return;
         }
+
+        // Check waiting list limit
+        if (event.getWaitingListLimit() != null &&
+                participants.size() >= event.getWaitingListLimit()) {
+            callback.onError(new IllegalArgumentException("Waiting list capacity is reached"));
+            return;
+        }
+
+        // Update participants list and save
+        participants.add(userID);
+        event.setParticipants(participants);
+        updateEvent(event, null, null, callback);
     }
+
+
+    // lottery implementation
 
     public void acceptInvitation(Event event, String userID) {
         if (event.getParticipants().contains(userID) && !event.getSelectedParticipants().contains(userID)) {
@@ -166,27 +152,35 @@ public class EventController {
 
     //------------ event object helper methods -----------//
     /**
-     * Validate event data
+     * Validate event data and report errors through callback
+     * @return true if validation passed, false if there were errors
      */
-    private void validateEvent(Event event) {
+    private boolean validateEvent(Event event, DataCallback<?> callback) {
         if (event == null) {
-            throw new IllegalArgumentException("Event cannot be null");
+            callback.onError(new IllegalArgumentException("Event cannot be null"));
+            return false;
         }
         if (event.getEventName() == null || event.getEventName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Event name cannot be empty");
+            callback.onError(new IllegalArgumentException("Event name cannot be empty"));
+            return false;
         }
         if (event.getCapacity() <= 0) {
-            throw new IllegalArgumentException("Event capacity must be greater than 0");
+            callback.onError(new IllegalArgumentException("Event capacity must be greater than 0"));
+            return false;
         }
         if (event.getStartDate() == null || event.getEndDate() == null) {
-            throw new IllegalArgumentException("Event dates cannot be null");
+            callback.onError(new IllegalArgumentException("Event dates cannot be null"));
+            return false;
         }
         if (event.getStartDate().after(event.getEndDate())) {
-            throw new IllegalArgumentException("Start date cannot be after end date");
+            callback.onError(new IllegalArgumentException("Start date cannot be after end date"));
+            return false;
         }
         if (event.getStartDate().before(new Date())) {
-            throw new IllegalArgumentException("Start date cannot be in the past");
+            callback.onError(new IllegalArgumentException("Start date cannot be in the past"));
+            return false;
         }
+        return true;
     }
 
     /**

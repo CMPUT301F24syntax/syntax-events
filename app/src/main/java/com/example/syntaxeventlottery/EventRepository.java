@@ -146,15 +146,29 @@ public class EventRepository  {
 
         HashMap<String, Object> data = eventToHashData(event);
 
+        // Preserve existing QR code URL
+        if (event.getQrCode() != null) {
+            data.put("qrCode", event.getQrCode());
+        }
+
+        // Preserve existing poster URL
+        if (event.getPosterUrl() != null) {
+            data.put("posterUrl", event.getPosterUrl());
+        }
+
         // Case 1: If both imageUri and qrCodeBitmap are null, just upload event data
         if (imageUri == null && qrCodeBitmap == null) {
             uploadEventData(event, data, callback);
         }
-        // Case 2: If imageUri is null and qrCodeBitmap is not null, upload QR code
+        // Case 2: If only updating image
+        else if (imageUri != null && qrCodeBitmap == null) {
+            uploadImage(event, data, imageUri, null, callback);
+        }
+        // Case 3: If only updating QR code
         else if (imageUri == null && qrCodeBitmap != null) {
             uploadQrCode(event, data, qrCodeBitmap, callback);
         }
-        // Case 3: If imageUri is not null, upload image and potentially QR code
+        // Case 4: If updating both image and QR code
         else {
             uploadImage(event, data, imageUri, qrCodeBitmap, callback);
         }
