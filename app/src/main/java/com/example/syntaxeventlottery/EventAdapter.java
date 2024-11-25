@@ -10,9 +10,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,12 +25,13 @@ import java.util.List;
  * for displaying event items in a {@link RecyclerView}. It binds event data to the views in each item.
  */
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
+    private final String TAG = "EventAdapter";
 
     /** List of events to be displayed in the RecyclerView. */
     private List<Event> eventsList;
 
     /** Context from which the adapter is created, used for inflating layouts and starting activities. */
-    private static Context context;
+    private Context context;
 
     /**
      * Constructs a new {@code EventAdapter}.
@@ -64,17 +68,20 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         Event event = eventsList.get(position);
+        Log.d("EventAdapter", "Event name: " +event.getEventName());
         holder.eventNameTextView.setText(event.getEventName());
+        holder.eventDescriptionTextView.setText(event.getDescription());
+        holder.eventDateTextView.setText(event.getStartDate() + " To " + event.getEndDate());
+        holder.eventLocationTextView.setText("Location: "+ event.getFacility());
 
-        // Check if posterUrl is null or empty and set the image accordingly
+        // Load the image using Glide, which will automatically handle activity lifecycle
         if (event.getPosterUrl() != null && !event.getPosterUrl().isEmpty()) {
-            Glide.with(context)
+            Glide.with(context)  // Glide automatically cancels when the activity is destroyed
                     .load(event.getPosterUrl())
                     .into(holder.eventPosterImageView);
         } else {
-            // Use ic_avatar_placeholder.png as the default image if posterUrl is null or empty
             Glide.with(context)
-                    .load(R.drawable.ic_avatar_placeholder)
+                    .load(R.drawable.ic_default_poster)
                     .into(holder.eventPosterImageView);
         }
 
@@ -109,36 +116,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
      * @param newEvents A new list of {@link Event} objects to replace the current list.
      */
     public void updateEvents(List<Event> newEvents) {
+        eventsList.clear();
         if (newEvents != null) {
-            this.eventsList.clear();
-            this.eventsList.addAll(newEvents);
-        } else {
-            this.eventsList.clear();
+            eventsList.addAll(newEvents);
         }
         notifyDataSetChanged();
     }
 
-    /**
-     * Adds a single event to the list and notifies the adapter.
-     *
-     * @param event The {@link Event} object to be added.
-     */
-    public void addEvent(Event event) {
-        this.eventsList.add(event);
-        notifyItemInserted(eventsList.size() - 1);
-    }
-
-    /**
-     * Removes an event from the list by its position and notifies the adapter.
-     *
-     * @param position The position of the event to be removed.
-     */
-    public void removeEvent(int position) {
-        if (position >= 0 && position < eventsList.size()) {
-            this.eventsList.remove(position);
-            notifyItemRemoved(position);
-        }
-    }
 
     /**
      * The {@code EventViewHolder} class holds references to the views for each event item.
@@ -150,6 +134,15 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         /** ImageView displaying the event poster image. */
         ImageView eventPosterImageView;
 
+        // TextView Displaying event description
+        TextView eventDescriptionTextView;
+
+        // TextView Displaying event dates
+        TextView eventDateTextView;
+
+        // TextView displaying event dates
+        TextView eventLocationTextView;
+
         /**
          * Constructs a new {@code EventViewHolder}.
          *
@@ -159,30 +152,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             super(itemView);
             eventNameTextView = itemView.findViewById(R.id.eventNameTextView);
             eventPosterImageView = itemView.findViewById(R.id.eventPosterImageView);
-
-        }
-
-        public void bind(Event event) {
-            eventNameTextView.setText(event.getEventName());
-
-            // Load poster image using Glide
-            if (event.getPosterUrl() != null && !event.getPosterUrl().isEmpty()) {
-                Glide.with(context)
-                        .load(event.getPosterUrl())
-                        .into(eventPosterImageView);
-            } else {
-                // Use a placeholder image if posterUrl is null or empty
-                Glide.with(context)
-                        .load(R.drawable.ic_avatar_placeholder)
-                        .into(eventPosterImageView);
-            }
-
-            // Set click listener to delegate to the EventController
-            itemView.setOnClickListener(v -> {
-                EventController.handleEventItemClick(event);
-            });
+            eventDescriptionTextView = itemView.findViewById(R.id.eventDescriptionTextView);
+            eventDateTextView = itemView.findViewById(R.id.eventDateTextView);
+            eventLocationTextView = itemView.findViewById(R.id.eventLocationTextView);
         }
     }
+
 }
 
 

@@ -1,374 +1,209 @@
-// EventController.java
 package com.example.syntaxeventlottery;
 
-import android.content.Context;
-import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
-import android.util.Log;
 
-import java.util.List;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 
-/**
- * The EventController class acts as a mediator between the View (Activity) and the Model (Event and EventRepository).
- * It handles the business logic and coordinates data interactions.
- */
+import java.util.ArrayList;
+import java.util.Date;
+
+import javax.annotation.Nullable;
+
 public class EventController {
+    private EventRepository repository;
 
-    private static final String TAG = "EventController";
-    private EventRepository eventRepository;
-    private EventControllerListener listener;
-    private static Context context;
+    public EventController(EventRepository repository) {
+        this.repository = repository;
+    }
 
+    public ArrayList<Event> getLocalEventsList() {
+        return repository.getLocalEventsList();
+    }
 
+    public void refreshRepository(DataCallback<Void> callback) {
+        repository.updateLocalEventsList(callback);
+    }
+
+    public void addEvent(Event event, @Nullable Uri imageUri, DataCallback<Event> callback) {
+        if (!validateEvent(event, callback)) {
+            return;
+        }
+        event.generateEventID(event.getOrganizerId());
+        Bitmap qrCodeBitmap = generateQRCodeBitmap(event.getEventID());
+        repository.addEventToRepo(event, imageUri, qrCodeBitmap, callback);
+    }
+
+    public void updateEvent(Event event, @Nullable Uri imageUri,
+                            @Nullable Bitmap qrCodeBitmap, DataCallback<Event> callback) {
+        if (!validateEvent(event, callback)) {
+            return;
+        }
+        repository.updateEventDetails(event, imageUri, qrCodeBitmap, callback);
+    }
+
+    public void deleteEvent(Event event, DataCallback<Void> callback) {
+        repository.deleteEventFromRepo(event, callback);
+    }
+
+    // Synchronous method to get event by ID from local cache
+    public Event getEventById(String eventId) {
+        // Check if eventId is null
+        if (eventId == null) {
+            return null;
+        }
+        ArrayList<Event> events = getLocalEventsList();
+        for (Event event : events) {
+            if (event.getEventID().equals(eventId)) {
+                return event;
+            }
+        }
+        // return null if no matching event found
+        return null;
+    }
+
+    // get all organizer events
+    public ArrayList<Event> getOrganizerEvents(String organizerID) {
+        if (organizerID == null || organizerID.isEmpty()) {
+            return null; 
+        }
+        // get all events where the passed id is the event's organizer
+        ArrayList<Event> organizerEvents = new ArrayList<>();
+        for (Event event : repository.getLocalEventsList()) {
+            if (event.getOrganizerId().equals(organizerID)) {
+                organizerEvents.add(event);
+            }
+        }
+        return organizerEvents;
+    }
+    
     /**
-     * Constructor for EventController.
-     *
-     * @param listener The listener to handle callbacks.
+     * User methods
      */
-    public EventController(EventControllerListener listener) {
-        this.eventRepository = new EventRepository();
-        this.listener = listener;
+    // removes user id from participants list
+    // and updates the repository
+    /**
+     * Removes a user from an event's waiting list
+     */
+    public void removeUserFromWaitingList(Event event, String userID, DataCallback<Event> callback) {
+        // Validate inputs
+        if (event == null || userID == null || userID.isEmpty()) {
+            callback.onError(new IllegalArgumentException("Invalid event or user ID"));
+            return;
+        }
+
+        ArrayList<String> participants = event.getParticipants();
+        if (!participants.contains(userID)) {
+            callback.onError(new IllegalArgumentException("User not found in events list"));
+            return;
+        }
+
+        // Update participants list and save
+        participants.remove(userID);
+        event.setParticipants(participants);
+        updateEvent(event, null, null, callback);
+    }
+
+    // adds user id to participants list
+    // and updates repository
+    /**
+     * Adds a user to an event's waiting list
+     */
+    public void addUserToWaitingList(Event event, String userID, DataCallback<Event> callback) {
+        // Validate inputs
+        if (event == null || userID == null || userID.isEmpty()) {
+            callback.onError(new IllegalArgumentException("Invalid event or user ID"));
+            return;
+        }
+
+        ArrayList<String> participants = event.getParticipants();
+        if (participants.contains(userID)) {
+            callback.onError(new IllegalArgumentException("User is already a participant"));
+            return;
+        }
+
+        // Check waiting list limit
+        if (event.getWaitingListLimit() != null &&
+                participants.size() >= event.getWaitingListLimit()) {
+            callback.onError(new IllegalArgumentException("Waiting list capacity is reached"));
+            return;
+        }
+
+        // Update participants list and save
+        participants.add(userID);
+        event.setParticipants(participants);
+        updateEvent(event, null, null, callback);
     }
 
 
-    /**
-     * Constructor for EventController.
-     *
-     * @param context  The context from which the controller is instantiated.
-     * @param listener The listener to handle callbacks.
-     */
-    public EventController(Context context, EventControllerListener listener) {
-        this.context = context;
-        this.eventRepository = new EventRepository();
-        this.listener = listener;
-    }
+    // lottery implementation
 
-    /**
-     * Loads event details by event ID.
-     *
-     * @param eventID The ID of the event to load.
-     */
-    public void loadEventDetails(String eventID) {
-        eventRepository.getEventById(eventID, new EventRepository.EventCallback() {
-            @Override
-            public void onSuccess(Event event) {
-                Log.d(TAG, "TTTTTTTTTTTTTT11111" + eventID);
-                if (listener != null) {
-                    listener.onEventLoaded(event);
-                }
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                Log.d(TAG, "TTTTTTTTTTTTTT222222" + eventID);
-                Log.e(TAG, "Error loading event details", e);
-                if (listener != null) {
-                    listener.onError("Event not found. It may have been deleted.");
-                }
-            }
-        });
-    }
-
-    /**
-     * Saves updated event details.
-     *
-     * @param event The event object containing updated details.
-     */
-    public void saveEventDetails(Event event) {
-        eventRepository.updateEvent(event, new EventRepository.EventUpdateCallback() {
-            @Override
-            public void onSuccess() {
-                if (listener != null) {
-                    listener.onEventSaved();
-                }
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                Log.e(TAG, "Failed to update event", e);
-                if (listener != null) {
-                    listener.onError("Failed to update event");
-                }
-            }
-        });
-    }
-
-    /**
-     * Handles the event item click from the adapter.
-     *
-     * @param event The event that was clicked.
-     */
-    public static void handleEventItemClick(Event event) {
-        Log.d("EventController", "TTTTTTTTTTTTTTAAAAABBBB" + event.getEventID());
-        Intent intent = new Intent(context, EventDetailActivity.class);
-        intent.putExtra("eventID", event.getEventID());
-        context.startActivity(intent);
-    }
-
-    /**
-     * Loads events by organizer ID.
-     *
-     * @param organizerId The ID of the organizer.
-     */
-    public void loadEventsByOrganizerId(String organizerId) {
-        eventRepository.getEventsByOrganizerId(organizerId, new EventRepository.EventListCallback() {
-            @Override
-            public void onSuccess(List<Event> eventList) {
-                if (listener != null) {
-                    listener.onEventListLoaded(eventList);
-                }
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                Log.e(TAG, "Error loading events for organizerId: " + organizerId, e);
-                if (listener != null) {
-                    listener.onError("Failed to load events");
-                }
-            }
-        });
-    }
-
-    /**
-     * Creates a new event.
-     *
-     * @param event    The event object to create.
-     * @param imageUri The URI of the event image.
-     * @param callback The callback to handle success or failure.
-     */
-    public void createEvent(Event event, Uri imageUri, EventCreateCallback callback) {
-        eventRepository.saveNewEventWithImage(event, imageUri, new EventRepository.EventUpdateCallback() {
-            @Override
-            public void onSuccess() {
-                if (callback != null) {
-                    callback.onEventCreated();
-                }
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                if (callback != null) {
-                    callback.onError("Failed to create event: " + e.getMessage());
-                }
-            }
-        });
+    public void acceptInvitation(Event event, String userID) {
+        if (event.getParticipants().contains(userID) && !event.getSelectedParticipants().contains(userID)) {
+            ArrayList<String> currentSelectedParticipants = event.getSelectedParticipants();
+            currentSelectedParticipants.add(userID);
+            event.setSelectedParticipants(currentSelectedParticipants);
+        }
     }
 
 
+    //------------ event object helper methods -----------//
     /**
-     * Interface for handling callbacks from the EventController.
+     * Validate event data and report errors through callback
+     * @return true if validation passed, false if there were errors
      */
-    public interface EventControllerListener {
-        void onEventLoaded(Event event);
-        void onEventSaved();
-        void onEventListLoaded(List<Event> eventList);
-        void onParticipantStatusChecked(boolean isInWaitingList, boolean isSelected, Event event);
-        void onWaitingListJoined();
-        void onWaitingListLeft();
-        void onInvitationAccepted();
-        void onInvitationDeclined();
-        void onDrawPerformed();
-        void onError(String errorMessage);
-
-        void onPosterUpdated();
+    private boolean validateEvent(Event event, DataCallback<?> callback) {
+        if (event == null) {
+            callback.onError(new IllegalArgumentException("Event cannot be null"));
+            return false;
+        }
+        if (event.getEventName() == null || event.getEventName().trim().isEmpty()) {
+            callback.onError(new IllegalArgumentException("Event name cannot be empty"));
+            return false;
+        }
+        if (event.getCapacity() <= 0) {
+            callback.onError(new IllegalArgumentException("Event capacity must be greater than 0"));
+            return false;
+        }
+        if (event.getStartDate() == null || event.getEndDate() == null) {
+            callback.onError(new IllegalArgumentException("Event dates cannot be null"));
+            return false;
+        }
+        if (event.getStartDate().after(event.getEndDate())) {
+            callback.onError(new IllegalArgumentException("Start date cannot be after end date"));
+            return false;
+        }
+        if (event.getStartDate().before(new Date())) {
+            callback.onError(new IllegalArgumentException("Start date cannot be in the past"));
+            return false;
+        }
+        return true;
     }
 
     /**
-     * Interface for event creation callbacks.
-     */
-    public interface EventCreateCallback {
-        void onEventCreated();
-        void onError(String errorMessage);
-    }
-
-    /**
-     * Checks if the participant is in the event's waiting list.
-     *
-     * @param eventId       The ID of the event.
-     * @param participantId The ID of the participant.
-     */
-    public void checkParticipantStatus(String eventId, String participantId) {
-        eventRepository.getEventById(eventId, new EventRepository.EventCallback() {
-            @Override
-            public void onSuccess(Event event) {
-                boolean isInWaitingList = event.getParticipants().contains(participantId);
-                boolean isSelected = event.getSelectedParticipants().contains(participantId);
-                if (listener != null) {
-                    listener.onParticipantStatusChecked(isInWaitingList, isSelected, event);
-                }
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                if (listener != null) {
-                    listener.onError("Failed to check participant status: " + e.getMessage());
-                }
-            }
-        });
-    }
-
-    /**
-     * Participant joins the waiting list.
-     *
-     * @param eventId       The ID of the event.
-     * @param participantId The ID of the participant.
-     */
-    public void joinWaitingList(String eventId, String participantId) {
-        eventRepository.addParticipantToEvent(eventId, participantId, new EventRepository.EventUpdateCallback() {
-            @Override
-            public void onSuccess() {
-                if (listener != null) {
-                    listener.onWaitingListJoined();
-                }
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                if (listener != null) {
-                    listener.onError("Failed to join waiting list: " + e.getMessage());
-                }
-            }
-        });
-    }
-
-    /**
-     * Participant leaves the waiting list.
-     *
-     * @param eventId       The ID of the event.
-     * @param participantId The ID of the participant.
-     */
-    public void leaveWaitingList(String eventId, String participantId) {
-        eventRepository.removeParticipantFromEvent(eventId, participantId, new EventRepository.EventUpdateCallback() {
-            @Override
-            public void onSuccess() {
-                if (listener != null) {
-                    listener.onWaitingListLeft();
-                }
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                if (listener != null) {
-                    listener.onError("Failed to leave waiting list: " + e.getMessage());
-                }
-            }
-        });
-    }
-
-    /**
-     * Organizer performs the draw to select participants.
+     * Generates a QR Code bitmap for the given event ID.
      *
      * @param eventId The ID of the event.
+     * @return The generated QR Code bitmap.
      */
-    /**
-     * Organizer performs the draw to select participants.
-     *
-     * @param eventId The ID of the event.
-     */
-    public void performDraw(String eventId) {
-        eventRepository.getEventById(eventId, new EventRepository.EventCallback() {
-            @Override
-            public void onSuccess(Event event) {
-                if (event.isDrawed()) {
-                    if (listener != null) {
-                        listener.onError("Draw has already been performed.");
-                    }
-                } else {
-                    eventRepository.performDraw(eventId, new EventRepository.EventUpdateCallback() {
-                        @Override
-                        public void onSuccess() {
-                            if (listener != null) {
-                                listener.onDrawPerformed();
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Exception e) {
-                            if (listener != null) {
-                                listener.onError("Failed to perform draw: " + e.getMessage());
-                            }
-                        }
-                    });
+    public Bitmap generateQRCodeBitmap(String eventId) {
+        QRCodeWriter writer = new QRCodeWriter();
+        try {
+            BitMatrix bitMatrix = writer.encode(eventId, BarcodeFormat.QR_CODE, 300, 300);
+            Bitmap bmp = Bitmap.createBitmap(300, 300, Bitmap.Config.RGB_565);
+            for (int x = 0; x < 300; x++) {
+                for (int y = 0; y < 300; y++) {
+                    bmp.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
                 }
             }
-
-            @Override
-            public void onFailure(Exception e) {
-                if (listener != null) {
-                    listener.onError("Failed to load event: " + e.getMessage());
-                }
-            }
-        });
+            return bmp;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
-
-    /**
-     * Participant accepts the invitation.
-     *
-     * @param eventId       The ID of the event.
-     * @param participantId The ID of the participant.
-     */
-    public void acceptInvitation(String eventId, String participantId) {
-        eventRepository.acceptInvitation(eventId, participantId, new EventRepository.EventUpdateCallback() {
-            @Override
-            public void onSuccess() {
-                if (listener != null) {
-                    listener.onInvitationAccepted();
-                }
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                if (listener != null) {
-                    listener.onError("Failed to accept invitation: " + e.getMessage());
-                }
-            }
-        });
-    }
-
-    /**
-     * Participant declines the invitation.
-     *
-     * @param eventId       The ID of the event.
-     * @param participantId The ID of the participant.
-     */
-    public void declineInvitation(String eventId, String participantId) {
-        eventRepository.declineInvitation(eventId, participantId, new EventRepository.EventUpdateCallback() {
-            @Override
-            public void onSuccess() {
-                if (listener != null) {
-                    listener.onInvitationDeclined();
-                }
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                if (listener != null) {
-                    listener.onError("Failed to decline invitation: " + e.getMessage());
-                }
-            }
-        });
-    }
-
-    public void updateEventPoster(String eventId, Uri imageUri) {
-        eventRepository.updateEventPoster(eventId, imageUri, new EventRepository.EventUpdateCallback() {
-            @Override
-            public void onSuccess() {
-                if (listener != null) {
-                    listener.onPosterUpdated();
-                }
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                if (listener != null) {
-                    listener.onError("Failed to update poster: " + e.getMessage());
-                }
-            }
-        });
-    }
-
-
-
-
 
 }

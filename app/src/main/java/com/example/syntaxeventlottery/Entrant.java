@@ -195,6 +195,7 @@ public class Entrant extends User implements Serializable {
      *
      * @param event The event to join.
      */
+    /*
     public void joinEvent(Event event) {
         if (event != null) {
             // Add this entrant's username to the event's participants list
@@ -202,13 +203,14 @@ public class Entrant extends User implements Serializable {
             // Add the event name to this entrant's waiting list events
             addWaitingListEvent(event.getEventName());
         }
-    }
+    }*/
 
     /**
      * Removes the Entrant from the waiting list of the specified event.
      *
      * @param event The event to leave.
      */
+    /*
     public void leaveEvent(Event event) {
         if (event != null) {
             // Remove this entrant's username from the event's participants list
@@ -216,5 +218,5 @@ public class Entrant extends User implements Serializable {
             // Remove the event name from this entrant's waiting list events
             removeWaitingListEvent(event.getEventName());
         }
-    }
+    }*/
 }

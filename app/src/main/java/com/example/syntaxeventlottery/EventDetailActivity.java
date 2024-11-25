@@ -3,7 +3,6 @@ package com.example.syntaxeventlottery;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -15,18 +14,17 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
-import java.util.List;
 
 /**
  * Activity to display event details and manage event actions.
  */
-public class EventDetailActivity extends AppCompatActivity implements EventController.EventControllerListener {
+public class EventDetailActivity extends AppCompatActivity {
 
     // UI Components
     private ImageView posterImageView, qrCodeImageView;
-    private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView, eventEndDateTextView, eventCapacityTextView;
+    private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView, eventEndDateTextView, eventCapacityTextView, eventFacilityTextView;
     private Button joinWaitingListButton, leaveWaitingListButton, acceptInvitationButton, declineInvitationButton;
-    private Button drawButton, updatePosterButton, editInfoButton, waitingListButton;
+    private Button drawButton, editInfoButton, viewParticipantsButton;
     private ImageButton backButton;
 
     // Controller and Data
@@ -41,28 +39,70 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
+        // initialize controller
+        eventController = new EventController(new EventRepository());
 
-        initializeUI();
-        eventController = new EventController(this);
+        // Get device ID
+        deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        Log.d(TAG, "Device ID: " + deviceID);
+
 
         // Get event ID from intent
         eventID = getIntent().getStringExtra("eventID");
         Log.d(TAG, "Received eventID: " + eventID);
 
         if (eventID != null && !eventID.isEmpty()) {
-            Log.d(TAG, "TTTTTTTTTTTTTT" + eventID);
-            eventController.loadEventDetails(eventID);
+            Log.d(TAG, "Event ID found: " + eventID);
+
+            // Refresh repository to get the latest data
+            eventController.refreshRepository(new DataCallback<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                    Log.d(TAG, "Refreshed repository");
+                    // Fetch the event by ID from the controller
+                    event = eventController.getEventById(eventID);
+                    //Log.d(TAG, eventController.getLocalEventsList().toString());
+
+                    // If the event is not found, show an error and finish
+                    if (event == null) {
+                        Log.e(TAG, "Failed to find event in repository");
+                        Toast.makeText(EventDetailActivity.this, "Failed to find the event", Toast.LENGTH_SHORT).show();
+                        finish();  // Exit the activity as the event wasn't found
+                        return;    // Early return to prevent the rest of the code from executing
+                    }
+
+                    // Initialize UI and display event details
+                    initializeUI();
+                    displayEventDetails(event);
+
+                    // Display buttons based on whether the user is the organizer or not
+                    if (event.getOrganizerId().equals(deviceID)) { // User is the organizer
+                        Log.d(TAG, "Current user is the organizer");
+                        hideAllParticipantButtons();
+                        showOrganizerButtons(event);
+                    } else { // User is a potential entrant
+                        hideOrganizerButtons();
+                        showJoinWaitingListButton();
+                        showAcceptDeclineButtons();
+                        showLeaveWaitingListButton();
+                    }
+
+                    // Set up button listeners after the UI is updated
+                    setupButtonListeners();
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Log.d(TAG, e.toString());
+                    Toast.makeText(EventDetailActivity.this, "Failed to get updated data", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            });
         } else {
-            Log.d(TAG, "TTTTTTTTTTTTTTAAAAA" + eventID);
-            Toast.makeText(this, "Event ID is missing", Toast.LENGTH_SHORT).show();
-            finish();
+            Log.d(TAG, "Event ID is missing");
+            Toast.makeText(this, "Couldn't retrieve event id", Toast.LENGTH_SHORT).show();
+            finish();  // Exit the activity as there's no event ID to fetch
         }
-
-        // Get device ID
-        deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        Log.d(TAG, "Device ID: " + deviceID);
-
-        setupButtonListeners();
     }
 
     private void initializeUI() {
@@ -73,6 +113,7 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
         eventStartDateTextView = findViewById(R.id.eventStartDateTextView);
         eventEndDateTextView = findViewById(R.id.eventEndDateTextView);
         eventCapacityTextView = findViewById(R.id.eventCapacityTextView);
+        eventFacilityTextView = findViewById(R.id.eventFacilityTextView);
 
         joinWaitingListButton = findViewById(R.id.joinEventButton);
         leaveWaitingListButton = findViewById(R.id.leaveEventButton);
@@ -80,18 +121,39 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
         declineInvitationButton = findViewById(R.id.rejectButton);
 
         drawButton = findViewById(R.id.drawButton);
-        updatePosterButton = findViewById(R.id.updatePosterButton);
         editInfoButton = findViewById(R.id.editInfoButton);
-        waitingListButton = findViewById(R.id.waitingListButton);
+        viewParticipantsButton = findViewById(R.id.viewParticipantsButton);
         backButton = findViewById(R.id.backButton);
     }
 
     private void setupButtonListeners() {
-        joinWaitingListButton.setOnClickListener(v -> eventController.joinWaitingList(eventID, deviceID));
-        leaveWaitingListButton.setOnClickListener(v -> eventController.leaveWaitingList(eventID, deviceID));
+        joinWaitingListButton.setOnClickListener(v -> eventController.addUserToWaitingList(event, deviceID, new DataCallback<Event>() {
+            @Override
+            public void onSuccess(Event result) {
+                Toast.makeText(EventDetailActivity.this, "You have joined the waiting list", Toast.LENGTH_SHORT).show();
+            }
 
-        acceptInvitationButton.setOnClickListener(v -> eventController.acceptInvitation(eventID, deviceID));
-        declineInvitationButton.setOnClickListener(v -> eventController.declineInvitation(eventID, deviceID));
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(EventDetailActivity.this, "Error joining the waiting list", Toast.LENGTH_SHORT).show();
+            }
+        }));
+
+        leaveWaitingListButton.setOnClickListener(v -> eventController.removeUserFromWaitingList(event, deviceID, new DataCallback<Event>() {
+            @Override
+            public void onSuccess(Event result) {
+                Toast.makeText(EventDetailActivity.this, "You have left the waiting list", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(EventDetailActivity.this, "Error joining the waiting list", Toast.LENGTH_SHORT).show();
+            }
+        }));
+
+        /*
+        acceptInvitationButton.setOnClickListener(v -> eventController.acceptInvitation(event, deviceID));
+        declineInvitationButton.setOnClickListener(v -> eventController.declineInvitation(event, deviceID));
 
         drawButton.setOnClickListener(v -> {
             if (event != null && !event.isDrawed()) {
@@ -101,7 +163,7 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
                 Log.d(TAG, "Draw has already been performed.");
             }
         });
-
+        */
         if (backButton != null) {
             backButton.setOnClickListener(v -> finish());
         } else {
@@ -110,16 +172,11 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
 
         editInfoButton.setOnClickListener(v -> {
             Intent intent = new Intent(EventDetailActivity.this, EditEventActivity.class);
-            intent.putExtra("eventID", eventID);
+            intent.putExtra("event", event); // pass event object
             startActivity(intent);
         });
 
-        updatePosterButton.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            startActivityForResult(intent, REQUEST_CODE_SELECT_POSTER);
-        });
-
-        waitingListButton.setOnClickListener(v -> {
+        viewParticipantsButton.setOnClickListener(v -> {
             if (event != null && deviceID.equals(event.getOrganizerId())) {
                 Intent intent = new Intent(EventDetailActivity.this, EventWaitingListActivity.class);
                 intent.putExtra("eventID", eventID);
@@ -131,118 +188,49 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
         });
     }
 
-    @Override
-    public void onEventLoaded(Event event) {
-        if (event == null) {
-            Log.e(TAG, "Event is null.");
-            Toast.makeText(this, "Failed to load event details.", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
-        this.event = event;
-        Log.d(TAG, "Event loaded: " + event.getEventName());
-        displayEventDetails(event);
-
-        if (deviceID.equals(event.getOrganizerId())) {
-            showOrganizerButtons();
-        } else {
-            hideOrganizerButtons();
-            eventController.checkParticipantStatus(eventID, deviceID);
-        }
-    }
-
-    @Override
-    public void onParticipantStatusChecked(boolean isInWaitingList, boolean isSelected, Event event) {
-        if (isSelected) {
-            showAcceptDeclineButtons();
-            Log.d(TAG, "Participant has been selected.");
-        } else if (isInWaitingList) {
-            showLeaveWaitingListButton();
-            Log.d(TAG, "Participant is in waiting list.");
-        } else {
-            showJoinWaitingListButton();
-            Log.d(TAG, "Participant is not in waiting list.");
-        }
-    }
-
-    @Override
-    public void onWaitingListJoined() {
-        Log.d(TAG, "Joined waiting list");
-        eventController.checkParticipantStatus(eventID, deviceID);
-    }
-
-    @Override
-    public void onWaitingListLeft() {
-        Log.d(TAG, "Left waiting list");
-        eventController.checkParticipantStatus(eventID, deviceID);
-    }
-
-    @Override
-    public void onInvitationAccepted() {
-        Log.d(TAG, "Invitation accepted");
-        hideAllParticipantButtons();
-    }
-
-    @Override
-    public void onInvitationDeclined() {
-        Log.d(TAG, "Invitation declined");
-        hideAllParticipantButtons();
-    }
-
-    @Override
-    public void onDrawPerformed() {
-        Log.d(TAG, "Draw has been performed successfully.");
-        drawButton.setEnabled(false);
-    }
-
-    @Override
-    public void onEventSaved() {}
-
-    @Override
-    public void onEventListLoaded(List<Event> eventList) {}
-
-    @Override
-    public void onError(String errorMessage) {
-        Log.e(TAG, "Error: " + errorMessage);
-    }
-
     private void displayEventDetails(Event event) {
         eventNameTextView.setText(event.getEventName());
         eventDescriptionTextView.setText(event.getDescription());
-        eventStartDateTextView.setText(event.getStartDate().toString());
-        eventEndDateTextView.setText(event.getEndDate().toString());
-        eventCapacityTextView.setText(String.valueOf(event.getCapacity()));
+        eventFacilityTextView.setText("Location: " + (event.getFacility() == null ? "No Facility Available" : event.getFacility()));
+        eventStartDateTextView.setText("Start: "+ event.getStartDate().toString());
+        eventEndDateTextView.setText("End: " + event.getEndDate().toString());
+        eventCapacityTextView.setText("Capacity: " + String.valueOf(event.getCapacity()));
 
         if (event.getPosterUrl() != null && !event.getPosterUrl().isEmpty()) {
             Glide.with(this).load(event.getPosterUrl()).into(posterImageView);
-            Log.d(TAG, "Loaded poster image.");
+            Log.d(TAG, "Loaded poster image. poster url: " + event.getPosterUrl());
+        } else {
+            // load default poster
+            Glide.with(this).load(R.drawable.ic_default_poster).into(posterImageView);
         }
+
 
         if (event.getQrCode() != null && !event.getQrCode().isEmpty()) {
             Glide.with(this).load(event.getQrCode()).into(qrCodeImageView);
-            Log.d(TAG, "Loaded QR code image.");
+            Log.d(TAG, "Loaded QR code image. qr code url: " + event.getQrCode());
+        } else {
+            // load missing qr code image
+            Glide.with(this).load(R.drawable.default_qrcode).into(qrCodeImageView);
         }
-
-        Log.d(TAG, "Event Details - Name: " + event.getEventName() + ", Description: " + event.getDescription() +
-                ", Start Date: " + event.getStartDate() + ", End Date: " + event.getEndDate() +
-                ", Capacity: " + event.getCapacity() + ", Organizer ID: " + event.getOrganizerId());
     }
 
-    private void showOrganizerButtons() {
+    private void showOrganizerButtons(Event event) {
         drawButton.setVisibility(View.VISIBLE);
-        updatePosterButton.setVisibility(View.VISIBLE);
         editInfoButton.setVisibility(View.VISIBLE);
-        waitingListButton.setVisibility(View.VISIBLE);
+        viewParticipantsButton.setVisibility(View.VISIBLE);
+        if (event.isDrawed()) {
+            viewParticipantsButton.setText("View Waiting List");
+        } else {
+            viewParticipantsButton.setText("View Invited Participants");
+        }
         hideAllParticipantButtons();
         Log.d(TAG, "Organizer buttons are now visible.");
     }
 
     private void hideOrganizerButtons() {
         drawButton.setVisibility(View.GONE);
-        updatePosterButton.setVisibility(View.GONE);
         editInfoButton.setVisibility(View.GONE);
-        waitingListButton.setVisibility(View.GONE);
+        viewParticipantsButton.setVisibility(View.GONE);
         Log.d(TAG, "Organizer buttons are now hidden.");
     }
 
@@ -279,18 +267,34 @@ public class EventDetailActivity extends AppCompatActivity implements EventContr
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_SELECT_POSTER && resultCode == RESULT_OK && data != null) {
-            Uri imageUri = data.getData();
-            eventController.updateEventPoster(eventID, imageUri);
-            Log.d(TAG, "Selected new poster URI: " + imageUri.toString());
-        }
-    }
+    protected void onResume() {
+        super.onResume();
 
-    @Override
-    public void onPosterUpdated() {
-        Log.d(TAG, "Poster updated successfully.");
-        eventController.loadEventDetails(eventID);
+        // Refresh the repository to get the latest event data
+        if (eventID != null && !eventID.isEmpty()) {
+            eventController.refreshRepository(new DataCallback<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                    // Fetch the event by ID from the controller
+                    event = eventController.getEventById(eventID);
+
+                    // If the event is found, update the UI with the latest details
+                    if (event != null) {
+                        displayEventDetails(event);
+                    } else {
+                        Log.e(TAG, "Failed to find event in repository");
+                        Toast.makeText(EventDetailActivity.this, "Failed to find the event", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Log.d(TAG, "Failed to refresh event details: " + e.toString());
+                    Toast.makeText(EventDetailActivity.this, "Failed to get updated data", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            });
+        }
     }
 }
