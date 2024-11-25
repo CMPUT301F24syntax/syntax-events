@@ -15,7 +15,7 @@ public class UserController {
     private UserRepository userRepository;
 
     public UserController(UserRepository userRepository) {
-        this.userRepository = new UserRepository();
+        this.userRepository = userRepository;
     }
 
     // User validation
@@ -70,6 +70,9 @@ public class UserController {
     public void addUser(User user, @Nullable Uri imageUri, DataCallback<User> callback) {
         if (!validateUser(user, callback)) {
             return;
+        }
+        if (imageUri == null && (user.getProfilePhotoUrl() == null || user.getProfilePhotoUrl().isEmpty())) {
+            user.setProfilePhotoUrl(userRepository.generateDefaultProfilePhotoUrl(user.getUsername()));
         }
         userRepository.addUserToRepo(user, imageUri, callback);
     }

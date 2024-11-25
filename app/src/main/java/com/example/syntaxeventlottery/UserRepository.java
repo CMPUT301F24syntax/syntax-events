@@ -212,7 +212,7 @@ public class UserRepository {
         return data;
     }
 
-    private String generateDefaultProfilePhotoUrl(String username) {
+    public String generateDefaultProfilePhotoUrl(String username) {
         return "https://robohash.org/" + username + ".png";
     }
 }
