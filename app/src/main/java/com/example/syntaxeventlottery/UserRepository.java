@@ -47,7 +47,7 @@ public class UserRepository {
         return new ArrayList<>(usersDataList);
     }
 
-    public void fetchAllUsers(DataCallback<List<User>> callback) {
+    public void fetchAllUsers(DataCallback<Void> callback) {
         usersRef.get()
                 .addOnSuccessListener(querySnapshot -> {
                     usersDataList.clear();
@@ -55,7 +55,7 @@ public class UserRepository {
                         User user = doc.toObject(User.class);
                         usersDataList.add(user);
                     }
-                    callback.onSuccess(usersDataList);
+                    callback.onSuccess(null);
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error fetching users", e);
@@ -85,7 +85,7 @@ public class UserRepository {
                 .addOnFailureListener(callback::onError);
     }
 
-    private void uploadProfilePhoto(User user, HashMap<String, Object> data, Uri imageUri, DataCallback<User> callback) {
+    public void uploadProfilePhoto(User user, HashMap<String, Object> data, Uri imageUri, DataCallback<User> callback) {
         StorageReference profilePhotoRef = usersImageRef.child("user_images/" + user.getUserID() + ".png");
         profilePhotoRef.putFile(imageUri)
                 .addOnSuccessListener(taskSnapshot ->

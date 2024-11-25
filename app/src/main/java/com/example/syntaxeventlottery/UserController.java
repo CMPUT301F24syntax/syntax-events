@@ -3,120 +3,120 @@ package com.example.syntaxeventlottery;
 
 import android.content.Context;
 import android.net.Uri;
-import android.provider.Settings;
+
+import androidx.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
 
 public class UserController {
 
     private UserRepository userRepository;
-    //private Context context;
-    //private String deviceId;
-    //private String userId;
 
     public UserController(UserRepository userRepository) {
-        //this.context = context;
-        this.userRepository = userRepository;
-        //this.deviceId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+        this.userRepository = new UserRepository();
     }
 
-    public void getAllUsers(DataCallback<List<User>> callback) {
+    // User validation
+    private boolean validateUser(User user, DataCallback<?> callback) {
+        if (user == null) {
+            callback.onError(new IllegalArgumentException("User cannot be null"));
+            return false;
+        }
+        if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+            callback.onError(new IllegalArgumentException("User name cannot be empty"));
+            return false;
+        }
+        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            callback.onError(new IllegalArgumentException("User email cannot be empty"));
+            return false;
+        }
+        if (!user.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            callback.onError(new IllegalArgumentException("User email is invalid"));
+        }
+        if (user.getPhoneNumber() != null && !user.getPhoneNumber().trim().isEmpty() && !user.getPhoneNumber().matches("\\d+")) {
+            callback.onError(new IllegalArgumentException("User phone number must only contain digits"));
+            return false;
+        }
+        return true;
+    }
+
+
+    public ArrayList<User> getLocalUsersList() {
+        return (ArrayList<User>) userRepository.getLocalUsersList();
+    }
+
+    public void refreshRepository(DataCallback<Void> callback) {
         userRepository.fetchAllUsers(callback);
     }
 
-    public void addUser(User user, @Nullablr Uri imageUri, DataCallback<User> callback) {
-        try {
-            validateUser(user);
-            userRepository.addUserToRepo(user, imageUri, callback);
-        } catch (IllegalArgumentException e) {
-            callback.onError(e);
-        }
-    }
-
-    /**
-     * Retrieves the device ID.
-     *
-     * @return The device ID as a string.
-     */
-    public String getDeviceId() {
-        return deviceId;
-    }
-
-    /**
-     * Retrieves the user ID (Firestore document ID).
-     *
-     * @return The user ID as a string.
-     */
-    public String getUserId() {
-        return userId;
-    }
-
-    /**
-     * Loads the user profile data and stores the user ID.
-     *
-     * @param listener Callback to handle the retrieved data or errors.
-     */
-    public void loadUserProfile(UserRepository.OnEntrantDataFetchListener listener) {
-        userRepository.getEntrantByDeviceId(context, new UserRepository.OnEntrantDataFetchListener() {
+    public void getEntrantByDeviceID(Context context, DataCallback<User> callback) {
+        userRepository.getEntrantByDeviceId(context, new DataCallback<User>() {
             @Override
-            public void onEntrantDataFetched(Entrant entrant) {
-                if (entrant != null) {
-                    userId = entrant.getUserID(); // Store the actual user ID (document ID)
+            public void onSuccess(User user) {
+                if (!validateUser(user, callback)) {
+                    return;
                 }
-                listener.onEntrantDataFetched(entrant);
             }
 
             @Override
-            public void onEntrantDataFetchError(Exception e) {
-                listener.onEntrantDataFetchError(e);
+            public void onError(Exception e) {
+                callback.onError(e);
             }
         });
     }
 
-    /**
-     * Uploads a profile photo for the user.
-     *
-     * @param fileUri  The URI of the image file to upload.
-     * @param listener Callback to handle the upload result.
-     */
-    public void uploadProfilePhoto(Uri fileUri, UserRepository.OnUploadCompleteListener listener) {
-        if (userId == null || userId.isEmpty()) {
-            listener.onUploadFailure(new Exception("User ID is null or empty"));
+    public void addUser(User user, @Nullable Uri imageUri, DataCallback<User> callback) {
+        if (!validateUser(user, callback)) {
             return;
         }
-        userRepository.uploadProfilePhoto(userId, fileUri, listener);
+        userRepository.addUserToRepo(user, imageUri, callback);
     }
 
-    /**
-     * Updates the user's profile photo URL in Firestore.
-     *
-     * @param profileImageUrl The URL of the uploaded profile image.
-     * @param listener        Callback to handle success or errors.
-     */
-    public void updateProfilePhotoUrl(String profileImageUrl, UserRepository.OnEntrantUpdateListener listener) {
-        if (userId == null || userId.isEmpty()) {
-            listener.onEntrantUpdateError(new Exception("User ID is null or empty"));
+    public void updateUser(User user, @Nullable Uri imageUri, DataCallback<User> callback) {
+        if (!validateUser(user, callback)) {
             return;
         }
-        userRepository.updateEntrant(userId, "profilePhotoUrl", profileImageUrl, listener);
+        userRepository.updateUserDetails(user, imageUri, callback);
     }
 
-    /**
-     * Retrieves the user's facility information.
-     *
-     * @param listener Callback to handle the retrieved data or errors.
-     */
-    public void getUserFacility(UserRepository.OnEntrantDataFetchListener listener) {
-        userRepository.getEntrantByDeviceId(context, new UserRepository.OnEntrantDataFetchListener() {
+    public void deleteUserProfilePhoto(User user, DataCallback<User> callback) {
+        if (!validateUser(user,callback)) {
+            return;
+        }
+        userRepository.deleteProfilePhoto(user, callback);
+    }
+
+    public void deleteUser(User user, DataCallback<Void> callback) {
+        userRepository.deleteUserfromRepo(user, callback);
+    }
+
+    public void uploadUserProfileImage(User user, Uri imageUri, DataCallback<User> callback) {
+        if (user == null) {
+            callback.onError(new IllegalArgumentException("User cannot be null"));
+            return;
+        }
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("userId", user.getUserID());
+        data.put("userName", user.getUsername());
+        userRepository.uploadProfilePhoto(user, data, imageUri, callback);
+    }
+
+    public void getUserFacility(Context context, DataCallback<User> callback) {
+        userRepository.getEntrantByDeviceId(context, new DataCallback<User>() {
             @Override
-            public void onEntrantDataFetched(Entrant entrant) {
-                if (entrant != null) {
-                    userId = entrant.getUserID(); // Store the actual user ID (document ID)
+            public void onSuccess(User user) {
+                if (user != null) {
+                    String userId = user.getUserID();
+                    user.setUserID(userId);
                 }
-                listener.onEntrantDataFetched(entrant);
+                callback.onSuccess(user);
             }
 
             @Override
-            public void onEntrantDataFetchError(Exception e) {
-                listener.onEntrantDataFetchError(e);
+            public void onError(Exception e) {
+                callback.onError(e);
             }
         });
     }
