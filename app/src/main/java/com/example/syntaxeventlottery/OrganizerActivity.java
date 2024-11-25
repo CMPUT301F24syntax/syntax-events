@@ -4,6 +4,7 @@ package com.example.syntaxeventlottery;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -17,7 +18,8 @@ import java.util.List;
 /**
  * OrganizerActivity allows the event organizer to view and manage their created events.
  */
-public class OrganizerActivity extends AppCompatActivity implements EventController.EventControllerListener {
+public class OrganizerActivity extends AppCompatActivity {
+    private static final String TAG = "Organizer Activity";
 
     private Button createEventButton;
     private Button backButton;
@@ -41,11 +43,11 @@ public class OrganizerActivity extends AppCompatActivity implements EventControl
 
         // Set up RecyclerView
         eventRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        eventAdapter = new EventAdapter(null, this);
+        eventAdapter = new EventAdapter(new ArrayList<>(), this);
         eventRecyclerView.setAdapter(eventAdapter);
 
         // Initialize EventController
-        eventController = new EventController(this);
+        eventController = new EventController(new EventRepository());
 
         // Load events
         loadEvents();
@@ -68,68 +70,18 @@ public class OrganizerActivity extends AppCompatActivity implements EventControl
     }
 
     private void loadEvents() {
-        eventController.loadEventsByOrganizerId(deviceID);
-    }
+        eventController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                ArrayList<Event> updatedEvents = eventController.getOrganizerEvents(deviceID);
+                eventAdapter.updateEvents(updatedEvents);
+            }
 
-    // EventControllerListener methods
-
-    @Override
-    public void onEventLoaded(Event event) {
-        // Not used here
-    }
-
-    @Override
-    public void onEventSaved() {
-        // Not used here
-    }
-
-    @Override
-    public void onEventListLoaded(List<Event> eventList) {
-        if (eventList != null) {
-            eventAdapter.updateEvents(eventList);
-        } else {
-            eventAdapter.updateEvents(new ArrayList<>());
-        }
-    }
-
-    @Override
-    public void onParticipantStatusChecked(boolean isInWaitingList, boolean isSelected, Event event) {
-
-    }
-
-    @Override
-    public void onWaitingListJoined() {
-
-    }
-
-    @Override
-    public void onWaitingListLeft() {
-
-    }
-
-    @Override
-    public void onInvitationAccepted() {
-
-    }
-
-    @Override
-    public void onInvitationDeclined() {
-
-    }
-
-    @Override
-    public void onDrawPerformed() {
-
-    }
-
-
-    @Override
-    public void onError(String errorMessage) {
-        Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onPosterUpdated() {
-
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error refreshing events: " + e.getMessage(), e);
+                Toast.makeText(OrganizerActivity.this, "Failed to load events. Please try again.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

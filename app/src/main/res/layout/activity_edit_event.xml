@@ -70,6 +70,33 @@
                 android:layout_marginTop="16dp" />
 
             <!-- Save Button -->
+            <FrameLayout
+
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginTop="8dp">
+                <!-- Event Image -->
+                <ImageView
+                    android:id="@+id/updatePosterView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="Event Image"
+                    android:background="@android:color/darker_gray"
+                    android:scaleType="centerCrop" />
+
+                <!-- Button to Upload Image -->
+                <Button
+                    android:id="@+id/updatePosterButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="Update Poster"
+                    android:textSize="16sp"
+                    android:backgroundTint="@android:color/black"
+                    android:textColor="@android:color/white" />
+            </FrameLayout>
+
+            <!-- Save Button -->
             <Button
                 android:id="@+id/saveEventButton"
                 android:layout_width="match_parent"

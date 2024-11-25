@@ -18,78 +18,51 @@ import java.util.Date;
 import java.util.List;
 
 public class AdminEventsActivity extends AppCompatActivity {
+    private final String TAG = "AdminEventsActivity";
 
     private ListView listViewEvents;
     private AdminEventAdapter eventAdapter;
-    private List<Event> eventList;
     private Button backButton;
-
-    // Firestore instance
-    private FirebaseFirestore db;
+    private EventController eventController;
+    private ArrayList<Event> eventsList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_events_main);
 
-        // Initialize ListView, Back button, and Firestore
+        // Initialize ListView, Back button, and eventController
         listViewEvents = findViewById(R.id.listViewEvents);
         backButton = findViewById(R.id.backButton);
-        db = FirebaseFirestore.getInstance(); // 获取 Firestore 实例
+        eventController = new EventController(new EventRepository());
 
         // Set up Back button
         backButton.setOnClickListener(v -> finish());
 
-        // Initialize event list and adapter
-        eventList = new ArrayList<>();
-        eventAdapter = new AdminEventAdapter(this, eventList); // 使用 AdminEventAdapter
+        // initialize local list
+        eventsList = new ArrayList<>();
+        // initialize list view and adapter
+        eventAdapter = new AdminEventAdapter(this, eventsList);
         listViewEvents.setAdapter(eventAdapter);
 
-        // Load events from Firestore
-        loadEventsFromDatabase();
+        // Load all events
+        loadEvents();
     }
 
-    private void loadEventsFromDatabase() {
-        // Reference to the "events" collection
-        CollectionReference eventsRef = db.collection("events");
+    private void loadEvents() {
+        eventController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                eventsList.clear();
+                ArrayList<Event> allEvents = eventController.getLocalEventsList();
+                eventsList.addAll(allEvents);
+                eventAdapter.notifyDataSetChanged();
+            }
 
-        eventsRef.get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        QuerySnapshot querySnapshot = task.getResult();
-                        if (querySnapshot != null && !querySnapshot.isEmpty()) {
-                            // Clear the existing list to avoid duplicates
-                            eventList.clear();
-                            for (DocumentSnapshot document : querySnapshot.getDocuments()) {
-                                // Retrieve data from each document and create Event object
-                                String eventID = document.getString("eventID");
-                                String eventName = document.getString("eventName");
-                                String description = document.getString("description");
-                                int capacity = document.getLong("capacity").intValue();
-                                Date startDate = document.getDate("startDate");
-                                Date endDate = document.getDate("endDate");
-                                String organizerId = document.getString("organizerId");
-                                String posterUrl = document.getString("posterUrl");
-                                String qrCode = document.getString("qrCode");
-
-                                // Create Event object and add it to the list
-                                // public Event(String eventID, String eventName, String description, String facility, int capacity,
-                                //                 Date startDate, Date endDate, String organizerId)
-                                Event event = new Event(eventID, eventName, description, capacity, startDate, endDate, organizerId);
-                                event.setPosterUrl(posterUrl);
-                                event.setQrCode(qrCode);
-
-                                eventList.add(event);
-                            }
-                            // Notify adapter that data has changed
-                            eventAdapter.notifyDataSetChanged();
-                        } else {
-                            Toast.makeText(this, "No events found in the database.", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        Log.e("AdminEventsActivity", "Error getting documents: ", task.getException());
-                        Toast.makeText(this, "Failed to load events from database.", Toast.LENGTH_SHORT).show();
-                    }
-                });
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error refreshing events: " +e.getMessage());
+            }
+        });
     }
 }

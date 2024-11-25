@@ -8,16 +8,6 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <Button
-            android:id="@+id/waitingListButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Waiting List"
-            android:backgroundTint="@android:color/black"
-            android:textColor="@android:color/white"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:layout_margin="8dp" />
 
         <!-- Back Button -->
         <ImageButton
@@ -29,192 +19,185 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Back"
             android:scaleType="centerInside"
-            android:src="@drawable/ic_back_arrow" /> \
+            android:src="@drawable/ic_back_arrow" />
 
-        <!-- Event Poster -->
-        <ImageView
-            android:id="@+id/eventPosterImageView"
+        <!-- View Participants Button -->
+        <Button
+            android:id="@+id/viewParticipantsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_margin="8dp"
+            android:backgroundTint="@android:color/black"
+            android:textColor="@android:color/white" />
+
+        <!-- Event Header Container -->
+        <LinearLayout
+            android:id="@+id/eventHeaderContainer"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="wrap_content"
             android:layout_below="@id/backButton"
             android:layout_marginTop="16dp"
-            android:scaleType="centerCrop" />
+            android:orientation="horizontal">
 
-        <!-- Event QR Code -->
-        <ImageView
-            android:id="@+id/eventQRCodeImageView"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_alignParentEnd="true"
-            android:layout_below="@id/backButton"
-            android:layout_marginTop="16dp"
-            android:scaleType="centerInside" />
+            <!-- Event Poster Container -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="200dp"
+                android:layout_weight="0.7">
 
-        <!-- Event Name -->
+                <ImageView
+                    android:id="@+id/eventPosterImageView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop" />
+            </FrameLayout>
+
+            <!-- QR Code Container -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.3"
+                android:padding="8dp">
+
+                <ImageView
+                    android:id="@+id/eventQRCodeImageView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="fitCenter" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <!-- Event Details -->
         <TextView
             android:id="@+id/eventNameTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/eventPosterImageView"
-            android:layout_alignParentStart="true"
+            android:layout_below="@id/eventHeaderContainer"
+            android:layout_marginTop="16dp"
             android:text="Event Name"
-            android:textSize="24sp"
-            android:textStyle="bold"
             android:textColor="@android:color/black"
-            android:layout_marginTop="16dp" />
+            android:textSize="24sp"
+            android:textStyle="bold" />
 
-        <!-- Event Description -->
         <TextView
             android:id="@+id/eventDescriptionTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/eventNameTextView"
-            android:layout_alignParentStart="true"
+            android:layout_marginTop="8dp"
             android:text="Event Description"
-            android:textSize="16sp"
             android:textColor="@android:color/black"
-            android:layout_marginTop="8dp" />
+            android:textSize="16sp" />
 
-        <!-- Event Start Date -->
         <TextView
             android:id="@+id/eventStartDateTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/eventDescriptionTextView"
-            android:layout_alignParentStart="true"
+            android:layout_marginTop="8dp"
             android:text="Start Date: "
-            android:textSize="16sp"
             android:textColor="@android:color/black"
-            android:layout_marginTop="8dp" />
+            android:textSize="16sp" />
 
-        <!-- Event End Date -->
         <TextView
             android:id="@+id/eventEndDateTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/eventStartDateTextView"
-            android:layout_alignParentStart="true"
+            android:layout_marginTop="4dp"
             android:text="End Date: "
-            android:textSize="16sp"
             android:textColor="@android:color/black"
-            android:layout_marginTop="4dp" />
+            android:textSize="16sp" />
 
-        <!-- Event Facility -->
         <TextView
             android:id="@+id/eventFacilityTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/eventEndDateTextView"
-            android:layout_alignParentStart="true"
+            android:layout_marginTop="4dp"
             android:text="Location: "
-            android:textSize="16sp"
             android:textColor="@android:color/black"
-            android:layout_marginTop="4dp" />
+            android:textSize="16sp" />
 
-        <!-- Event Capacity -->
         <TextView
             android:id="@+id/eventCapacityTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/eventFacilityTextView"
-            android:layout_alignParentStart="true"
+            android:layout_marginTop="4dp"
             android:text="Capacity: "
-            android:textSize="16sp"
             android:textColor="@android:color/black"
-            android:layout_marginTop="4dp" />
+            android:textSize="16sp" />
 
-        <!-- Update Poster Button -->
-        <Button
-            android:id="@+id/updatePosterButton"
-            android:layout_width="wrap_content"
+        <!-- Action Buttons Container -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Update Poster"
             android:layout_below="@id/eventCapacityTextView"
-            android:layout_alignParentStart="true"
             android:layout_marginTop="16dp"
-            android:visibility="gone" />
+            android:orientation="horizontal"
+            android:gravity="center">
 
-        <!-- Edit Info Button -->
-        <Button
-            android:id="@+id/editInfoButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Edit Info"
-            android:layout_below="@id/eventCapacityTextView"
-            android:layout_toEndOf="@id/updatePosterButton"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:visibility="gone" />
+            <Button
+                android:id="@+id/editInfoButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Edit Info"
+                android:visibility="visible"
+                android:layout_marginEnd="8dp" />
 
-        <!-- Join Event Button -->
-        <Button
-            android:id="@+id/joinEventButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Join Event"
-            android:layout_below="@id/eventCapacityTextView"
-            android:layout_alignParentStart="true"
-            android:layout_marginTop="16dp"
-            android:visibility="gone" />
+            <Button
+                android:id="@+id/drawButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Draw"
+                android:visibility="visible"
+                android:layout_marginEnd="8dp" />
 
-        <!-- Leave Event Button -->
-        <Button
-            android:id="@+id/leaveEventButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Leave Event"
-            android:layout_below="@id/eventCapacityTextView"
-            android:layout_toEndOf="@id/joinEventButton"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:visibility="gone" />
+            <Button
+                android:id="@+id/joinEventButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Join Event"
+                android:visibility="gone"
+                android:layout_marginEnd="8dp" />
 
-        <!-- Draw Button -->
-        <Button
-            android:id="@+id/drawButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Draw"
-            android:layout_below="@id/eventCapacityTextView"
-            android:layout_toEndOf="@id/editInfoButton"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:visibility="gone" />
+            <Button
+                android:id="@+id/leaveEventButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Leave Event"
+                android:visibility="gone"
+                android:layout_marginEnd="8dp" />
 
-        <!-- Accept Button -->
-        <Button
-            android:id="@+id/acceptButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Accept"
-            android:layout_below="@id/eventCapacityTextView"
-            android:layout_alignParentStart="true"
-            android:layout_marginTop="16dp"
-            android:visibility="gone" />
+            <Button
+                android:id="@+id/acceptButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Accept"
+                android:visibility="gone"
+                android:layout_marginEnd="8dp" />
 
-        <!-- Reject Button -->
-        <Button
-            android:id="@+id/rejectButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Reject"
-            android:layout_below="@id/eventCapacityTextView"
-            android:layout_toEndOf="@id/acceptButton"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:visibility="gone" />
+            <Button
+                android:id="@+id/rejectButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Reject"
+                android:visibility="gone" />
+        </LinearLayout>
 
-        <!-- Draw Ended TextView -->
         <TextView
             android:id="@+id/drawEndedTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Draw Ended"
-            android:textSize="16sp"
-            android:textColor="@android:color/black"
             android:layout_below="@id/eventCapacityTextView"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="16dp"
+            android:text="Draw Ended"
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
             android:visibility="gone" />
 
     </RelativeLayout>

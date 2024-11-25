@@ -3,6 +3,7 @@ package com.example.syntaxeventlottery;
 import com.google.firebase.firestore.ServerTimestamp;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -18,9 +19,12 @@ public class Event implements Serializable {
 
     private String eventID;
     private String eventName;
+    private String facility;
     private String description;
     private int capacity;
-    private boolean isFull;
+    private Integer waitingListLimit; // Integer class so that it can be null;
+    private boolean capacityFull;
+    private boolean waitingListFull;
     private boolean isDrawed;
 
     @ServerTimestamp
@@ -32,18 +36,9 @@ public class Event implements Serializable {
     private String organizerId;
     private String posterUrl;
     private String qrCode;
-
-    /**
-     * A list of participant IDs who have joined the event's waiting list.
-     */
-    private List<String> participants;
-
-    /**
-     * A list of participant IDs who have been selected for the event.
-     */
-    private List<String> selectedParticipants;
-
-    private List<String> confirmedParticipants;
+    private ArrayList<String> participants; // those who have joined waiting list
+    private ArrayList<String> selectedParticipants; // those who have been selected by lottery
+    private ArrayList<String> confirmedParticipants; // those who have confirmed to take part of event
 
     // -------------------------------------------------------------------------
     // Constructors
@@ -55,25 +50,26 @@ public class Event implements Serializable {
     public Event() {
         this.participants = new ArrayList<>();
         this.selectedParticipants = new ArrayList<>();
-        this.isFull = false;
+        this.capacityFull = false;
         this.isDrawed = false;
     }
 
     /**
      * Parameterized constructor to create an Event with specific details.
      *
-     * @param eventID       Unique identifier for the event.
      * @param eventName     Name of the event.
      * @param description   Description of the event.
      * @param capacity      Maximum capacity of participants.
      * @param startDate     Start date and time of the event.
      * @param endDate       End date and time of the event.
      * @param organizerId   ID of the organizer creating the event.
+     * @param waitingListLimit Limit of the waiting list (i.e., participants list). No limit if null
      */
-    public Event(String eventID, String eventName, String description, int capacity,
-                 Date startDate, Date endDate, String organizerId) {
-        this.eventID = eventID;
+    public Event(String eventName, String facility, String description, int capacity,
+                 Date startDate, Date endDate, String organizerId, Integer waitingListLimit) {
+        this.eventID = null;
         this.eventName = eventName;
+        this.facility = facility;
         this.description = description;
         this.capacity = capacity;
         this.startDate = startDate;
@@ -81,9 +77,11 @@ public class Event implements Serializable {
         this.organizerId = organizerId;
         this.participants = new ArrayList<>();
         this.selectedParticipants = new ArrayList<>();
-        this.isFull = false;
-        this.isDrawed = false;
         this.confirmedParticipants = new ArrayList<>();
+        this.waitingListLimit = waitingListLimit;
+        this.capacityFull = false;
+        this.waitingListFull = false;
+        this.isDrawed = false;
     }
 
     // -------------------------------------------------------------------------
@@ -106,6 +104,14 @@ public class Event implements Serializable {
         this.eventName = eventName;
     }
 
+    public String getFacility() {
+        return facility;
+    }
+
+    public void setFacility(String facilityName) {
+        this.facility = facilityName;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -122,12 +128,31 @@ public class Event implements Serializable {
         this.capacity = capacity;
     }
 
-    public boolean isFull() {
-        return isFull;
+    public boolean getCapacityFull() {
+        return confirmedParticipants.size() >= capacity;
     }
 
-    public void setFull(boolean full) {
-        isFull = full;
+    public void setCapacityFull(boolean full) {
+        this.capacityFull = full;
+    }
+
+    public Integer getWaitingListLimit() {
+        return waitingListLimit;
+    }
+
+    public void setWaitingListLimit(Integer waitingListLimit) {
+        this.waitingListLimit = waitingListLimit;
+    }
+
+    public boolean getWaitingListFull() {
+        if (waitingListLimit == null) { // if limit is null, cannot be full
+            return false;
+        }
+        return participants.size() >= waitingListLimit;
+    }
+
+    public void setWaitingListFull(boolean full) {
+        this.waitingListFull = full;
     }
 
     public boolean isDrawed() {
@@ -178,59 +203,40 @@ public class Event implements Serializable {
         this.qrCode = qrCode;
     }
 
-    public List<String> getParticipants() {
+    public ArrayList<String> getParticipants() {
         return participants;
     }
 
-    public void setParticipants(List<String> participants) {
+    /**
+     * Generates a unique event ID based on the current timestamp and organizer ID.
+     *
+     * @param organizerId The ID of the organizer.
+     */
+    public void generateEventID(String organizerId) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        this.eventID = formatter.format(new Date()) + "_" + organizerId;
+    }
+
+    public void setParticipants(ArrayList<String> participants) {
         this.participants = participants;
     }
 
-    public List<String> getSelectedParticipants() {
+    public ArrayList<String> getSelectedParticipants() {
         return selectedParticipants;
     }
 
-    public void setSelectedParticipants(List<String> selectedParticipants) {
+    public void setSelectedParticipants(ArrayList<String> selectedParticipants) {
         this.selectedParticipants = selectedParticipants;
     }
 
-    public List<String> getConfirmedParticipants() {
+    public ArrayList<String> getConfirmedParticipants() {
         return confirmedParticipants;
     }
 
-    public void setConfirmedParticipants(List<String> confirmedParticipants) {
+    public void setConfirmedParticipants(ArrayList<String> confirmedParticipants) {
         this.confirmedParticipants = confirmedParticipants;
     }
-    /**
-     * Adds a participant's ID to the event's participants list.
-     *
-     * @param participantId The ID of the participant to add.
-     */
-    public void addParticipant(String participantId) {
-        if (!this.participants.contains(participantId) && !this.isFull) {
-            this.participants.add(participantId);
-            checkIfFull();
-        }
-    }
-    /**
-     * Removes a participant's ID from the event's participants list.
-     *
-     * @param participantId The ID of the participant to remove.
-     */
-    public void removeParticipant(String participantId) {
-        this.participants.remove(participantId);
-        checkIfFull();
-    }
-    /**
-     * Checks if the event is full based on capacity and updates the isFull flag.
-     */
-    private void checkIfFull() {
-        if (this.participants.size() >= this.capacity) {
-            this.isFull = true;
-        } else {
-            this.isFull = false;
-        }
-    }
+
 
     @Override
     public String toString() {
@@ -239,7 +245,9 @@ public class Event implements Serializable {
                 ", eventName='" + eventName + '\'' +
                 ", description='" + description + '\'' +
                 ", capacity=" + capacity +
-                ", isFull=" + isFull +
+                ", capacityFull=" + capacityFull +
+                ", waitingListLimit=" + (waitingListLimit == null ? "No limit set" : waitingListLimit) +
+                ", waitingListFull=" + waitingListFull +
                 ", isDrawed=" + isDrawed +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
