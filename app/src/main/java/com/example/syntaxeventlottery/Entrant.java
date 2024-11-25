@@ -5,6 +5,7 @@ import com.google.firebase.firestore.Exclude;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Represents an Entrant in the Event Lottery System.
@@ -66,8 +67,8 @@ public class Entrant extends User implements Serializable {
      * @param profilePhotoUrl URL to the entrant's profile photo.
      * @param username        Entrant's chosen username.
      */
-    public Entrant(String deviceCode, String email, String phoneNumber, String profilePhotoUrl, String username,String facility) {
-        super(deviceCode, email, phoneNumber, profilePhotoUrl, username,facility); // Calls the parameterized constructor of User
+    public Entrant(String deviceCode, String email, String phoneNumber, String profilePhotoUrl, String username, Set<String> roles, String facility) {
+        super(deviceCode, email, phoneNumber, profilePhotoUrl, username, roles, facility); // Calls the parameterized constructor of User
         this.waitingListEvents = new ArrayList<>();
         this.selectedEvents = new ArrayList<>();
         this.invitations = new ArrayList<>();

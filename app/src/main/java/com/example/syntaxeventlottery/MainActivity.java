@@ -3,16 +3,19 @@ package com.example.syntaxeventlottery;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
+    private final String TAG = "MainActivity";
 
     private Button adminButton;
     private Button userButton;
     private String deviceId; // Variable to store the device ID
-    private UserRepository userRepository; // User repository instance
+    private UserController userController;
+    private User currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,8 +25,8 @@ public class MainActivity extends AppCompatActivity {
         // Retrieve the device ID
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        // Initialize UserRepository
-        userRepository = new UserRepository();
+        // Initialize userController
+        userController = new UserController(new UserRepository());
 
         // Initialize buttons
         adminButton = findViewById(R.id.adminButton);
@@ -42,20 +45,23 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Checks if the user with the current device ID exists in the Firestore database.
+     * If user does not have an existing profile, launch the activity which creates one
      */
     private void checkUserInDatabase() {
-        userRepository.checkEntrantExists(deviceId, new UserRepository.OnCheckEntrantExistsListener() {
+        userController.refreshRepository(new DataCallback<Void>() {
             @Override
-            public void onCheckComplete(boolean exists, Entrant entrant) {
-                if (exists) {
-                    openUserHomeActivity(entrant.getUserID());
-                } else {
+            public void onSuccess(Void result) {
+                currentUser = userController.getEntrantByDeviceID(deviceId);
+                if (currentUser == null) { // this means user does not have an associated account
                     openUserProfileActivity();
+                } else {
+                    openUserHomeActivity(currentUser.getUserID());
                 }
             }
 
             @Override
-            public void onCheckError(Exception e) {
+            public void onError(Exception e) {
+                Log.e(TAG,"Main Activity", e);
                 handleDatabaseError(e);
             }
         });

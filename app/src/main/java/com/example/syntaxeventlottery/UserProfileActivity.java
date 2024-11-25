@@ -93,17 +93,17 @@ public class UserProfileActivity extends AppCompatActivity {
     }
 
     private void loadUserProfile() {
-        userController.getEntrantByDeviceID(this, new DataCallback<User>() {
+        userController.refreshRepository(new DataCallback<Void>() {
             @Override
-            public void onSuccess(User user) {
-                currentUser = user;
-                displayUserDetails(user);
+            public void onSuccess(Void result) {
+                currentUser = userController.getEntrantByDeviceID(deviceId);
+                displayUserDetails(currentUser);
             }
 
             @Override
             public void onError(Exception e) {
-                Log.e(TAG, "Filed to load user profile", e);
-                Toast.makeText(UserProfileActivity.this, "Failed to load user profile", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Failed to fetch user profile", e);
+                Toast.makeText(UserProfileActivity.this, "Couldn't load user profile", Toast.LENGTH_SHORT).show();
             }
         });
     }

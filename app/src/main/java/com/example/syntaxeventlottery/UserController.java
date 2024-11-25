@@ -51,29 +51,29 @@ public class UserController {
         userRepository.fetchAllUsers(callback);
     }
 
-    public void getEntrantByDeviceID(Context context, DataCallback<User> callback) {
-        userRepository.getEntrantByDeviceId(context, new DataCallback<User>() {
-            @Override
-            public void onSuccess(User user) {
-                if (!validateUser(user, callback)) {
-                    return;
-                }
+    public User getEntrantByDeviceID(String deviceId) {
+        // Check if eventId is null
+        if (deviceId == null) {
+            return null;
+        }
+        ArrayList<User> users = getLocalUsersList();
+        for (User user : users) {
+            if (user.getUserID().equals(deviceId)) {
+                return user;
             }
-
-            @Override
-            public void onError(Exception e) {
-                callback.onError(e);
-            }
-        });
+        }
+        // return null if no matching event found
+        return null;
     }
 
     public void addUser(User user, @Nullable Uri imageUri, DataCallback<User> callback) {
         if (!validateUser(user, callback)) {
             return;
         }
+        /*
         if (imageUri == null && (user.getProfilePhotoUrl() == null || user.getProfilePhotoUrl().isEmpty())) {
             user.setProfilePhotoUrl(userRepository.generateDefaultProfilePhotoUrl(user.getUsername()));
-        }
+        }*/
         userRepository.addUserToRepo(user, imageUri, callback);
     }
 

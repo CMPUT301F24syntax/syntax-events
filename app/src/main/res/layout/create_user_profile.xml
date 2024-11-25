@@ -32,21 +32,20 @@
                 android:id="@+id/image_view_avatar"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@drawable/ic_avatar_placeholder"
+                android:src="@drawable/ic_empty_profile_picture"
                 android:contentDescription="User Avatar"
                 android:scaleType="centerCrop" />
 
-            <!-- Overlay Remove Button -->
-            <ImageButton
-                android:id="@+id/button_remove_photo"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_gravity="top|end"
-                android:background="@android:color/transparent"
-                android:src="@drawable/ic_remove_photo"
-                android:contentDescription="Remove Photo"
-                android:visibility="gone" /> <!-- Initially hidden -->
         </FrameLayout>
+
+        <Button
+            android:id="@+id/upload_profile_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@android:color/black"
+            android:text="Upload Profile Picture"
+            android:textColor="@android:color/white"
+            android:textSize="12sp" />
 
         <EditText
             android:id="@+id/edit_text_username"
