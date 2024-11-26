@@ -122,11 +122,22 @@
             android:textColor="@android:color/black"
             android:textSize="16sp" />
 
+        <TextView
+            android:id="@+id/eventDrawedTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/eventCapacityTextView"
+            android:layout_marginTop="4dp"
+            android:text="Drawed Status: "
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
+
         <!-- Action Buttons Container -->
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/eventCapacityTextView"
+            android:layout_below="@id/eventDrawedTextView"
             android:layout_marginTop="30dp"
             android:gravity="center"
             android:orientation="vertical">
@@ -146,6 +157,12 @@
                 android:layout_marginEnd="0dp"
                 android:text="Manage Participants"
                 android:visibility="visible" />
+
+            <Button
+                android:id="@+id/drawParticipantsButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Perform Event Draw" />
 
             <Button
                 android:id="@+id/joinEventButton"

@@ -10,12 +10,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,6 +93,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             intent.putExtra("startDate", event.getStartDate().toString());
             intent.putExtra("endDate", event.getEndDate().toString());
             intent.putExtra("capacity", event.getCapacity());
+            intent.putExtra("drawed", event.isDrawed());
             context.startActivity(intent);
         });
     }

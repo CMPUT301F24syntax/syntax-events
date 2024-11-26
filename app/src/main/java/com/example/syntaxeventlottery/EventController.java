@@ -9,7 +9,9 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -140,6 +142,31 @@ public class EventController {
 
 
     // lottery implementation
+    public void performDraw(Event event, DataCallback<Event> callback) {
+        if (event.isDrawed()) {
+            callback.onError(new IllegalArgumentException("Event draw has already been performed"));
+            return;
+        }
+
+        ArrayList<String> selectedList = new ArrayList<>();
+        List<String> waitList = event.getParticipants(); // Assuming this returns a list of participants
+        int capacity = event.getCapacity();
+
+        // If the number of participants is less than or equal to capacity, add all participants
+        if (waitList.size() <= capacity) {
+            selectedList.addAll(waitList);
+        } else {
+            // Select a random subset of participants equal to the event capacity
+            Collections.shuffle(waitList); // Randomize the order
+            selectedList.addAll(waitList.subList(0, capacity)); // Take the first `capacity` participants
+        }
+
+        // Update the event's selected participants
+        event.setSelectedParticipants(selectedList);
+        event.setDrawed(true);
+
+        updateEvent(event, null, null, callback);
+    }
 
     public void acceptInvitation(Event event, String userID) {
         if (event.getParticipants().contains(userID) && !event.getSelectedParticipants().contains(userID)) {

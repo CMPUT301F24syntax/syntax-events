@@ -6,7 +6,6 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Represents an event in the Event Lottery System.
@@ -25,7 +24,7 @@ public class Event implements Serializable {
     private Integer waitingListLimit; // Integer class so that it can be null;
     private boolean capacityFull;
     private boolean waitingListFull;
-    private boolean isDrawed;
+    private boolean drawed;
 
     @ServerTimestamp
     private Date startDate;
@@ -48,10 +47,7 @@ public class Event implements Serializable {
      * Default constructor required by Firebase.
      */
     public Event() {
-        this.participants = new ArrayList<>();
-        this.selectedParticipants = new ArrayList<>();
-        this.capacityFull = false;
-        this.isDrawed = false;
+
     }
 
     /**
@@ -81,7 +77,7 @@ public class Event implements Serializable {
         this.waitingListLimit = waitingListLimit;
         this.capacityFull = false;
         this.waitingListFull = false;
-        this.isDrawed = false;
+        this.drawed = false;
     }
 
     // -------------------------------------------------------------------------
@@ -156,11 +152,11 @@ public class Event implements Serializable {
     }
 
     public boolean isDrawed() {
-        return isDrawed;
+        return drawed;
     }
 
     public void setDrawed(boolean drawed) {
-        isDrawed = drawed;
+        this.drawed = drawed;
     }
 
     public Date getStartDate() {
@@ -248,7 +244,7 @@ public class Event implements Serializable {
                 ", capacityFull=" + capacityFull +
                 ", waitingListLimit=" + (waitingListLimit == null ? "No limit set" : waitingListLimit) +
                 ", waitingListFull=" + waitingListFull +
-                ", isDrawed=" + isDrawed +
+                ", isDrawed=" + drawed +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
                 ", organizerId='" + organizerId + '\'' +

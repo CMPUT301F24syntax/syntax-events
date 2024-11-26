@@ -145,6 +145,7 @@ public class EventRepository  {
         }
 
         HashMap<String, Object> data = eventToHashData(event);
+        Log.d(TAG, "event details: " +data);
 
         // Preserve existing QR code URL
         if (event.getQrCode() != null) {
@@ -198,7 +199,7 @@ public class EventRepository  {
         data.put("waitingListLimit", event.getWaitingListLimit());
         data.put("capacityFull", event.getCapacityFull());
         data.put("waitingListFull", event.getWaitingListFull());
-        data.put("isDrawed", event.isDrawed());
+        data.put("drawed", event.isDrawed());
         return data;
     }
 

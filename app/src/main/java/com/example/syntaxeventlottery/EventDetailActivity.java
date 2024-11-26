@@ -18,21 +18,19 @@ import com.bumptech.glide.Glide;
  * Activity to display event details and manage event actions.
  */
 public class EventDetailActivity extends AppCompatActivity {
+    private static final String TAG = "EventDetailActivity";
 
     // UI Components
     private ImageView posterImageView, qrCodeImageView;
-    private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView, eventEndDateTextView, eventCapacityTextView, eventFacilityTextView;
+    private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView, eventEndDateTextView, eventCapacityTextView, eventFacilityTextView, eventDrawedStatusTextView;
     private Button joinWaitingListButton, leaveWaitingListButton, acceptInvitationButton, declineInvitationButton;
-    private Button manageParticipantsButton, editInfoButton;
+    private Button manageParticipantsButton, editInfoButton, drawButton;
     private ImageButton backButton;
 
     // Controller and Data
     private EventController eventController;
     private String eventID, deviceID;
     private Event event;
-
-    private static final int REQUEST_CODE_SELECT_POSTER = 1001;
-    private static final String TAG = "EventDetailActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,68 +41,88 @@ public class EventDetailActivity extends AppCompatActivity {
 
         // Get device ID
         deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        Log.d(TAG, "Device ID: " + deviceID);
-
 
         // Get event ID from intent
         eventID = getIntent().getStringExtra("eventID");
-        Log.d(TAG, "Received eventID: " + eventID);
 
-        if (eventID != null && !eventID.isEmpty()) {
-            Log.d(TAG, "Event ID found: " + eventID);
-
-            // Refresh repository to get the latest data
-            eventController.refreshRepository(new DataCallback<Void>() {
-                @Override
-                public void onSuccess(Void result) {
-                    Log.d(TAG, "Refreshed repository");
-                    // Fetch the event by ID from the controller
-                    event = eventController.getEventById(eventID);
-                    //Log.d(TAG, eventController.getLocalEventsList().toString());
-
-                    // If the event is not found, show an error and finish
-                    if (event == null) {
-                        Log.e(TAG, "Failed to find event in repository");
-                        Toast.makeText(EventDetailActivity.this, "Failed to find the event", Toast.LENGTH_SHORT).show();
-                        finish();  // Exit the activity as the event wasn't found
-                        return;    // Early return to prevent the rest of the code from executing
-                    }
-
-                    // Initialize UI and display event details
-                    initializeUI();
-                    displayEventDetails(event);
-
-                    // Display buttons based on whether the user is the organizer or not
-                    if (event.getOrganizerId().equals(deviceID)) { // User is the organizer
-                        Log.d(TAG, "Current user is the organizer");
-                        hideAllParticipantButtons();
-                        showOrganizerButtons(event);
-                    } else { // User is a potential entrant
-                        hideOrganizerButtons();
-                        showJoinWaitingListButton();
-                        showAcceptDeclineButtons();
-                        showLeaveWaitingListButton();
-                    }
-
-                    // Set up button listeners after the UI is updated
-                    setupButtonListeners();
-                }
-
-                @Override
-                public void onError(Exception e) {
-                    Log.d(TAG, e.toString());
-                    Toast.makeText(EventDetailActivity.this, "Failed to get updated data", Toast.LENGTH_SHORT).show();
-                    finish();
-                }
-            });
+        if (eventID == null || eventID.isEmpty()) { // finish activity if there is error getting the event
+            Log.e(TAG, "Couldn't get eventID from event");
+            finish();
         } else {
-            Log.d(TAG, "Event ID is missing");
-            Toast.makeText(this, "Couldn't retrieve event id", Toast.LENGTH_SHORT).show();
-            finish();  // Exit the activity as there's no event ID to fetch
+            loadEvent();
         }
     }
 
-    private void initializeUI() {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // reload all event details when resuming activity to get most updated information
+        loadEvent();
+    }
+
+    private void loadEvent() {
+        // Refresh repository to get the latest data
+        eventController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+
+                // Fetch the event by ID from the controller
+                event = eventController.getEventById(eventID);
+                Log.d(TAG, "Refreshed repository, event details:"+event);
+                // If the event is not found, show an error and finish
+                if (event == null) {
+                    Log.e(TAG, "Failed to find event in repository");
+                    Toast.makeText(EventDetailActivity.this, "Failed to find the event", Toast.LENGTH_SHORT).show();
+                    finish();  // Exit the activity as the event wasn't found
+                    return;    // Early return to prevent the rest of the code from executing
+                }
+                updateUI(event); // display the most updated event details
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.d(TAG, e.toString());
+                Toast.makeText(EventDetailActivity.this, "Failed to get updated data", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        });
+    }
+
+    private void updateUI(Event event) {
+        this.event = event;
+        initializeUI(event);
+        displayEventDetails(event);
+    }
+
+    private void displayEventDetails(Event event) {
+        eventNameTextView.setText(event.getEventName());
+        eventDescriptionTextView.setText(event.getDescription());
+        eventFacilityTextView.setText("Location: " + (event.getFacility() == null ? "No Facility Available" : event.getFacility()));
+        eventStartDateTextView.setText("Start: "+ event.getStartDate().toString());
+        eventEndDateTextView.setText("End: " + event.getEndDate().toString());
+        eventCapacityTextView.setText("Capacity: " + String.valueOf(event.getCapacity()));
+        eventDrawedStatusTextView.setText("Drawed: "+event.isDrawed());
+
+        if (event.getPosterUrl() != null && !event.getPosterUrl().isEmpty()) {
+            Glide.with(this).load(event.getPosterUrl()).into(posterImageView);
+            Log.d(TAG, "Loaded poster image. poster url: " + event.getPosterUrl());
+        } else {
+            // load default poster
+            Glide.with(this).load(R.drawable.ic_default_poster).into(posterImageView);
+        }
+
+
+        if (event.getQrCode() != null && !event.getQrCode().isEmpty()) {
+            Glide.with(this).load(event.getQrCode()).into(qrCodeImageView);
+            Log.d(TAG, "Loaded QR code image. qr code url: " + event.getQrCode());
+        } else {
+            // load missing qr code image
+            Glide.with(this).load(R.drawable.default_qrcode).into(qrCodeImageView);
+        }
+    }
+
+
+    private void initializeUI(Event event) {
         posterImageView = findViewById(R.id.eventPosterImageView);
         qrCodeImageView = findViewById(R.id.eventQRCodeImageView);
         eventNameTextView = findViewById(R.id.eventNameTextView);
@@ -113,7 +131,7 @@ public class EventDetailActivity extends AppCompatActivity {
         eventEndDateTextView = findViewById(R.id.eventEndDateTextView);
         eventCapacityTextView = findViewById(R.id.eventCapacityTextView);
         eventFacilityTextView = findViewById(R.id.eventFacilityTextView);
-
+        eventDrawedStatusTextView = findViewById(R.id.eventDrawedTextView);
         joinWaitingListButton = findViewById(R.id.joinEventButton);
         leaveWaitingListButton = findViewById(R.id.leaveEventButton);
         acceptInvitationButton = findViewById(R.id.acceptButton);
@@ -121,8 +139,38 @@ public class EventDetailActivity extends AppCompatActivity {
 
         manageParticipantsButton = findViewById(R.id.manageParticipantsButton);
         editInfoButton = findViewById(R.id.editInfoButton);
+        drawButton = findViewById(R.id.drawParticipantsButton);
         backButton = findViewById(R.id.backButton);
+
+        configureButtonVisibility();
+        setupButtonListeners();
     }
+
+    private void configureButtonVisibility() {
+        boolean isOrganizer = event.getOrganizerId().equals(deviceID);
+
+        // Organizer buttons
+        editInfoButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
+        manageParticipantsButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
+        drawButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
+
+        // Participant buttons
+        if (!isOrganizer) {
+            joinWaitingListButton.setVisibility(View.VISIBLE);
+            leaveWaitingListButton.setVisibility(View.VISIBLE);
+            // Additional participant-specific visibility logic
+        } else {
+            hideAllParticipantButtons();
+        }
+
+        // Draw button state
+        if (isOrganizer && event.isDrawed()) {
+            drawButton.setEnabled(false);
+            drawButton.setText("Event Already Drawn");
+        }
+    }
+
+
 
     private void setupButtonListeners() {
         joinWaitingListButton.setOnClickListener(v -> eventController.addUserToWaitingList(event, deviceID, new DataCallback<Event>() {
@@ -148,18 +196,30 @@ public class EventDetailActivity extends AppCompatActivity {
                 Toast.makeText(EventDetailActivity.this, "Error joining the waiting list", Toast.LENGTH_SHORT).show();
             }
         }));
+
+        drawButton.setOnClickListener(v -> {
+            if (event.isDrawed()) {
+                Toast.makeText(this, "Event draw has already occured", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            eventController.performDraw(event, new DataCallback<Event>() {
+                @Override
+                public void onSuccess(Event result) {
+                    Log.d(TAG, "Event draw performed: updated event info: "+  result);
+                    Toast.makeText(EventDetailActivity.this, "Draw perfomed successfully", Toast.LENGTH_SHORT).show();
+                    loadEvent();
+                }
+                @Override
+                public void onError(Exception e) {
+                    Log.d(TAG, "Event draw error");
+                    Toast.makeText(EventDetailActivity.this, "Event draw error", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
         /*
         acceptInvitationButton.setOnClickListener(v -> eventController.acceptInvitation(event, deviceID));
         declineInvitationButton.setOnClickListener(v -> eventController.declineInvitation(event, deviceID));
-
-        drawButton.setOnClickListener(v -> {
-            if (event != null && !event.isDrawed()) {
-                eventController.performDraw(eventID);
-            } else {
-                Toast.makeText(this, "The draw has already been performed.", Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "Draw has already been performed.");
-            }
-        });
         */
         if (backButton != null) {
             backButton.setOnClickListener(v -> finish());
@@ -185,106 +245,11 @@ public class EventDetailActivity extends AppCompatActivity {
         });
     }
 
-    private void displayEventDetails(Event event) {
-        eventNameTextView.setText(event.getEventName());
-        eventDescriptionTextView.setText(event.getDescription());
-        eventFacilityTextView.setText("Location: " + (event.getFacility() == null ? "No Facility Available" : event.getFacility()));
-        eventStartDateTextView.setText("Start: "+ event.getStartDate().toString());
-        eventEndDateTextView.setText("End: " + event.getEndDate().toString());
-        eventCapacityTextView.setText("Capacity: " + String.valueOf(event.getCapacity()));
-
-        if (event.getPosterUrl() != null && !event.getPosterUrl().isEmpty()) {
-            Glide.with(this).load(event.getPosterUrl()).into(posterImageView);
-            Log.d(TAG, "Loaded poster image. poster url: " + event.getPosterUrl());
-        } else {
-            // load default poster
-            Glide.with(this).load(R.drawable.ic_default_poster).into(posterImageView);
-        }
-
-
-        if (event.getQrCode() != null && !event.getQrCode().isEmpty()) {
-            Glide.with(this).load(event.getQrCode()).into(qrCodeImageView);
-            Log.d(TAG, "Loaded QR code image. qr code url: " + event.getQrCode());
-        } else {
-            // load missing qr code image
-            Glide.with(this).load(R.drawable.default_qrcode).into(qrCodeImageView);
-        }
-    }
-
-    private void showOrganizerButtons(Event event) {
-        manageParticipantsButton.setVisibility(View.VISIBLE);
-        editInfoButton.setVisibility(View.VISIBLE);
-        hideAllParticipantButtons();
-        Log.d(TAG, "Organizer buttons are now visible.");
-    }
-
-    private void hideOrganizerButtons() {
-        editInfoButton.setVisibility(View.GONE);
-        manageParticipantsButton.setVisibility(View.GONE);
-        Log.d(TAG, "Organizer buttons are now hidden.");
-    }
-
-    private void showJoinWaitingListButton() {
-        joinWaitingListButton.setVisibility(View.VISIBLE);
-        leaveWaitingListButton.setVisibility(View.GONE);
-        acceptInvitationButton.setVisibility(View.GONE);
-        declineInvitationButton.setVisibility(View.GONE);
-        Log.d(TAG, "Shown: Join Waiting List button.");
-    }
-
-    private void showLeaveWaitingListButton() {
-        joinWaitingListButton.setVisibility(View.GONE);
-        leaveWaitingListButton.setVisibility(View.VISIBLE);
-        acceptInvitationButton.setVisibility(View.GONE);
-        declineInvitationButton.setVisibility(View.GONE);
-        Log.d(TAG, "Shown: Leave Waiting List button.");
-    }
-
-    private void showAcceptDeclineButtons() {
-        joinWaitingListButton.setVisibility(View.GONE);
-        leaveWaitingListButton.setVisibility(View.GONE);
-        acceptInvitationButton.setVisibility(View.VISIBLE);
-        declineInvitationButton.setVisibility(View.VISIBLE);
-        Log.d(TAG, "Shown: Accept and Decline Invitation buttons.");
-    }
 
     private void hideAllParticipantButtons() {
         joinWaitingListButton.setVisibility(View.GONE);
         leaveWaitingListButton.setVisibility(View.GONE);
         acceptInvitationButton.setVisibility(View.GONE);
         declineInvitationButton.setVisibility(View.GONE);
-        Log.d(TAG, "All participant buttons are now hidden.");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        // Refresh the repository to get the latest event data
-        if (eventID != null && !eventID.isEmpty()) {
-            eventController.refreshRepository(new DataCallback<Void>() {
-                @Override
-                public void onSuccess(Void result) {
-                    // Fetch the event by ID from the controller
-                    event = eventController.getEventById(eventID);
-
-                    // If the event is found, update the UI with the latest details
-                    if (event != null) {
-                        displayEventDetails(event);
-                    } else {
-                        Log.e(TAG, "Failed to find event in repository");
-                        Toast.makeText(EventDetailActivity.this, "Failed to find the event", Toast.LENGTH_SHORT).show();
-                        finish();
-                    }
-                }
-
-                @Override
-                public void onError(Exception e) {
-                    Log.d(TAG, "Failed to refresh event details: " + e.toString());
-                    Toast.makeText(EventDetailActivity.this, "Failed to get updated data", Toast.LENGTH_SHORT).show();
-                    finish();
-                }
-            });
-        }
     }
 }

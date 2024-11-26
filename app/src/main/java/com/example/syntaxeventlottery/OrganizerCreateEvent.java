@@ -143,6 +143,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         // ensure waitinglistlimit is larger than capacity
         if (waitingListLimit != null && waitingListLimit < capacity) {
             Toast.makeText(this, "limit must be larger than capacity", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         // Create Event Object and save

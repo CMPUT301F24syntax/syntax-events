@@ -10,12 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-
 import java.util.ArrayList;
-import java.util.List;
 
 public class EventParticipantsListActivity extends AppCompatActivity {
     private final String TAG = "EventParticipantsListActivity";
@@ -136,7 +131,7 @@ public class EventParticipantsListActivity extends AppCompatActivity {
         if (!event.isDrawed()) {
             listDetails.setText("Event draw has not occured");
         } else {
-            listDetails.setText(selectedList.size() + "Entrants invited");
+            listDetails.setText(selectedList.size() + " Entrants invited");
         }
 
         usersList.addAll(selectedList);
