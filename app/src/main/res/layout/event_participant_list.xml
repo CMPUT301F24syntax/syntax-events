@@ -1,6 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:padding="16dp"
     android:background="@android:color/white">
 
@@ -21,19 +22,30 @@
         android:id="@+id/participantsListTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text=""
+        android:layout_below="@id/backButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="10dp"
         android:textSize="24sp"
         android:textStyle="bold"
+        tools:text="List Display Title"/>
+
+    <TextView
+        android:id="@+id/listDetailsTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/participantsListTitle"
         android:layout_centerHorizontal="true"
-        android:layout_below="@id/backButton"
-        android:layout_marginBottom="16dp" />
+        android:textSize="16sp"
+        android:layout_marginBottom="10dp"
+        tools:text="0/0" />
 
     <!-- RecyclerView to display participants list -->
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/waitingListRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_below="@id/participantsListTitle"
+        android:layout_below="@id/listDetailsTextView"
         android:layout_above="@id/buttonContainer"
         android:layout_marginBottom="16dp" />
 

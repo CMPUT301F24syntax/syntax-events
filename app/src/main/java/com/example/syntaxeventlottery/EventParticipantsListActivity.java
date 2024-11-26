@@ -28,6 +28,7 @@ public class EventParticipantsListActivity extends AppCompatActivity {
     private WaitingListAdapter participantsListAdapter;
     private ArrayList<User> usersList;
     private TextView listTitle;
+    private TextView listDetails;
     private Button backButton;
     private Button waitingListButton;
     private Button selectedListButton;
@@ -47,6 +48,8 @@ public class EventParticipantsListActivity extends AppCompatActivity {
 
         // initialize text view
         listTitle = findViewById(R.id.participantsListTitle);
+        listDetails = findViewById(R.id.listDetailsTextView);
+
         // Initialize RecyclerView and Adapter
         listRecyclerView = findViewById(R.id.waitingListRecyclerView);
         listRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -92,13 +95,27 @@ public class EventParticipantsListActivity extends AppCompatActivity {
     private void loadWaitingList() {
         // set title
         listTitle.setText("Waiting List");
+
         // clear old list
         usersList.clear();
         ArrayList<User> waitingList = new ArrayList<>();
         for (String userId : event.getParticipants()) {
             User user = userController.getEntrantByDeviceID(userId);
-            waitingList.add(user);
+            if (user != null) {
+                waitingList.add(user);
+            }
         }
+        // set details header
+        if (waitingList.isEmpty()) {
+            listDetails.setText("No Entrants have joined the waiting list");
+        } else {
+            if (event.getWaitingListLimit() == null) {
+                listDetails.setText(waitingList.size()+" Entrants in the waiting list");
+            } else {
+                listDetails.setText(waitingList.size()+" / "+ event.getWaitingListLimit()+ " Entrants in the waiting list");
+            }
+        }
+
         usersList.addAll(waitingList);
         participantsListAdapter.notifyDataSetChanged();
     }
@@ -111,9 +128,17 @@ public class EventParticipantsListActivity extends AppCompatActivity {
         ArrayList<User> selectedList = new ArrayList<>();
         for (String userId : event.getSelectedParticipants()) {
             User user = userController.getEntrantByDeviceID(userId);
-            selectedList.add(user);
-
+            if (user != null) {
+                selectedList.add(user);
+            }
         }
+        // set details header
+        if (!event.isDrawed()) {
+            listDetails.setText("Event draw has not occured");
+        } else {
+            listDetails.setText(selectedList.size() + "Entrants invited");
+        }
+
         usersList.addAll(selectedList);
         participantsListAdapter.notifyDataSetChanged();
     }
@@ -126,9 +151,19 @@ public class EventParticipantsListActivity extends AppCompatActivity {
         ArrayList<User> confirmedList = new ArrayList<>();
         for (String userId : event.getConfirmedParticipants()) {
             User user = userController.getEntrantByDeviceID(userId);
-            confirmedList.add(user);
-
+            if (user != null) {
+                confirmedList.add(user);
+            }
         }
+        // set details header
+        if (!event.isDrawed()) {
+            listDetails.setText("Event draw has not occured");
+        } else if (confirmedList.isEmpty()) {
+            listDetails.setText("No Entrants have accepted their invitation");
+        } else {
+                listDetails.setText(confirmedList.size() +" / "+ event.getCapacity() +" Entrants have joined the event");
+        }
+
         usersList.addAll(confirmedList);
         participantsListAdapter.notifyDataSetChanged();
     }
