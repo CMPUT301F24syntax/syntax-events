@@ -62,7 +62,7 @@
 
 
 
-        <activity android:name=".EventWaitingListActivity" />
+        <activity android:name=".EventParticipantsListActivity" />
 
         <activity android:name=".NotificationCenterActivity"></activity>
 

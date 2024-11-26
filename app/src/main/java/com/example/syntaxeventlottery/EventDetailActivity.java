@@ -1,7 +1,6 @@
 // EventDetailActivity.java
 package com.example.syntaxeventlottery;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -11,7 +10,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.annotation.Nullable;
+
 import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 
@@ -24,7 +23,7 @@ public class EventDetailActivity extends AppCompatActivity {
     private ImageView posterImageView, qrCodeImageView;
     private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView, eventEndDateTextView, eventCapacityTextView, eventFacilityTextView;
     private Button joinWaitingListButton, leaveWaitingListButton, acceptInvitationButton, declineInvitationButton;
-    private Button drawButton, editInfoButton, viewParticipantsButton;
+    private Button manageParticipantsButton, editInfoButton;
     private ImageButton backButton;
 
     // Controller and Data
@@ -120,9 +119,8 @@ public class EventDetailActivity extends AppCompatActivity {
         acceptInvitationButton = findViewById(R.id.acceptButton);
         declineInvitationButton = findViewById(R.id.rejectButton);
 
-        drawButton = findViewById(R.id.drawButton);
+        manageParticipantsButton = findViewById(R.id.manageParticipantsButton);
         editInfoButton = findViewById(R.id.editInfoButton);
-        viewParticipantsButton = findViewById(R.id.viewParticipantsButton);
         backButton = findViewById(R.id.backButton);
     }
 
@@ -150,7 +148,6 @@ public class EventDetailActivity extends AppCompatActivity {
                 Toast.makeText(EventDetailActivity.this, "Error joining the waiting list", Toast.LENGTH_SHORT).show();
             }
         }));
-
         /*
         acceptInvitationButton.setOnClickListener(v -> eventController.acceptInvitation(event, deviceID));
         declineInvitationButton.setOnClickListener(v -> eventController.declineInvitation(event, deviceID));
@@ -176,9 +173,9 @@ public class EventDetailActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        viewParticipantsButton.setOnClickListener(v -> {
+        manageParticipantsButton.setOnClickListener(v -> {
             if (event != null && deviceID.equals(event.getOrganizerId())) {
-                Intent intent = new Intent(EventDetailActivity.this, EventWaitingListActivity.class);
+                Intent intent = new Intent(EventDetailActivity.this, EventParticipantsListActivity.class);
                 intent.putExtra("eventID", eventID);
                 startActivity(intent);
             } else {
@@ -215,22 +212,15 @@ public class EventDetailActivity extends AppCompatActivity {
     }
 
     private void showOrganizerButtons(Event event) {
-        drawButton.setVisibility(View.VISIBLE);
+        manageParticipantsButton.setVisibility(View.VISIBLE);
         editInfoButton.setVisibility(View.VISIBLE);
-        viewParticipantsButton.setVisibility(View.VISIBLE);
-        if (event.isDrawed()) {
-            viewParticipantsButton.setText("View Waiting List");
-        } else {
-            viewParticipantsButton.setText("View Invited Participants");
-        }
         hideAllParticipantButtons();
         Log.d(TAG, "Organizer buttons are now visible.");
     }
 
     private void hideOrganizerButtons() {
-        drawButton.setVisibility(View.GONE);
         editInfoButton.setVisibility(View.GONE);
-        viewParticipantsButton.setVisibility(View.GONE);
+        manageParticipantsButton.setVisibility(View.GONE);
         Log.d(TAG, "Organizer buttons are now hidden.");
     }
 

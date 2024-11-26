@@ -22,15 +22,6 @@
             android:src="@drawable/ic_back_arrow" />
 
         <!-- View Participants Button -->
-        <Button
-            android:id="@+id/viewParticipantsButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:layout_margin="8dp"
-            android:backgroundTint="@android:color/black"
-            android:textColor="@android:color/white" />
 
         <!-- Event Header Container -->
         <LinearLayout
@@ -136,49 +127,49 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/eventCapacityTextView"
-            android:layout_marginTop="16dp"
-            android:orientation="horizontal"
-            android:gravity="center">
+            android:layout_marginTop="30dp"
+            android:gravity="center"
+            android:orientation="vertical">
 
             <Button
                 android:id="@+id/editInfoButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Edit Info"
-                android:visibility="visible"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginEnd="0dp"
+                android:text="Edit Event Information"
+                android:visibility="visible" />
 
             <Button
-                android:id="@+id/drawButton"
+                android:id="@+id/manageParticipantsButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Draw"
-                android:visibility="visible"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginEnd="0dp"
+                android:text="Manage Participants"
+                android:visibility="visible" />
 
             <Button
                 android:id="@+id/joinEventButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
                 android:text="Join Event"
-                android:visibility="gone"
-                android:layout_marginEnd="8dp" />
+                android:visibility="gone" />
 
             <Button
                 android:id="@+id/leaveEventButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
                 android:text="Leave Event"
-                android:visibility="gone"
-                android:layout_marginEnd="8dp" />
+                android:visibility="gone" />
 
             <Button
                 android:id="@+id/acceptButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
                 android:text="Accept"
-                android:visibility="gone"
-                android:layout_marginEnd="8dp" />
+                android:visibility="gone" />
 
             <Button
                 android:id="@+id/rejectButton"
