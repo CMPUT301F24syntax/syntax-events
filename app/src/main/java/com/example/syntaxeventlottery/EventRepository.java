@@ -187,7 +187,8 @@ public class EventRepository  {
         HashMap<String, Object> data = new HashMap<>(); // initialize hashmap
         data.put("eventID", event.getEventID());
         data.put("eventName", event.getEventName());
-        data.put("facility", event.getFacility());
+        data.put("facilityName", event.getFacilityName());
+        data.put("facilityLocation", event.getFacilityLocation());
         data.put("description", event.getDescription());
         data.put("capacity", event.getCapacity());
         data.put("startDate", new com.google.firebase.Timestamp(event.getStartDate()));  // Use Firebase Timestamp

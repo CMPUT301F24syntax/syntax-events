@@ -202,7 +202,7 @@ public class UserRepository {
 
     public HashMap<String, Object> userToHashData(User user) {
         HashMap<String, Object> data = new HashMap<>();
-        data.put("userId", user.getUserID());
+        data.put("userID", user.getUserID());
         data.put("deviceCode", user.getDeviceCode());
         data.put("email", user.getEmail());
         data.put("phoneNumber", user.getPhoneNumber());

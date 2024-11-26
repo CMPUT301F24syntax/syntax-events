@@ -7,10 +7,18 @@ import java.util.Date;
 public class Facility {
 
     // Attributes
+    private String name;
     private String location;
-    private User organizer;
-    private Date startDate;
-    private Date endDate;
+    private String organizerId;
+
+    // No-argument constructor required by Firestore
+    public Facility() {}
+
+    public Facility(String name, String location, String organizerId) {
+        this.name = name;
+        this.location = location;
+        this.organizerId = organizerId;
+    }
 
     // Getter and Setter for location
     public String getLocation() {
@@ -22,26 +30,20 @@ public class Facility {
     }
 
     // Getter and Setter for organizer
-    public User getOrganizer() {
-        return organizer;
+    public String getName() {
+        return name;
     }
 
-    public void setOrganizer(User organizer) {
-        this.organizer = organizer;
+    public void setName() {
+        this.name = name;
     }
 
-    // Setter for start and end dates
-    public void setDates(Date startDate, Date endDate) {
-        this.startDate = startDate;
-        this.endDate = endDate;
+    // Getter and Setter for organizer
+    public String getOrganizerId() {
+        return organizerId;
     }
 
-    // Getter for start and end dates
-    public Date getStartDate() {
-        return startDate;
-    }
-
-    public Date getEndDate() {
-        return endDate;
+    public void setOrganizer(String organizerId) {
+        this.organizerId = organizerId;
     }
 }

@@ -18,7 +18,8 @@ public class Event implements Serializable {
 
     private String eventID;
     private String eventName;
-    private String facility;
+    private String facilityName;
+    private String facilityLocation;
     private String description;
     private int capacity;
     private Integer waitingListLimit; // Integer class so that it can be null;
@@ -61,11 +62,12 @@ public class Event implements Serializable {
      * @param organizerId   ID of the organizer creating the event.
      * @param waitingListLimit Limit of the waiting list (i.e., participants list). No limit if null
      */
-    public Event(String eventName, String facility, String description, int capacity,
+    public Event(String eventName, String facilityName, String facilityLocation, String description, int capacity,
                  Date startDate, Date endDate, String organizerId, Integer waitingListLimit) {
         this.eventID = null;
         this.eventName = eventName;
-        this.facility = facility;
+        this.facilityName = facilityName;
+        this.facilityLocation = facilityLocation;
         this.description = description;
         this.capacity = capacity;
         this.startDate = startDate;
@@ -100,12 +102,20 @@ public class Event implements Serializable {
         this.eventName = eventName;
     }
 
-    public String getFacility() {
-        return facility;
+    public String getFacilityName() {
+        return facilityName;
     }
 
-    public void setFacility(String facilityName) {
-        this.facility = facilityName;
+    public void setFacilityName(String facilityName) {
+        this.facilityName = facilityName;
+    }
+
+    public String getFacilityLocation() {
+        return facilityLocation;
+    }
+
+    public void setFacilityLocation() {
+        this.facilityLocation = facilityLocation;
     }
 
     public String getDescription() {

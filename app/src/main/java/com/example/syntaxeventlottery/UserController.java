@@ -51,8 +51,8 @@ public class UserController {
         userRepository.fetchAllUsers(callback);
     }
 
-    public User getEntrantByDeviceID(String deviceId) {
-        // Check if eventId is null
+    public User getUserByDeviceID(String deviceId) {
+        // Check if deviceId is null
         if (deviceId == null) {
             return null;
         }

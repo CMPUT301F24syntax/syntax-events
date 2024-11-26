@@ -7,22 +7,17 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.Settings;
-import android.util.ArraySet;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.HashSet;
-import java.util.Set;
 
 
 /**
@@ -78,7 +73,7 @@ public class CreateUserProfileActivity extends AppCompatActivity {
      * Initialize UI components.
      */
     private void initializeUI() {
-        editUsername = findViewById(R.id.edit_text_username);
+        editUsername = findViewById(R.id.facilityNameEditText);
         editEmail = findViewById(R.id.edit_text_email);
         editPhone = findViewById(R.id.edit_text_phone);
         btnSave = findViewById(R.id.button_save);
@@ -113,7 +108,7 @@ public class CreateUserProfileActivity extends AppCompatActivity {
             return;
         }
 
-        Entrant entrant = new Entrant(deviceId, email, phone, null, username, new HashSet<String>(), null);
+        Entrant entrant = new Entrant(deviceId, email, phone, null, username, new HashSet<String>());
 
         userController.addUser(entrant, selectedImageUri, new DataCallback<User>() {
             @Override

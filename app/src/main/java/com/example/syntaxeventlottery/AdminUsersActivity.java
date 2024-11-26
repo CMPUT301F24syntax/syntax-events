@@ -16,6 +16,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class AdminUsersActivity extends AppCompatActivity {
@@ -66,9 +67,10 @@ public class AdminUsersActivity extends AppCompatActivity {
                                 String email = document.getString("email");
                                 String phoneNumber = document.getString("phoneNumber");
                                 String profilePhotoUrl = document.getString("profilePhotoUrl");
-                                String facility = document.getString("facility");
                                 List<String> rolesList = (List<String>) document.get("roles");
                                 Set<String> roles = new HashSet<>(rolesList);
+                                Map<String, Object> facilityMap = (Map<String, Object>) document.get("facility");
+                                Facility facility = document.toObject(Facility.class);
 
                                 // Make sure all required fields are present
                                 if (userID != null && username != null) {

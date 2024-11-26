@@ -29,16 +29,14 @@ public class UserHomeActivity extends AppCompatActivity {
     private RecyclerView futureEventsRecyclerView;
     private EventAdapter eventAdapter;
     private EventController eventController;
+    private UserController userController;
     private ImageButton organizerButton;
     private ImageButton profileButton;
     private ImageButton newsButton;
     private ImageButton scanButton; // New QR Scan Button
     private String deviceId;
     private ImageButton scanButton2;
-
-    // refactor this!!!!!
-    private FirebaseFirestore db;
-
+    private User currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,11 +51,9 @@ public class UserHomeActivity extends AppCompatActivity {
         scanButton = findViewById(R.id.qrScanButton1);
         scanButton2 = findViewById(R.id.qrScanButton2);
 
-        // refactor this!!!!
-        db = FirebaseFirestore.getInstance();
-
-        // Initialize event controller
+        // Initialize controllers
         eventController = new EventController(new EventRepository());
+        userController = new UserController(new UserRepository());
 
         // Get deviceId
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -72,7 +68,7 @@ public class UserHomeActivity extends AppCompatActivity {
         loadEvents();
 
         // Set click listener for Organizer button
-        organizerButton.setOnClickListener(v -> checkUserAndNavigate());
+        organizerButton.setOnClickListener(v -> checkFacilityProfileAndLaunch());
 
         // Set click listener for Profile button
         profileButton.setOnClickListener(v -> {
@@ -107,28 +103,6 @@ public class UserHomeActivity extends AppCompatActivity {
         loadEvents();
     }
 
-    private void checkUserAndNavigate() {
-        db.collection("Users").document(deviceId).get()
-                .addOnSuccessListener(document -> {
-                    if (document.exists()) {
-                        String facility = document.getString("facility");
-
-                        if (facility == null || facility.isEmpty()) {
-                            startActivity(new Intent(UserHomeActivity.this, FacilityProfileActivity.class));
-                        } else {
-                            startActivity(new Intent(UserHomeActivity.this, OrganizerActivity.class));
-                        }
-                    } else {
-                        Log.d("Firestore", "No user found with device ID " + deviceId);
-                        Toast.makeText(UserHomeActivity.this, "User not found.", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Firestore", "Error checking user", e);
-                    Toast.makeText(UserHomeActivity.this, "Failed to check user information.", Toast.LENGTH_SHORT).show();
-                });
-    }
-
     private void loadEvents() {
         eventController.refreshRepository(new DataCallback<Void>() {
             @Override
@@ -161,5 +135,35 @@ public class UserHomeActivity extends AppCompatActivity {
                 }
             }
         }).start();
+    }
+
+    // get the most updated user info and check if they have a facility profile
+    // launch create facility activity if they do not have a facility
+    private void checkFacilityProfileAndLaunch() {
+        userController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                currentUser = userController.getUserByDeviceID(deviceId);
+                if (currentUser == null) {
+                    Log.e(TAG, "No user found with this device ID");
+                    Toast.makeText(UserHomeActivity.this, "Couldn't load user information, try again", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+                Facility facility = currentUser.getFacility();
+                if (facility == null) {
+                    Intent intent = new Intent(UserHomeActivity.this, FacilityProfileActivity.class);
+                    intent.putExtra("currentUser", currentUser);
+                    startActivity(intent);
+                } else {
+                    startActivity(new Intent(UserHomeActivity.this, OrganizerActivity.class));
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error refreshing repository", e);
+                finish();
+            }
+        });
     }
 }

@@ -2,8 +2,10 @@
 
 package com.example.syntaxeventlottery;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,7 +15,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -21,10 +22,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FacilityProfileActivity extends AppCompatActivity {
+    private final String TAG = "FacilityProfileActivity";
 
-    private EditText editTextUsername;
+    private EditText facilityNameEditText;
+    private EditText facilityLocationEditText;
     private Button buttonBack, buttonSave;
-    private FirebaseFirestore db;
+    private UserController userController;
+    private User currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,12 +36,16 @@ public class FacilityProfileActivity extends AppCompatActivity {
         setContentView(R.layout.facility_profile);
 
         // Initialize views
-        editTextUsername = findViewById(R.id.edit_text_username);
+        facilityNameEditText = findViewById(R.id.facilityNameEditText);
+        facilityLocationEditText = findViewById(R.id.facilityLocationEditText);
         buttonBack = findViewById(R.id.button_back);
         buttonSave = findViewById(R.id.button_save);
 
-        // Initialize Firebase Firestore
-        db = FirebaseFirestore.getInstance();
+        // get current user from previous activity
+        currentUser = (User) getIntent().getSerializableExtra("currentUser");
+
+        // Initalize user controller
+        userController = new UserController(new UserRepository());
 
         // Set onClick listener for the Back button
         buttonBack.setOnClickListener(new View.OnClickListener() {
@@ -48,55 +56,40 @@ public class FacilityProfileActivity extends AppCompatActivity {
         });
 
         // Set onClick listener for the Save button
-        buttonSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveFacilityDetails();
-            }
-        });
+        buttonSave.setOnClickListener(v -> saveFacilityDetails());
     }
 
     private void saveFacilityDetails() {
         // Get the device ID
-        final String deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        final String facilityDetails = editTextUsername.getText().toString();
+        String deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        String facilityName = facilityNameEditText.getText().toString();
+        String facilityLocation = facilityLocationEditText.getText().toString();
 
         // Check if the facility details input is empty
-        if (facilityDetails.isEmpty()) {
-            Toast.makeText(this, "Please enter facility details", Toast.LENGTH_SHORT).show();
+        if (facilityName.isEmpty() || facilityLocation.isEmpty()) {
+            Toast.makeText(this, "Please enter fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Query the Users collection to find a user with a matching deviceCode
-        db.collection("Users")
-                .whereEqualTo("deviceCode", deviceID)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful() && !task.getResult().isEmpty()) {
-                            // Iterate through matched users (if there are multiple)
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                // Prepare data to update the facility field
-                                Map<String, Object> updateData = new HashMap<>();
-                                updateData.put("facility", facilityDetails);
+        Facility facility = new Facility(facilityName, facilityLocation, deviceID);
+        Log.d(TAG, "current user: " + currentUser);
+        if (currentUser != null) {
+            currentUser.setFacility(facility);
+            userController.updateUser(currentUser, null, new DataCallback<User>() {
+                @Override
+                public void onSuccess(User result) {
+                    Log.d(TAG, "Facility profile created and user updated: "+ result);
+                    Toast.makeText(FacilityProfileActivity.this, "Facility Profile Created", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(FacilityProfileActivity.this, OrganizerActivity.class));
+                }
 
-                                // Update the facility field in the user's document
-                                db.collection("Users").document(document.getId())
-                                        .update(updateData)
-                                        .addOnSuccessListener(aVoid -> {
-                                            Toast.makeText(FacilityProfileActivity.this, "Facility details saved successfully!", Toast.LENGTH_SHORT).show();
-                                            finish(); // Return to previous screen on success
-                                        })
-                                        .addOnFailureListener(e -> {
-                                            Toast.makeText(FacilityProfileActivity.this, "Failed to save facility details", Toast.LENGTH_SHORT).show();
-                                        });
-                            }
-                        } else {
-                            // No matching user found
-                            Toast.makeText(FacilityProfileActivity.this, "No matching user found", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
+                @Override
+                public void onError(Exception e) {
+                    Log.e(TAG, "Error creating facility profile", e);
+                    Toast.makeText(FacilityProfileActivity.this, "Error creating facility profile", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            });
+        }
     }
 }

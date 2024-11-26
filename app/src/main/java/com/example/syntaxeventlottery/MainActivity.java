@@ -48,12 +48,14 @@ public class MainActivity extends AppCompatActivity {
      * If user does not have an existing profile, launch the activity which creates one
      */
     private void checkUserInDatabase() {
+        Log.d(TAG, "deviceId: "+ deviceId);
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                currentUser = userController.getEntrantByDeviceID(deviceId);
+                currentUser = userController.getUserByDeviceID(deviceId);
+                Log.d(TAG, "current user "+ currentUser);
                 if (currentUser == null) { // this means user does not have an associated account
-                    openUserProfileActivity();
+                    openCreateProfileActivity();
                 } else {
                     openUserHomeActivity(currentUser.getUserID());
                 }
@@ -82,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Opens UserProfileActivity and passes the device ID.
      */
-    private void openUserProfileActivity() {
+    private void openCreateProfileActivity() {
         Toast.makeText(this, "User Mode Selected", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(MainActivity.this, CreateUserProfileActivity.class);
         intent.putExtra("DEVICE_ID", deviceId);

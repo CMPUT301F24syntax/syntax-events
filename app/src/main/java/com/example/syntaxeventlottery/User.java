@@ -15,13 +15,13 @@ public class User implements Serializable {
     private String profilePhotoUrl;
     private String username;
     private Set<String> roles;
-    private String facility;
+    private Facility facility;
 
     // No-argument constructor required by Firebase
     public User() {}
 
     // Parameterized constructor
-    public User(String deviceCode, String email, String phoneNumber, String profilePhotoUrl, String username, Set<String> roles, String facility) {
+    public User(String deviceCode, String email, String phoneNumber, String profilePhotoUrl, String username, Set<String> roles, Facility facility) {
         this.deviceCode = deviceCode;
         this.email = email;
         this.phoneNumber = phoneNumber;
@@ -97,9 +97,9 @@ public class User implements Serializable {
         this.roles = roles;
     }
 
-    public String getFacility(){ return facility;}
+    public Facility getFacility(){ return facility;}
 
-    public void setFacility(String facility){this.facility = facility;}
+    public void setFacility(Facility facility){this.facility = facility;}
     @Override
     public String toString() {
         return "User{" +

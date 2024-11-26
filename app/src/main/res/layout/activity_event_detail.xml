@@ -103,10 +103,20 @@
             android:textSize="16sp" />
 
         <TextView
-            android:id="@+id/eventFacilityTextView"
+            android:id="@+id/eventFNameTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/eventEndDateTextView"
+            android:layout_marginTop="4dp"
+            android:text="Facility Name: "
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/eventFLocationTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/eventFNameTextView"
             android:layout_marginTop="4dp"
             android:text="Location: "
             android:textColor="@android:color/black"
@@ -116,7 +126,7 @@
             android:id="@+id/eventCapacityTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/eventFacilityTextView"
+            android:layout_below="@id/eventFLocationTextView"
             android:layout_marginTop="4dp"
             android:text="Capacity: "
             android:textColor="@android:color/black"

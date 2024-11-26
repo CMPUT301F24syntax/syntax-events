@@ -96,7 +96,7 @@ public class UserProfileActivity extends AppCompatActivity {
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                currentUser = userController.getEntrantByDeviceID(deviceId);
+                currentUser = userController.getUserByDeviceID(deviceId);
                 displayUserDetails(currentUser);
             }
 

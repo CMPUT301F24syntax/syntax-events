@@ -27,6 +27,7 @@ public class OrganizerActivity extends AppCompatActivity {
     private EventAdapter eventAdapter;
     private String deviceID;
     private EventController eventController;
+    private UserController userController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,11 +47,11 @@ public class OrganizerActivity extends AppCompatActivity {
         eventAdapter = new EventAdapter(new ArrayList<>(), this);
         eventRecyclerView.setAdapter(eventAdapter);
 
-        // Initialize EventController
+        // Initialize controllers
         eventController = new EventController(new EventRepository());
+        userController = new UserController(new UserRepository());
 
-        // Load events
-        loadEvents();
+        fetchUpdatedUserInfo();
 
         // Create event button listener
         createEventButton.setOnClickListener(v -> {
@@ -66,14 +67,40 @@ public class OrganizerActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         // Refresh the event list
-        loadEvents();
+        fetchUpdatedUserInfo();
     }
 
-    private void loadEvents() {
+    private void fetchUpdatedUserInfo() {
+        userController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                User currentUser = userController.getUserByDeviceID(deviceID);
+                if (currentUser == null) {
+                    Log.e(TAG, "Failed to get updated user info");
+                    finish();
+                }
+                if (currentUser.getFacility() == null) {
+                    // launch facility creation if user does not have a facility profile
+                    startActivity(new Intent(OrganizerActivity.this, FacilityProfileActivity.class));
+                } else {
+                    loadEvents(currentUser.getUserID());
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error fetching user data", e);
+                Toast.makeText(OrganizerActivity.this, "Couldn't find user data", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        });
+    }
+
+    private void loadEvents(String userId) {
         eventController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                ArrayList<Event> updatedEvents = eventController.getOrganizerEvents(deviceID);
+                ArrayList<Event> updatedEvents = eventController.getOrganizerEvents(userId);
                 eventAdapter.updateEvents(updatedEvents);
             }
 

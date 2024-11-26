@@ -95,7 +95,7 @@ public class EventParticipantsListActivity extends AppCompatActivity {
         usersList.clear();
         ArrayList<User> waitingList = new ArrayList<>();
         for (String userId : event.getParticipants()) {
-            User user = userController.getEntrantByDeviceID(userId);
+            User user = userController.getUserByDeviceID(userId);
             if (user != null) {
                 waitingList.add(user);
             }
@@ -122,7 +122,7 @@ public class EventParticipantsListActivity extends AppCompatActivity {
         usersList.clear();
         ArrayList<User> selectedList = new ArrayList<>();
         for (String userId : event.getSelectedParticipants()) {
-            User user = userController.getEntrantByDeviceID(userId);
+            User user = userController.getUserByDeviceID(userId);
             if (user != null) {
                 selectedList.add(user);
             }
@@ -145,7 +145,7 @@ public class EventParticipantsListActivity extends AppCompatActivity {
         usersList.clear();
         ArrayList<User> confirmedList = new ArrayList<>();
         for (String userId : event.getConfirmedParticipants()) {
-            User user = userController.getEntrantByDeviceID(userId);
+            User user = userController.getUserByDeviceID(userId);
             if (user != null) {
                 confirmedList.add(user);
             }

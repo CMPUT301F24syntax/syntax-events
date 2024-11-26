@@ -22,7 +22,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
     // UI Components
     private ImageView posterImageView, qrCodeImageView;
-    private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView, eventEndDateTextView, eventCapacityTextView, eventFacilityTextView, eventDrawedStatusTextView;
+    private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView, eventEndDateTextView, eventCapacityTextView, eventFacilityLocationTextView, eventFacilityNameTextView, eventDrawedStatusTextView;
     private Button joinWaitingListButton, leaveWaitingListButton, acceptInvitationButton, declineInvitationButton;
     private Button manageParticipantsButton, editInfoButton, drawButton;
     private ImageButton backButton;
@@ -97,7 +97,8 @@ public class EventDetailActivity extends AppCompatActivity {
     private void displayEventDetails(Event event) {
         eventNameTextView.setText(event.getEventName());
         eventDescriptionTextView.setText(event.getDescription());
-        eventFacilityTextView.setText("Location: " + (event.getFacility() == null ? "No Facility Available" : event.getFacility()));
+        eventFacilityNameTextView.setText("Facility Name: " +event.getFacilityName());
+        eventFacilityLocationTextView.setText("Location: " + event.getFacilityLocation());
         eventStartDateTextView.setText("Start: "+ event.getStartDate().toString());
         eventEndDateTextView.setText("End: " + event.getEndDate().toString());
         eventCapacityTextView.setText("Capacity: " + String.valueOf(event.getCapacity()));
@@ -130,7 +131,8 @@ public class EventDetailActivity extends AppCompatActivity {
         eventStartDateTextView = findViewById(R.id.eventStartDateTextView);
         eventEndDateTextView = findViewById(R.id.eventEndDateTextView);
         eventCapacityTextView = findViewById(R.id.eventCapacityTextView);
-        eventFacilityTextView = findViewById(R.id.eventFacilityTextView);
+        eventFacilityLocationTextView = findViewById(R.id.eventFLocationTextView);
+        eventFacilityNameTextView = findViewById(R.id.eventFNameTextView);
         eventDrawedStatusTextView = findViewById(R.id.eventDrawedTextView);
         joinWaitingListButton = findViewById(R.id.joinEventButton);
         leaveWaitingListButton = findViewById(R.id.leaveEventButton);

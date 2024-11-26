@@ -43,6 +43,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
     private ImageView eventImageView;
     private Uri imageUri;
     private EventController eventController;
+    private UserController userController;
 
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -72,8 +73,9 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         uploadButton = findViewById(R.id.updatePosterButton);
         eventImageView = findViewById(R.id.updatePosterView);
 
-        // Initialize EventController with repository
+        // Initialize controllers with repository
         eventController = new EventController(new EventRepository());
+        userController = new UserController(new UserRepository());
 
         // Back button listener
         backButton.setOnClickListener(v -> finish());
@@ -146,18 +148,36 @@ public class OrganizerCreateEvent extends AppCompatActivity {
             return;
         }
 
-        // Create Event Object and save
-        Event event = new Event(eventName, null, eventDescription, capacity, startDate, endDate, organizerId, waitingListLimit);
-        // TODO: get facility from the current user to pass as argument!!!
-        // event controller will also generate the eventID
-        eventController.addEvent(event, imageUri, new DataCallback<Event>() {
+        // get most updated user (organizer) information facility property
+        Integer finalWaitingListLimit = waitingListLimit;
+        userController.refreshRepository(new DataCallback<Void>() {
             @Override
-            public void onSuccess(Event result) {
-                Toast.makeText(OrganizerCreateEvent.this, "Event creation success", Toast.LENGTH_SHORT).show();
-                clearInputFields();
-                finish();
-            }
+            public void onSuccess(Void result) {
+                // get user and save the event
+                User user = userController.getUserByDeviceID(organizerId);
+                if (user == null) {
+                    Log.e(TAG, "Couldn't find current user information");
+                    Toast.makeText(OrganizerCreateEvent.this, "Failed to retrieve user data", Toast.LENGTH_SHORT).show();
+                    finish();
+                    return;
+                }
+                Event event = new Event(eventName, user.getFacility().getName(), user.getFacility().getLocation(), eventDescription, capacity, startDate, endDate, organizerId, finalWaitingListLimit);
+                eventController.addEvent(event, imageUri, new DataCallback<Event>() {
+                    @Override
+                    public void onSuccess(Event result) {
+                        Toast.makeText(OrganizerCreateEvent.this, "Event creation success", Toast.LENGTH_SHORT).show();
+                        clearInputFields();
+                        finish();
+                    }
 
+                    @Override
+                    public void onError(Exception e) {
+                        Toast.makeText(OrganizerCreateEvent.this, "Event creation Error!", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, e.toString());
+                        finish();
+                    }
+                });
+            }
             @Override
             public void onError(Exception e) {
                 Toast.makeText(OrganizerCreateEvent.this, "Event creation Error!", Toast.LENGTH_SHORT).show();

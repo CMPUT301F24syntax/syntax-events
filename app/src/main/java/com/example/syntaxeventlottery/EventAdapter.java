@@ -69,7 +69,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         holder.eventNameTextView.setText(event.getEventName());
         holder.eventDescriptionTextView.setText(event.getDescription());
         holder.eventDateTextView.setText(event.getStartDate() + " To " + event.getEndDate());
-        holder.eventLocationTextView.setText("Location: "+ event.getFacility());
+        holder.eventFacilityNameTextView.setText("Facility Name: "+ event.getFacilityName());
+        holder.eventFacilityLocationTextView.setText("Location: "+ event.getFacilityLocation());
 
         // Load the image using Glide, which will automatically handle activity lifecycle
         if (event.getPosterUrl() != null && !event.getPosterUrl().isEmpty()) {
@@ -138,8 +139,10 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         // TextView Displaying event dates
         TextView eventDateTextView;
 
-        // TextView displaying event dates
-        TextView eventLocationTextView;
+        // TextView displaying event facility name
+        TextView eventFacilityNameTextView;
+        // TextView displaying event location
+        TextView eventFacilityLocationTextView;
 
         /**
          * Constructs a new {@code EventViewHolder}.
@@ -152,10 +155,10 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             eventPosterImageView = itemView.findViewById(R.id.eventPosterImageView);
             eventDescriptionTextView = itemView.findViewById(R.id.eventDescriptionTextView);
             eventDateTextView = itemView.findViewById(R.id.eventDateTextView);
-            eventLocationTextView = itemView.findViewById(R.id.eventLocationTextView);
+            eventFacilityLocationTextView = itemView.findViewById(R.id.eventFacilityLocationTextView);
+            eventFacilityNameTextView = itemView.findViewById(R.id.eventFacilityNameTextView);
         }
     }
-
 }
 
 
