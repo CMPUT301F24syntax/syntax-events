@@ -58,7 +58,7 @@ public class UserHomeActivity extends AppCompatActivity {
         waitlistEventsRecyclerView.setAdapter(eventAdapter);
 
         // load all events
-        loadEvents();
+        loadUserWaitlistedEvents();
 
         // Set button listeners
         organizerButton.setOnClickListener(v -> checkFacilityProfileAndLaunch());
@@ -87,29 +87,27 @@ public class UserHomeActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadEvents();
+        loadUserWaitlistedEvents();
     }
 
-    private void loadEvents() {
-        eventController.refreshRepository(new DataCallback<Void>() {
+    private void loadUserWaitlistedEvents() {
+        eventController.getUserWaitlistedEvents(deviceID, new DataCallback<ArrayList<Event>>() {
             @Override
-            public void onSuccess(Void result) {
-                Log.d(TAG, "Events Refreshed");
-                ArrayList<Event> eventsDataList = eventController.getLocalEventsList();
-                eventAdapter.updateEvents(eventsDataList);
-
+            public void onSuccess(ArrayList<Event> waitlistedEvents) {
+                Log.d(TAG, "Waitlisted events loaded successfully");
+                eventAdapter.updateEvents(waitlistedEvents);
             }
 
             @Override
             public void onError(Exception e) {
-                Log.e(TAG, "Error Refreshing Events");
-                Toast.makeText(UserHomeActivity.this, "Error refreshing events, try to relaunch app", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Failed to Load Waitlisted events", e);
+                Toast.makeText(UserHomeActivity.this, "Failed to Load Waitlisted events", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void updateDateTime() {
-        final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM", Locale.getDefault());
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault());
         dateFormat.setTimeZone(TimeZone.getTimeZone("America/Edmonton"));
 
         new Thread(() -> {

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 
+
 public class UserController {
 
     private UserRepository userRepository;
@@ -66,7 +67,6 @@ public class UserController {
         return null;
 
 
-
     }
 
     public void addUser(User user, @Nullable Uri imageUri, DataCallback<User> callback) {
@@ -84,7 +84,7 @@ public class UserController {
     }
 
     public void deleteUserProfilePhoto(User user, DataCallback<User> callback) {
-        if (!validateUser(user,callback)) {
+        if (!validateUser(user, callback)) {
             return;
         }
         userRepository.deleteProfilePhoto(user, callback);
