@@ -137,7 +137,7 @@ public class UserHomeActivity extends AppCompatActivity {
                 Facility facility = currentUser.getFacility();
                 if (facility == null) {
                     Intent intent = new Intent(UserHomeActivity.this, FacilityProfileActivity.class);
-                    intent.putExtra("deviceID", deviceID);
+                    intent.putExtra("currentUser", currentUser);
                     startActivity(intent);
                 } else {
                     startActivity(new Intent(UserHomeActivity.this, OrganizerActivity.class));

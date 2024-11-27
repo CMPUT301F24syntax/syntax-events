@@ -19,7 +19,7 @@ import java.util.List;
  * OrganizerActivity allows the event organizer to view and manage their created events.
  */
 public class OrganizerActivity extends AppCompatActivity {
-    private static final String TAG = "Organizer Activity";
+    private static final String TAG = "OrganizerActivity";
 
     private Button createEventButton;
     private Button backButton;
@@ -81,7 +81,10 @@ public class OrganizerActivity extends AppCompatActivity {
                 }
                 if (currentUser.getFacility() == null) {
                     // launch facility creation if user does not have a facility profile
-                    startActivity(new Intent(OrganizerActivity.this, FacilityProfileActivity.class));
+                    Log.d(TAG, "current user facility not found, launching FacilityProfileActivity");
+                    Intent intent = new Intent(OrganizerActivity.this, FacilityProfileActivity.class);
+                    intent.putExtra("currentUser", currentUser);
+                    startActivity(intent);
                 } else {
                     loadEvents(currentUser.getUserID());
                 }

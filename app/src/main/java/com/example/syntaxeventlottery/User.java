@@ -2,12 +2,13 @@
 package com.example.syntaxeventlottery;
 
 
+import java.io.Serializable;
 import java.util.Set;
 
 /**
  * Represents a general user within the Event Lottery System.
  */
-public class User {
+public class User implements Serializable {
     private String userID;
     private String deviceCode;
     private String email;
