@@ -37,6 +37,9 @@ android {
 dependencies {
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation("com.google.zxing:core:3.4.1")
+    testImplementation(libs.core)
+    testImplementation(libs.espresso.core)
+    testImplementation(libs.ext.junit)
 
     // Core library desugaring
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
