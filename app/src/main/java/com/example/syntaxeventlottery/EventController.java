@@ -175,6 +175,26 @@ public class EventController {
             event.setSelectedParticipants(currentSelectedParticipants);
         }
     }
+    public void getUserWaitlistedEvents(String userId, DataCallback<ArrayList<Event>> callback) {
+        refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                ArrayList<Event> events = getLocalEventsList();
+                ArrayList<Event> userWaitlistedEvents = new ArrayList<>();
+                for (Event event : events) {
+                    if (event.getParticipants().contains(userId)) {
+                        userWaitlistedEvents.add(event);
+                    }
+                }
+                callback.onSuccess(userWaitlistedEvents);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                callback.onError(e);
+            }
+        });
+    }
 
 
     //------------ event object helper methods -----------//
