@@ -6,8 +6,8 @@
     <!-- Poster Image -->
     <ImageView
         android:id="@+id/eventPoster"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:layout_alignParentStart="true"
         android:layout_marginEnd="8dp"
         android:contentDescription="Event Poster" />
@@ -35,12 +35,21 @@
 
     <!-- Event Start Date -->
     <TextView
+        android:id="@+id/eventOrganizer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Event Organizer ID"
+        android:textSize="14sp"
+        android:layout_below="@id/eventDescription"
+        android:layout_toEndOf="@id/eventPoster" />
+
+    <TextView
         android:id="@+id/eventStartDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Start Date"
         android:textSize="14sp"
-        android:layout_below="@id/eventDescription"
+        android:layout_below="@id/eventOrganizer"
         android:layout_toEndOf="@id/eventPoster" />
 
     <!-- Delete Button -->

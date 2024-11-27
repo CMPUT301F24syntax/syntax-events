@@ -35,7 +35,5 @@ public class AdminActivity extends AppCompatActivity {
         Button backButton = findViewById(R.id.backButton);
         backButton.setOnClickListener(v -> finish()); // Finish the current activity and return
 
-
-
     }
 }

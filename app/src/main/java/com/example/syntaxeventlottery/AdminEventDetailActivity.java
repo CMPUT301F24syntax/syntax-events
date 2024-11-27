@@ -23,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * The {@code AdminEventDetailActivity} class displays detailed information about an event
@@ -30,25 +31,22 @@ import java.util.Locale;
  * Administrators can delete the poster image if necessary.
  */
 public class AdminEventDetailActivity extends AppCompatActivity {
+    private final String TAG = "AdminEventDetailActivity";
 
     private Button backButton, deletePosterButton, deleteQRCodeButton;
     private TextView eventName, eventDescription, eventCapacity, eventStartDate, eventEndDate;
     private ImageView eventPosterImageView, eventqrCode;
-    private FirebaseFirestore db;
+    private EventController eventController;
     private String eventID;
-
-    private StorageReference storageRef;
+    private Event event;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_event_detail);
 
-        // Initialize Firebase Storage reference
-        storageRef = FirebaseStorage.getInstance().getReference();
-
-        // Initialize Firebase Firestore
-        db = FirebaseFirestore.getInstance();
+        // initalize event controller
+        eventController = new EventController(new EventRepository());
 
         // Initialize views
         backButton = findViewById(R.id.backButton);
@@ -65,45 +63,8 @@ public class AdminEventDetailActivity extends AppCompatActivity {
         // Get intent data
         Intent intent = getIntent();
         eventID = intent.getStringExtra("eventID");
-        String name = intent.getStringExtra("eventName");
-        String description = intent.getStringExtra("description");
-        String capacity = intent.getStringExtra("capacity");
-        Date startDate = (Date) intent.getSerializableExtra("startDate");
-        Date endDate = (Date) intent.getSerializableExtra("endDate");
-        String posterUrl = intent.getStringExtra("posterUrl");
-        String qrCode = intent.getStringExtra("qrCode");
 
-        // Format dates to string if they are not null
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        String startDateString = (startDate != null) ? dateFormat.format(startDate) : "N/A";
-        String endDateString = (endDate != null) ? dateFormat.format(endDate) : "N/A";
-
-        // Set data to views
-        eventName.setText(name);
-        eventDescription.setText(description);
-        eventCapacity.setText(capacity);
-        eventStartDate.setText(startDateString);
-        eventEndDate.setText(endDateString);
-
-        // Load event poster image using Glide
-        if (posterUrl != null && !posterUrl.isEmpty()) {
-            Glide.with(this)
-                    .load(posterUrl)
-                    .placeholder(R.drawable.ic_placeholder_poster_image) // Placeholder image in case of loading failure
-                    .into(eventPosterImageView);
-        } else {
-            eventPosterImageView.setImageResource(R.drawable.ic_placeholder_poster_image); // Set default image if no URL
-        }
-
-        // Load QRcode image using Glide
-        if (qrCode != null && !qrCode.isEmpty()) {
-            Glide.with(this)
-                    .load(qrCode)
-                    .placeholder(R.drawable.ic_placeholder_poster_image) // Placeholder image in case of loading failure
-                    .into(eventqrCode);
-        } else {
-            eventqrCode.setImageResource(R.drawable.ic_placeholder_poster_image); // Set default image if no URL
-        }
+        loadEventDetails(); // load the event and its details
 
         // Set up back button functionality
         backButton.setOnClickListener(v -> finish());
@@ -115,55 +76,91 @@ public class AdminEventDetailActivity extends AppCompatActivity {
         deleteQRCodeButton.setOnClickListener(v -> deleteQRCodeImage());
     }
 
+    private void loadEventDetails() {
+        // get newest event details and display them
+        eventController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                event = eventController.getEventById(eventID);
+                if (event == null) {
+                    Log.e(TAG, "Couldn't find Event");
+                    Toast.makeText(AdminEventDetailActivity.this, "Failed to retrieve event details", Toast.LENGTH_SHORT).show();
+                    finish();
+                    return;
+                }
+                // Set data to views
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                eventName.setText(event.getEventName());
+                eventDescription.setText(event.getDescription());
+                eventCapacity.setText(String.valueOf(event.getCapacity()));
+                eventStartDate.setText(dateFormat.format(event.getStartDate()));
+                eventEndDate.setText(dateFormat.format(event.getEndDate()));
+                // Load images
+                // Load event poster image using Glide
+                if (event.getPosterUrl() != null && !event.getPosterUrl().isEmpty()) {
+                    Glide.with(AdminEventDetailActivity.this)
+                            .load(event.getPosterUrl())
+                            .into(eventPosterImageView);
+                } else {
+                    eventPosterImageView.setImageResource(R.drawable.ic_default_poster); // Set default image if no URL
+                }
+
+                // Load QRcode image using Glide
+                if (event.getQrCode() != null && !event.getQrCode().isEmpty()) {
+                    Glide.with(AdminEventDetailActivity.this)
+                            .load(event.getQrCode())
+                            .into(eventqrCode);
+                } else {
+                    eventqrCode.setImageResource(R.drawable.default_qrcode); // Set default image if no URL
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Failed to update event repository", e);
+                Toast.makeText(AdminEventDetailActivity.this, "Failed to update event repository", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     /**
      * Replaces the QR code image URL in Firestore with a default image URL.
      */
     private void deleteQRCodeImage() {
-        String defaultQRCode = "https://firebasestorage.googleapis.com/v0/b/scanapp-7e377.appspot.com/o/default_qrcode.png?alt=media&token=aecbe3a4-3e8a-4c88-beed-ad6f3a029666"; // Firebase Storage default URL
-        if (eventID != null) {
-            DocumentReference eventRef = db.collection("events").document(eventID);
-            eventRef.update("qrCode", defaultQRCode) // update Firestore QR code
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(this, "QR code image reset to default", Toast.LENGTH_SHORT).show();
-                        // use Glide show default picture
-                        Glide.with(this)
-                                .load(defaultQRCode)
-                                .placeholder(R.drawable.default_qrcode)
-                                .into(eventqrCode);
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("AdminEventDetailActivity", "Failed to reset QR code URL in Firestore", e);
-                        Toast.makeText(this, "Failed to reset QR code URL in Firestore", Toast.LENGTH_SHORT).show();
-                    });
-        } else {
-            Toast.makeText(this, "Event ID not found", Toast.LENGTH_SHORT).show();
-        }
+        event.setQrCode(null); // set qr code to null
+        eventController.updateEvent(event, null, null, new DataCallback<Event>() {
+            @Override
+            public void onSuccess(Event result) {
+                event = result;
+                Log.d(TAG, "event qr code deleted ");
+                loadEventDetails();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error updating event ", e);
+                return;
+            }
+        });
     }
 
     /**
      * Replaces the poster image URL in Firestore with a default image URL.
      */
     private void deletePosterImage() {
-        String defaultPosterUrl = "https://firebasestorage.googleapis.com/v0/b/scanapp-7e377.appspot.com/o/default_poster.png?alt=media&token=f9fa0dcf-2b5f-469f-be33-d50c205fc63d"; // Firebase Storage default URL
-        if (eventID != null) {
-            DocumentReference eventRef = db.collection("events").document(eventID);
-            eventRef.update("posterUrl", defaultPosterUrl) // update Firestore poster URL
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(this, "Poster image reset to default", Toast.LENGTH_SHORT).show();
-                        // use Glide show the default picture
-                        Glide.with(this)
-                                .load(defaultPosterUrl)
-                                .placeholder(R.drawable.ic_placeholder_poster_image)
-                                .into(eventPosterImageView);
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("AdminEventDetailActivity", "Failed to reset poster URL in Firestore", e);
-                        Toast.makeText(this, "Failed to reset poster URL in Firestore", Toast.LENGTH_SHORT).show();
-                    });
-        } else {
-            Toast.makeText(this, "Event ID not found", Toast.LENGTH_SHORT).show();
-        }
+        event.setPosterUrl(null); // set poster url to null
+        eventController.updateEvent(event, null, null, new DataCallback<Event>() {
+            @Override
+            public void onSuccess(Event result) {
+                event = result;
+                Log.d(TAG, "event poster deleted ");
+                loadEventDetails();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error updating event ", e);
+            }
+        });
     }
-
-
 }

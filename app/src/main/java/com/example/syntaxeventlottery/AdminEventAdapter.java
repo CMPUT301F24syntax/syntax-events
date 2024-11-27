@@ -2,6 +2,7 @@ package com.example.syntaxeventlottery;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,10 +28,11 @@ import java.util.Locale;
  * for displaying event items in a list view for administrators.
  */
 public class AdminEventAdapter extends ArrayAdapter<Event> {
+    private final String TAG = "Admin Event Adapter";
 
     private Context context;
     private List<Event> eventList;
-    private FirebaseFirestore db;
+    private EventController eventController;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
 
     /**
@@ -43,7 +45,7 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
         super(context, R.layout.admin_event_item, eventList);
         this.context = context;
         this.eventList = eventList;
-        this.db = FirebaseFirestore.getInstance();
+        this.eventController = new EventController(new EventRepository());
     }
 
     /**
@@ -69,17 +71,19 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
         TextView eventName = convertView.findViewById(R.id.eventName);
         TextView eventDescription = convertView.findViewById(R.id.eventDescription);
         TextView eventStartDate = convertView.findViewById(R.id.eventStartDate);
+        TextView eventOrganizerId = convertView.findViewById(R.id.eventOrganizer);
         ImageView posterImage = convertView.findViewById(R.id.eventPoster);
 
         eventName.setText(event.getEventName());
         eventDescription.setText(event.getDescription());
+        eventOrganizerId.setText("Created by: "+event.getOrganizerId());
         eventStartDate.setText("Start: " + dateFormat.format(event.getStartDate()));
 
         // Load the event poster image using Glide
         Glide.with(context).load(event.getPosterUrl()).into(posterImage);
 
         // Set click listener to fetch and show event details from the database
-        convertView.setOnClickListener(v -> fetchEventDetailsAndShow(event.getEventID()));
+        convertView.setOnClickListener(v -> displayEventDetails(event.getEventID()));
 
         // Delete button functionality
         Button deleteButton = convertView.findViewById(R.id.deleteButton);
@@ -87,7 +91,7 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
             new AlertDialog.Builder(context)
                     .setTitle("Delete Event")
                     .setMessage("Are you sure you want to delete this event?")
-                    .setPositiveButton("Yes", (dialog, which) -> deleteEvent(event.getEventID()))
+                    .setPositiveButton("Yes", (dialog, which) -> deleteEvent(event))
                     .setNegativeButton("No", null)
                     .show();
         });
@@ -96,47 +100,35 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
     }
 
     /**
-     * Fetches event details from the database and starts the AdminEventDetailActivity to display them.
+     * Fetches displays Event details
      *
-     * @param eventID The unique identifier of the event to fetch.
      */
-    private void fetchEventDetailsAndShow(String eventID) {
-        db.collection("events").document(eventID)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        // Prepare intent to start AdminEventDetailActivity
-                        Intent intent = new Intent(context, AdminEventDetailActivity.class);
-                        intent.putExtra("eventID", eventID);
-                        intent.putExtra("eventName", documentSnapshot.getString("eventName"));
-                        intent.putExtra("description", documentSnapshot.getString("description"));
-                        intent.putExtra("facility", documentSnapshot.getString("facility"));
-                        intent.putExtra("capacity", documentSnapshot.getLong("capacity").intValue());
-                        intent.putExtra("startDate", documentSnapshot.getDate("startDate"));
-                        intent.putExtra("endDate", documentSnapshot.getDate("endDate"));
-                        intent.putExtra("posterUrl", documentSnapshot.getString("posterUrl"));
-                        intent.putExtra("qrCode", documentSnapshot.getString("qrCode"));
-                        context.startActivity(intent);
-                    } else {
-                        Toast.makeText(context, "Event not found in the database.", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .addOnFailureListener(e -> Toast.makeText(context, "Failed to load event details", Toast.LENGTH_SHORT).show());
+    private void displayEventDetails(String eventID) {
+        Intent intent = new Intent(context, AdminEventDetailActivity.class);
+        intent.putExtra("eventID", eventID);
+        context.startActivity(intent);
     }
 
     /**
      * Deletes an event from the database and updates the adapter.
      *
-     * @param eventID The unique identifier of the event to delete.
+     * @param event the event object to delete
      */
-    private void deleteEvent(String eventID) {
-        db.collection("events").document(eventID)
-                .delete()
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(context, "Event deleted", Toast.LENGTH_SHORT).show();
-                    eventList.removeIf(event -> event.getEventID().equals(eventID));
-                    notifyDataSetChanged();
-                })
-                .addOnFailureListener(e -> Toast.makeText(context, "Failed to delete event", Toast.LENGTH_SHORT).show());
+
+    private void deleteEvent(Event event) {
+
+        eventController.deleteEvent(event, new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                Log.d(TAG, "Event deleted");
+                eventList.remove(event);
+                notifyDataSetChanged();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "error deleting event", e);
+            }
+        });
     }
 }
