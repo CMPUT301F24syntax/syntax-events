@@ -127,10 +127,10 @@ public class UserHomeActivity extends AppCompatActivity {
     // get the most updated user info and check if they have a facility profile
     // launch create facility activity if they do not have a facility
     private void checkFacilityProfileAndLaunch() {
-        userController.getEntrantByDeviceID(this, new DataCallback<User>() {
+        userController.refreshRepository(new DataCallback<Void>() {
             @Override
-            public void onSuccess(User user) {
-                currentUser = user;
+            public void onSuccess(Void result) {
+                currentUser = userController.getUserByDeviceID(deviceID);
                 if (currentUser == null) {
                     Log.e(TAG, "No user found with this device ID");
                     Toast.makeText(UserHomeActivity.this, "Couldn't load user information, try again", Toast.LENGTH_SHORT).show();

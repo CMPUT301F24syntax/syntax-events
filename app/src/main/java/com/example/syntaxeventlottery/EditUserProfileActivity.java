@@ -71,10 +71,10 @@ public class EditUserProfileActivity extends AppCompatActivity {
     }
 
     private void loadUserProfile() {
-        userController.getEntrantByDeviceID(this, new DataCallback<User>() {
+        userController.refreshRepository(new DataCallback<Void>() {
             @Override
-            public void onSuccess(User currentUser) {
-                user = currentUser;
+            public void onSuccess(Void result) {
+                user = userController.getUserByDeviceID(deviceID);
                 displayUserDetails(user);
             }
 
