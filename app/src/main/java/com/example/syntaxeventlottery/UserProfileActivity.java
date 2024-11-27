@@ -35,7 +35,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
     private User currentUser;
     private UserController userController;
-    private String deviceId;
+    private String deviceID;
     private static final String TAG = "UserProfileActivity";
     private static final int REQUEST_CODE_EDIT_PROFILE = 2001;
 
@@ -55,8 +55,8 @@ public class UserProfileActivity extends AppCompatActivity {
         userController = new UserController(new UserRepository());
 
         // Retrieve device ID
-        deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        Log.d(TAG, "Device ID: " + deviceId);
+        deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        Log.d(TAG, "Device ID: " + deviceID);
 
         // Initialize UI components
         backButton = findViewById(R.id.backButton);
@@ -73,7 +73,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
         editButton.setOnClickListener(v -> {
             Intent intent = new Intent(UserProfileActivity.this, EditUserProfileActivity.class);
-            intent.putExtra("user", currentUser); // Pass user to edit activity
+            intent.putExtra("deviceID", deviceID); // Pass user to edit activity
             startActivityForResult(intent, REQUEST_CODE_EDIT_PROFILE);
         });
     }
@@ -93,17 +93,17 @@ public class UserProfileActivity extends AppCompatActivity {
     }
 
     private void loadUserProfile() {
-        userController.refreshRepository(new DataCallback<Void>() {
+        userController.getEntrantByDeviceID(this, new DataCallback<User>() {
             @Override
-            public void onSuccess(Void result) {
-                currentUser = userController.getUserByDeviceID(deviceId);
+            public void onSuccess(User user) {
+                currentUser = user;
                 displayUserDetails(currentUser);
             }
 
             @Override
             public void onError(Exception e) {
-                Log.e(TAG, "Failed to fetch user profile", e);
-                Toast.makeText(UserProfileActivity.this, "Couldn't load user profile", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Failed to load user profile", e);
+                Toast.makeText(UserProfileActivity.this, "Failed to load user profile", Toast.LENGTH_SHORT).show();
             }
         });
     }

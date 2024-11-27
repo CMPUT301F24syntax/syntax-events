@@ -12,82 +12,69 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
 public class UserHomeActivity extends AppCompatActivity {
-    private final String TAG = "UserHomeActivity";
 
+    // UI Components
     private TextView dateTextView;
-    private RecyclerView futureEventsRecyclerView;
-    private EventAdapter eventAdapter;
+    private RecyclerView waitlistEventsRecyclerView;
+    private ImageButton organizerButton, newsButton, profileButton, scanButton;
+
     private EventController eventController;
     private UserController userController;
-    private ImageButton organizerButton;
-    private ImageButton profileButton;
-    private ImageButton newsButton;
-    private ImageButton scanButton; // New QR Scan Button
-    private String deviceId;
-    private ImageButton scanButton2;
+    private EventAdapter eventAdapter;
+    private String deviceID;
     private User currentUser;
+    private final String TAG = "UserHomeActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_home_page);
 
-        // Initialize views
+        // Initialize UI Components
         dateTextView = findViewById(R.id.dateTextView);
         organizerButton = findViewById(R.id.organizerButton);
         profileButton = findViewById(R.id.profileButton);
         newsButton = findViewById(R.id.newsButton);
-        scanButton = findViewById(R.id.qrScanButton1);
-        scanButton2 = findViewById(R.id.qrScanButton2);
+        scanButton = findViewById(R.id.qrScanButton2);
 
         // Initialize controllers
         eventController = new EventController(new EventRepository());
         userController = new UserController(new UserRepository());
 
         // Get deviceId
-        deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
         // Set up RecyclerView for Future Events
-        futureEventsRecyclerView = findViewById(R.id.futureEventsRecyclerView);
-        futureEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        waitlistEventsRecyclerView = findViewById(R.id.futureEventsRecyclerView);
+        waitlistEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         eventAdapter = new EventAdapter(new ArrayList<>(), this);
-        futureEventsRecyclerView.setAdapter(eventAdapter);
+        waitlistEventsRecyclerView.setAdapter(eventAdapter);
 
         // load all events
         loadEvents();
 
-        // Set click listener for Organizer button
+        // Set button listeners
         organizerButton.setOnClickListener(v -> checkFacilityProfileAndLaunch());
 
-        // Set click listener for Profile button
         profileButton.setOnClickListener(v -> {
-            // Navigate to UserProfileActivity
-            startActivity(new Intent(UserHomeActivity.this, UserProfileActivity.class));
+            Intent intent = new Intent(UserHomeActivity.this, UserProfileActivity.class);
+            intent.putExtra("deviceID", deviceID);
+            startActivity(intent);
         });
 
-        // Set click listener for News button
         newsButton.setOnClickListener(v -> {
             // Navigate to NotificationCenterActivity
             startActivity(new Intent(UserHomeActivity.this, NotificationCenterActivity.class));
         });
 
-        // Set click listener for Scan button
         scanButton.setOnClickListener(v -> {
-            // Navigate to QRScanActivity
-            startActivity(new Intent(UserHomeActivity.this, QRScanActivity.class));
-        });
-        scanButton2.setOnClickListener(v -> {
             // Navigate to QRScanActivity
             startActivity(new Intent(UserHomeActivity.this, QRScanActivity.class));
         });
@@ -122,7 +109,7 @@ public class UserHomeActivity extends AppCompatActivity {
     }
 
     private void updateDateTime() {
-        final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.getDefault());
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM", Locale.getDefault());
         dateFormat.setTimeZone(TimeZone.getTimeZone("America/Edmonton"));
 
         new Thread(() -> {
@@ -140,10 +127,10 @@ public class UserHomeActivity extends AppCompatActivity {
     // get the most updated user info and check if they have a facility profile
     // launch create facility activity if they do not have a facility
     private void checkFacilityProfileAndLaunch() {
-        userController.refreshRepository(new DataCallback<Void>() {
+        userController.getEntrantByDeviceID(this, new DataCallback<User>() {
             @Override
-            public void onSuccess(Void result) {
-                currentUser = userController.getUserByDeviceID(deviceId);
+            public void onSuccess(User user) {
+                currentUser = user;
                 if (currentUser == null) {
                     Log.e(TAG, "No user found with this device ID");
                     Toast.makeText(UserHomeActivity.this, "Couldn't load user information, try again", Toast.LENGTH_SHORT).show();
@@ -152,7 +139,7 @@ public class UserHomeActivity extends AppCompatActivity {
                 Facility facility = currentUser.getFacility();
                 if (facility == null) {
                     Intent intent = new Intent(UserHomeActivity.this, FacilityProfileActivity.class);
-                    intent.putExtra("currentUser", currentUser);
+                    intent.putExtra("deviceID", deviceID);
                     startActivity(intent);
                 } else {
                     startActivity(new Intent(UserHomeActivity.this, OrganizerActivity.class));

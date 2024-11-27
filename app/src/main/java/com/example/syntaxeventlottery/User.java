@@ -1,13 +1,13 @@
 // Refactor Complete
 package com.example.syntaxeventlottery;
 
-import java.io.Serializable;
+
 import java.util.Set;
 
 /**
  * Represents a general user within the Event Lottery System.
  */
-public class User implements Serializable {
+public class User {
     private String userID;
     private String deviceCode;
     private String email;
