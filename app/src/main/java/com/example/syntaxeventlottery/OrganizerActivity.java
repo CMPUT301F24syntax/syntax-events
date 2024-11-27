@@ -28,6 +28,7 @@ public class OrganizerActivity extends AppCompatActivity {
     private String deviceID;
     private EventController eventController;
     private UserController userController;
+    private User currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +61,12 @@ public class OrganizerActivity extends AppCompatActivity {
         });
 
         // Back button listener
-        backButton.setOnClickListener(v -> finish());
+        backButton.setOnClickListener(v -> {
+            Intent intent = new Intent(OrganizerActivity.this, UserHomeActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); // Clears the back stack
+            startActivity(intent);
+            finish(); // Close OrganizerActivity
+        });
     }
 
     @Override
@@ -74,7 +80,7 @@ public class OrganizerActivity extends AppCompatActivity {
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                User currentUser = userController.getUserByDeviceID(deviceID);
+                currentUser = userController.getUserByDeviceID(deviceID);
                 if (currentUser == null) {
                     Log.e(TAG, "Failed to get updated user info");
                     finish();
