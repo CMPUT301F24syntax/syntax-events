@@ -62,7 +62,7 @@ public class UserController {
                 return user;
             }
         }
-        // return null if no matching event found
+        // return null if no matching user found
         return null;
 
 
@@ -73,10 +73,6 @@ public class UserController {
         if (!validateUser(user, callback)) {
             return;
         }
-        /*
-        if (imageUri == null && (user.getProfilePhotoUrl() == null || user.getProfilePhotoUrl().isEmpty())) {
-            user.setProfilePhotoUrl(userRepository.generateDefaultProfilePhotoUrl(user.getUsername()));
-        }*/
         userRepository.addUserToRepo(user, imageUri, callback);
     }
 
