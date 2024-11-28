@@ -198,6 +198,35 @@ public class UserRepository {
                     callback.onError(e);
                 });
     }
+    /**
+     * Updates the user's location data in Firestore.
+     *
+     * @param user      The user whose location needs to be updated.
+     * @param location  The new location data to be stored (e.g., [latitude, longitude]).
+     * @param callback  Callback to handle success or failure.
+     */
+    public void updateLocation(User user, ArrayList<Double> location, DataCallback<User> callback) {
+        if (user == null || location == null || location.size() < 2) {
+            callback.onError(new Exception("Invalid user or location data"));
+            return;
+        }
+
+        // Create a map to store the location data
+        HashMap<String, Object> updateData = new HashMap<>();
+        updateData.put("location", location);
+
+        // Update Firestore with the new location data
+        usersRef.document(user.getUserID())
+                .update(updateData)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d(TAG, "Location updated successfully for user: " + user.getUserID());
+                    callback.onSuccess(null);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to update location for user: " + user.getUserID(), e);
+                    callback.onError(e);
+                });
+    }
 
 
     public HashMap<String, Object> userToHashData(User user) {

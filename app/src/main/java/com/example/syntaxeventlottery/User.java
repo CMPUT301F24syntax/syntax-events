@@ -2,7 +2,10 @@
 package com.example.syntaxeventlottery;
 
 
+import android.util.Pair;
+
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Set;
 
 /**
@@ -17,11 +20,23 @@ public class User implements Serializable {
     private String username;
     private Set<String> roles;
     private Facility facility;
+    private ArrayList<Double> location;
 
     // No-argument constructor required by Firebase
     public User() {}
 
     // Parameterized constructor
+    public User(String deviceCode, String email, String phoneNumber, String profilePhotoUrl, String username, Set<String> roles, Facility facility,ArrayList<Double> location) {
+        this.deviceCode = deviceCode;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.profilePhotoUrl = profilePhotoUrl;
+        this.username = username;
+        this.userID = generateUserID();
+        this.roles = roles;
+        this.facility = facility;
+        this.location = location;
+    }
     public User(String deviceCode, String email, String phoneNumber, String profilePhotoUrl, String username, Set<String> roles, Facility facility) {
         this.deviceCode = deviceCode;
         this.email = email;
@@ -31,6 +46,7 @@ public class User implements Serializable {
         this.userID = generateUserID();
         this.roles = roles;
         this.facility = facility;
+
     }
 
     // Method to generate a unique, shorter userID
@@ -100,7 +116,13 @@ public class User implements Serializable {
 
     public Facility getFacility(){ return facility;}
 
+    public ArrayList<Double> getLocation(){return location;}
+
     public void setFacility(Facility facility){this.facility = facility;}
+
+    public void setLocation(ArrayList<Double> location){this.location = location;}
+
+
     @Override
     public String toString() {
         return "User{" +
