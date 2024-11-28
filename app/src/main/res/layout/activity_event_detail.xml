@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_event_detail"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -158,7 +159,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="0dp"
                 android:text="Edit Event Information"
-                android:visibility="visible" />
+                android:visibility="visible"
+                tools:visibility="gone" />
 
             <Button
                 android:id="@+id/manageParticipantsButton"
@@ -166,13 +168,15 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="0dp"
                 android:text="Manage Participants"
-                android:visibility="visible" />
+                android:visibility="visible"
+                tools:visibility="gone" />
 
             <Button
                 android:id="@+id/drawParticipantsButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Perform Event Draw" />
+                android:text="Perform Event Draw"
+                tools:visibility="gone" />
 
             <Button
                 android:id="@+id/joinEventButton"
@@ -180,7 +184,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:text="Join Event"
-                android:visibility="gone" />
+                android:visibility="visible" />
 
             <Button
                 android:id="@+id/leaveEventButton"
@@ -188,7 +192,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:text="Leave Event"
-                android:visibility="gone" />
+                android:visibility="gone"
+                tools:visibility="visible" />
 
             <Button
                 android:id="@+id/acceptButton"
@@ -198,12 +203,6 @@
                 android:text="Accept"
                 android:visibility="gone" />
 
-            <Button
-                android:id="@+id/rejectButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Reject"
-                android:visibility="gone" />
         </LinearLayout>
 
         <TextView

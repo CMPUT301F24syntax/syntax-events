@@ -23,7 +23,7 @@ public class EventDetailActivity extends AppCompatActivity {
     // UI Components
     private ImageView posterImageView, qrCodeImageView;
     private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView, eventEndDateTextView, eventCapacityTextView, eventFacilityLocationTextView, eventFacilityNameTextView, eventDrawedStatusTextView;
-    private Button joinWaitingListButton, leaveWaitingListButton, acceptInvitationButton, declineInvitationButton;
+    private Button joinWaitingListButton, acceptInvitationButton, leaveEventButton;
     private Button manageParticipantsButton, editInfoButton, drawButton;
     private ImageButton backButton;
 
@@ -44,6 +44,10 @@ public class EventDetailActivity extends AppCompatActivity {
 
         // Get event ID from intent
         eventID = getIntent().getStringExtra("eventID");
+
+        // set up back button listener
+        backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> finish());
 
         if (eventID == null || eventID.isEmpty()) { // finish activity if there is error getting the event
             Log.e(TAG, "Couldn't get eventID from event");
@@ -135,14 +139,12 @@ public class EventDetailActivity extends AppCompatActivity {
         eventFacilityNameTextView = findViewById(R.id.eventFNameTextView);
         eventDrawedStatusTextView = findViewById(R.id.eventDrawedTextView);
         joinWaitingListButton = findViewById(R.id.joinEventButton);
-        leaveWaitingListButton = findViewById(R.id.leaveEventButton);
+        leaveEventButton = findViewById(R.id.leaveEventButton);
         acceptInvitationButton = findViewById(R.id.acceptButton);
-        declineInvitationButton = findViewById(R.id.rejectButton);
 
         manageParticipantsButton = findViewById(R.id.manageParticipantsButton);
         editInfoButton = findViewById(R.id.editInfoButton);
         drawButton = findViewById(R.id.drawParticipantsButton);
-        backButton = findViewById(R.id.backButton);
 
         configureButtonVisibility();
         setupButtonListeners();
@@ -156,11 +158,9 @@ public class EventDetailActivity extends AppCompatActivity {
         manageParticipantsButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
         drawButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
 
-        // Participant buttons
+        // Determin which buttons to display
         if (!isOrganizer) {
-            joinWaitingListButton.setVisibility(View.VISIBLE);
-            leaveWaitingListButton.setVisibility(View.VISIBLE);
-            // Additional participant-specific visibility logic
+            displayParticipantButtons();
         } else {
             hideAllParticipantButtons();
         }
@@ -172,13 +172,14 @@ public class EventDetailActivity extends AppCompatActivity {
         }
     }
 
-
-
     private void setupButtonListeners() {
+        // user joins waiting list
         joinWaitingListButton.setOnClickListener(v -> eventController.addUserToWaitingList(event, deviceID, new DataCallback<Event>() {
             @Override
             public void onSuccess(Event result) {
                 Toast.makeText(EventDetailActivity.this, "You have joined the waiting list", Toast.LENGTH_SHORT).show();
+                // refresh event data
+                loadEvent();
             }
 
             @Override
@@ -187,18 +188,37 @@ public class EventDetailActivity extends AppCompatActivity {
             }
         }));
 
-        leaveWaitingListButton.setOnClickListener(v -> eventController.removeUserFromWaitingList(event, deviceID, new DataCallback<Event>() {
+        // user accepts invitation
+        acceptInvitationButton.setOnClickListener(v -> eventController.addUserToConfirmedList(event, deviceID, new DataCallback<Event>() {
             @Override
             public void onSuccess(Event result) {
-                Toast.makeText(EventDetailActivity.this, "You have left the waiting list", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EventDetailActivity.this, "Successfully Enrolled in the Event!", Toast.LENGTH_SHORT).show();
+                loadEvent();
             }
 
             @Override
             public void onError(Exception e) {
-                Toast.makeText(EventDetailActivity.this, "Error joining the waiting list", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Error adding user to confirmed list", e);
+                Toast.makeText(EventDetailActivity.this, "Error accepting invitation", Toast.LENGTH_SHORT).show();
             }
         }));
 
+        // user leaves the event, remove from all lists
+        leaveEventButton.setOnClickListener(v -> eventController.removeUserFromEvent(event, deviceID, new DataCallback<Event>() {
+            @Override
+            public void onSuccess(Event result) {
+                Toast.makeText(EventDetailActivity.this, "You have left the event", Toast.LENGTH_SHORT).show();
+                loadEvent();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error leaving the Event", e);
+                Toast.makeText(EventDetailActivity.this, "Error leaving the event", Toast.LENGTH_SHORT).show();
+            }
+        }));
+
+        // perform event draw
         drawButton.setOnClickListener(v -> {
             if (event.isDrawed()) {
                 Toast.makeText(this, "Event draw has already occured", Toast.LENGTH_SHORT).show();
@@ -219,15 +239,6 @@ public class EventDetailActivity extends AppCompatActivity {
                 }
             });
         });
-        /*
-        acceptInvitationButton.setOnClickListener(v -> eventController.acceptInvitation(event, deviceID));
-        declineInvitationButton.setOnClickListener(v -> eventController.declineInvitation(event, deviceID));
-        */
-        if (backButton != null) {
-            backButton.setOnClickListener(v -> finish());
-        } else {
-            Log.e(TAG, "Back button is not initialized");
-        }
 
         editInfoButton.setOnClickListener(v -> {
             Intent intent = new Intent(EventDetailActivity.this, EditEventActivity.class);
@@ -247,11 +258,42 @@ public class EventDetailActivity extends AppCompatActivity {
         });
     }
 
+    //------------ helper methods for displaying UI --------------//
+    private void displayParticipantButtons() {
+        boolean isInWaitingList = eventController.isUserInWaitingList(event, deviceID);
+        boolean isInSelectedList = eventController.isUserInSelectedList(event, deviceID);
+        boolean isInConfirmedList = eventController.isUserInConfirmedList(event, deviceID);
+
+        // Handle Waiting List buttons
+        if (isInWaitingList && !isInSelectedList) {
+            joinWaitingListButton.setVisibility(View.GONE);
+            leaveEventButton.setVisibility(View.VISIBLE);
+            leaveEventButton.setText("Leave Waiting List");
+        } else {
+            leaveEventButton.setVisibility(View.GONE);
+            joinWaitingListButton.setVisibility(View.VISIBLE);
+        }
+
+        // Handle Selected List buttons
+        if (isInSelectedList && !isInConfirmedList) {
+            joinWaitingListButton.setVisibility(View.GONE);
+            leaveEventButton.setVisibility(View.VISIBLE);
+            leaveEventButton.setText("Decline Invitation");
+            acceptInvitationButton.setVisibility(View.VISIBLE);
+        }
+
+        // Handle Confirmed List buttons
+        if (isInConfirmedList) {
+            joinWaitingListButton.setVisibility(View.GONE);
+            acceptInvitationButton.setVisibility(View.GONE);
+            leaveEventButton.setVisibility(View.VISIBLE);
+            leaveEventButton.setText("Leave Event");
+        }
+    }
 
     private void hideAllParticipantButtons() {
         joinWaitingListButton.setVisibility(View.GONE);
-        leaveWaitingListButton.setVisibility(View.GONE);
         acceptInvitationButton.setVisibility(View.GONE);
-        declineInvitationButton.setVisibility(View.GONE);
+        leaveEventButton.setVisibility(View.GONE);
     }
 }
