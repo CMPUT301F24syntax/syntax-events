@@ -94,12 +94,14 @@ public class EventParticipantsListActivity extends AppCompatActivity {
         // clear old list
         usersList.clear();
         ArrayList<User> waitingList = new ArrayList<>();
+        Log.d(TAG, "Waiting List Array:"+ event.getParticipants());
         for (String userId : event.getParticipants()) {
             User user = userController.getUserByDeviceID(userId);
             if (user != null) {
                 waitingList.add(user);
             }
         }
+        Log.d(TAG, "Waiting List Array:"+ waitingList);
         // set details header
         if (waitingList.isEmpty()) {
             listDetails.setText("No Entrants have joined the waiting list");

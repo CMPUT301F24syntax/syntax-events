@@ -8,6 +8,7 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -67,7 +68,7 @@ public class EventController {
         return null;
     }
 
-    // get all organizer events
+
     public ArrayList<Event> getOrganizerEvents(String organizerID) {
         if (organizerID == null || organizerID.isEmpty()) {
             return null; 
@@ -85,27 +86,48 @@ public class EventController {
     /**
      * User methods
      */
-    // removes user id from participants list
-    // and updates the repository
+
     /**
-     * Removes a user from an event's waiting list
+     * Removes a user from a all event lists
      */
-    public void removeUserFromWaitingList(Event event, String userID, DataCallback<Event> callback) {
+    public void removeUserFromEvent(Event event, String userID, DataCallback<Event> callback) {
         // Validate inputs
         if (event == null || userID == null || userID.isEmpty()) {
             callback.onError(new IllegalArgumentException("Invalid event or user ID"));
             return;
         }
 
+        // Get the event lists, initialize them if they are null
         ArrayList<String> participants = event.getParticipants();
-        if (!participants.contains(userID)) {
-            callback.onError(new IllegalArgumentException("User not found in events list"));
+        if (participants == null) {
+            participants = new ArrayList<>();
+        }
+
+        ArrayList<String> selectedParticipants = event.getSelectedParticipants();
+        if (selectedParticipants == null) {
+            selectedParticipants = new ArrayList<>();
+        }
+
+        ArrayList<String> confirmedParticipants = event.getConfirmedParticipants();
+        if (confirmedParticipants == null) {
+            confirmedParticipants = new ArrayList<>();
+        }
+
+        // Remove user from the lists (if present)
+        boolean removedFromParticipants = participants.remove(userID);
+        boolean removedFromSelected = selectedParticipants.remove(userID);
+        boolean removedFromConfirmed = confirmedParticipants.remove(userID);
+
+        // If the user wasn't removed from any list, you may want to log that
+        if (!removedFromParticipants && !removedFromSelected && !removedFromConfirmed) {
+            callback.onError(new IllegalArgumentException("User ID not found in any event list"));
             return;
         }
 
         // Update participants list and save
-        participants.remove(userID);
         event.setParticipants(participants);
+        event.setSelectedParticipants(selectedParticipants);
+        event.setConfirmedParticipants(confirmedParticipants);
         updateEvent(event, null, null, callback);
     }
 
@@ -140,6 +162,55 @@ public class EventController {
         updateEvent(event, null, null, callback);
     }
 
+    public void addUserToConfirmedList(Event event, String userID, DataCallback<Event> callback) {
+        // Validate inputs
+        if (event == null || userID == null || userID.isEmpty()) {
+            callback.onError(new IllegalArgumentException("Invalid event or user ID"));
+            return;
+        }
+
+        ArrayList<String> confirmedParticipants = event.getConfirmedParticipants();
+
+        if (!event.getParticipants().contains(userID) || !event.getSelectedParticipants().contains(userID)) {
+            callback.onError(new IllegalArgumentException("User was never in waiting list or selected list"));
+            return;
+        }
+        if (event.getConfirmedParticipants().contains(userID)) {
+            callback.onError(new IllegalArgumentException("User has already been confirmed"));
+            return;
+        }
+        confirmedParticipants.add(userID);
+        event.setConfirmedParticipants(confirmedParticipants);
+        updateEvent(event, null, null, callback);
+
+    }
+
+    /**
+     * Check if user is in the waiting list
+     * @param event
+     * @param userID
+     */
+    public boolean isUserInWaitingList(Event event, String userID) {
+        return !event.getParticipants().isEmpty() && event.getParticipants().contains(userID);
+    }
+
+    /**
+     * Check if user is in the selected list
+     * @param event
+     * @param userID
+     */
+    public boolean isUserInSelectedList(Event event, String userID) {
+        return !event.getParticipants().isEmpty() && event.getSelectedParticipants().contains(userID);
+    }
+
+    /**
+     * Check if user is in the selected list
+     * @param event
+     * @param userID
+     */
+    public boolean isUserInConfirmedList(Event event, String userID) {
+        return !event.getParticipants().isEmpty() && event.getConfirmedParticipants().contains(userID);
+    }
 
     // lottery implementation
     public void performDraw(Event event, DataCallback<Event> callback) {

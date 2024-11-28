@@ -87,7 +87,26 @@ public class UserHomeActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        loadAllEvents();
+        /*
+        changed for testing
         loadUserWaitlistedEvents();
+
+         */
+    }
+
+    private void loadAllEvents() {
+        eventController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                eventAdapter.updateEvents(eventController.getLocalEventsList());
+            }
+
+            @Override
+            public void onError(Exception e) {
+
+            }
+        });
     }
 
     private void loadUserWaitlistedEvents() {
