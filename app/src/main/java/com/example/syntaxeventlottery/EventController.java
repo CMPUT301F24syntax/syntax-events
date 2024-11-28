@@ -194,6 +194,10 @@ public class EventController {
         return !event.getParticipants().isEmpty() && event.getParticipants().contains(userID);
     }
 
+    public ArrayList<String> getEventWaitingList(Event event) {
+        return event.getParticipants();
+    }
+
     /**
      * Check if user is in the selected list
      * @param event
@@ -203,6 +207,11 @@ public class EventController {
         return !event.getParticipants().isEmpty() && event.getSelectedParticipants().contains(userID);
     }
 
+    public ArrayList<String> getEventSelectedList(Event event) {
+        return event.getSelectedParticipants();
+    }
+
+
     /**
      * Check if user is in the selected list
      * @param event
@@ -210,6 +219,10 @@ public class EventController {
      */
     public boolean isUserInConfirmedList(Event event, String userID) {
         return !event.getParticipants().isEmpty() && event.getConfirmedParticipants().contains(userID);
+    }
+
+    public ArrayList<String> getEventConfirmedList(Event event) {
+        return event.getConfirmedParticipants();
     }
 
     // lottery implementation
