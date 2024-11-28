@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -36,6 +37,41 @@
             android:contentDescription="User Profile Image" />
 
         <!-- Delete Image Button below the profile image -->
+=======
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Back Button -->
+        <Button
+            android:id="@+id/backButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Back"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#000000"
+            android:padding="8dp"
+            android:textSize="16sp"
+            android:layout_gravity="start"
+            android:layout_marginBottom="16dp" />
+
+        <!-- User Profile Image -->
+        <ImageView
+            android:id="@+id/userProfileImage"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:contentDescription="User Profile Image"
+            android:scaleType="centerCrop" />
+
+        <!-- Delete Image Button -->
+>>>>>>> 78923537e3a3e77870018af220bea98cf7eb1dd5
         <Button
             android:id="@+id/deleteImageButton"
             android:layout_width="wrap_content"
@@ -45,6 +81,7 @@
             android:backgroundTint="#FF0000"
             android:padding="8dp"
             android:textSize="16sp"
+<<<<<<< HEAD
             android:layout_marginBottom="16dp" />
 
         <!-- Username -->
@@ -160,3 +197,47 @@
 
     </LinearLayout>
 </RelativeLayout>
+=======
+            android:layout_gravity="end"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Username -->
+        <TextView
+            android:id="@+id/userName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Username"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp" />
+
+        <!-- User ID -->
+        <TextView
+            android:id="@+id/userId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="User ID"
+            android:textSize="16sp"
+            android:layout_marginTop="8dp" />
+
+        <!-- Email -->
+        <TextView
+            android:id="@+id/userEmail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Email"
+            android:textSize="16sp"
+            android:layout_marginTop="8dp" />
+
+        <!-- Phone Number -->
+        <TextView
+            android:id="@+id/userPhone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Phone Number"
+            android:textSize="16sp"
+            android:layout_marginTop="8dp" />
+    </LinearLayout>
+</ScrollView>
+>>>>>>> 78923537e3a3e77870018af220bea98cf7eb1dd5
