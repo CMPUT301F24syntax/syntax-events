@@ -74,5 +74,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
+    // Mockito core library for unit testing
+    testImplementation("org.mockito:mockito-core:5.4.0")
 }
 
