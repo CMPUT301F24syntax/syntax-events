@@ -88,7 +88,7 @@ public class EventController {
      */
 
     /**
-     * Removes a user from a all event lists
+     * Removes a user from a all event lists, and adds them to a list of cancelled entrants
      */
     public void removeUserFromEvent(Event event, String userID, DataCallback<Event> callback) {
         // Validate inputs

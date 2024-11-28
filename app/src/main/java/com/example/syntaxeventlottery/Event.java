@@ -39,6 +39,7 @@ public class Event implements Serializable {
     private ArrayList<String> participants; // those who have joined waiting list
     private ArrayList<String> selectedParticipants; // those who have been selected by lottery
     private ArrayList<String> confirmedParticipants; // those who have confirmed to take part of event
+    private ArrayList<String> cancelledParticipants; // those who have taken too long to accept their invitation/are cancelled by the organizer
 
     // -------------------------------------------------------------------------
     // Constructors
