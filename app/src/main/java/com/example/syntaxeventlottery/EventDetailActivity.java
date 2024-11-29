@@ -2,8 +2,12 @@
 package com.example.syntaxeventlottery;
 import static androidx.constraintlayout.motion.widget.Debug.getLocation;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -46,13 +50,27 @@ public class EventDetailActivity extends AppCompatActivity {
     private String eventID, deviceID;
     private Event event;
     private boolean isRequireLocation;
+    // locaiton
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+    private boolean isLocationPermissionGranted = false;
+    private UserController userController;
+    private User currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
+
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (locationManager == null) {
+            Log.e(TAG, "LocationManager is null");
+            Toast.makeText(this, "Error: Unable to initialize LocationManager", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         // initialize controller
         eventController = new EventController(new EventRepository());
+        userController = new UserController(new UserRepository(), locationManager);
 
         // Get device ID
         deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -70,7 +88,9 @@ public class EventDetailActivity extends AppCompatActivity {
         } else {
             loadEvent();
         }
+
     }
+
 
     @Override
     protected void onResume() {
@@ -80,84 +100,184 @@ public class EventDetailActivity extends AppCompatActivity {
     }
 
     private void loadEvent() {
-        // Refresh repository to get the latest data
         eventController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-
-                // Fetch the event by ID from the controller
                 event = eventController.getEventById(eventID);
-                Log.d(TAG, "Event from local cache: " + event.getLocationRequired());
-                Log.d(TAG, "Refreshed repository, event details:"+event);
-                // If the event is not found, show an error and finish
                 if (event == null) {
-                    Log.e(TAG, "Failed to find event in repository");
+                    Log.e(TAG, "Event not found in repository.");
                     Toast.makeText(EventDetailActivity.this, "Failed to find the event", Toast.LENGTH_SHORT).show();
-                    finish();  // Exit the activity as the event wasn't found
-                    return;    // Early return to prevent the rest of the code from executing
+                    finish();
+                    return;
                 }
-                // Log.d("EventDetailActivivty","check islocationn11"+event.getLocationRequired());
-                // Log.d("EventDetailActivivty","check islocationn1122"+event);
-                // event.setLocationRequired(true);
-                // check if need location
+
                 if (event.getLocationRequired()) {
-                    Log.d("EventDetailActivivty","check islocationn"+event.getLocationRequired());
                     handleLocationRequirement();
                 } else {
-                    updateUI(event); // Proceed if location is not required
+                    updateUI(event);
                 }
             }
-
-            private void handleLocationRequirement() {
-                // Create an AlertDialog to inform the user about the location requirement
-                AlertDialog.Builder builder = new AlertDialog.Builder(EventDetailActivity.this);
-                builder.setTitle("Location Required")
-                        .setMessage("This event requires your location. Do you want to enable location permissions?")
-                        .setCancelable(false) // Ensure the dialog cannot be canceled by tapping outside
-                        .setPositiveButton("Yes", (dialog, which) -> {
-                            // Check if location permission is already granted
-                            if (ContextCompat.checkSelfPermission(EventDetailActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
-                                    == PackageManager.PERMISSION_GRANTED) {
-                                isRequireLocation = true; // Set the flag to indicate location is required
-                                getLocation(); // Fetch the location
-                            } else {
-                                // Request location permission if not granted
-                                requestLocationPermission();
-                            }
-                        })
-                        // if no, jump to the UserHomeActivity
-                        .setNegativeButton("No", (dialog, which) -> {
-                            // Handle the case where the user declines location access
-                            Toast.makeText(EventDetailActivity.this, "Location not enabled. Returning to home screen.", Toast.LENGTH_SHORT).show();
-                            // Navigate back to the UserHomeActivity
-                            Intent intent = new Intent(EventDetailActivity.this, UserHomeActivity.class);
-                            startActivity(intent);
-                            finish(); // Finish the current activity to remove it from the back stack
-                        });
-
-                // Create and show the AlertDialog
-                AlertDialog dialog = builder.create();
-                dialog.show();
-            }
-
-            private void requestLocationPermission() {
-                // Request the ACCESS_FINE_LOCATION permission from the user
-                ActivityCompat.requestPermissions(EventDetailActivity.this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1001);
-            }
-
-
 
             @Override
             public void onError(Exception e) {
-                Log.d(TAG, e.toString());
+                Log.e(TAG, "Error refreshing event repository: ", e);
                 Toast.makeText(EventDetailActivity.this, "Failed to get updated data", Toast.LENGTH_SHORT).show();
                 finish();
             }
         });
     }
 
+    private void handleLocationRequirement() {
+        Log.d(TAG, "Entered handleLocationRequirement.");
+        AlertDialog.Builder builder = new AlertDialog.Builder(EventDetailActivity.this);
+        builder.setTitle("Location Required")
+                .setMessage("This event requires your location. Do you want to enable location permissions?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    Log.d(TAG, "User chose to enable location permissions.");
+                    checkAndRequestLocationPermission();
+                })
+                .setNegativeButton("No", (dialog, which) -> {
+                    Log.d(TAG, "User chose not to enable location permissions.");
+                    navigateToUserHome();
+                });
 
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+
+    private void checkAndRequestLocationPermission() {
+        try {
+            Log.d(TAG, "Checking and requesting location permission.");
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                Log.d(TAG, "Permission not granted. Requesting now...");
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        LOCATION_PERMISSION_REQUEST_CODE);
+            } else {
+                Log.d(TAG, "Permission already granted.");
+                isLocationPermissionGranted = true;
+                proceedWithLocationAccess();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Exception in checkAndRequestLocationPermission: ", e);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        Log.d(TAG, "onRequestPermissionsResult triggered with requestCode: " + requestCode);
+
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d(TAG, "Location permission granted.");
+                isLocationPermissionGranted = true;
+                proceedWithLocationAccess();
+            } else {
+                Log.d(TAG, "Location permission denied.");
+                isLocationPermissionGranted = false;
+            }
+        }
+    }
+
+
+    private void proceedWithLocationAccess() {
+        Log.d(TAG, "Proceeding with location access...");
+
+        // 获取 LocationManager 实例
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        // 检查权限
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+
+            // 获取最后的已知位置（可以立即使用）
+            Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (lastKnownLocation != null) {
+                double latitude = lastKnownLocation.getLatitude();
+                double longitude = lastKnownLocation.getLongitude();
+                Log.d(TAG, "Last Known Location - Lat: " + latitude + ", Lng: " + longitude);
+
+                // 在这里存储用户的位置信息到数据库或服务器
+                saveUserLocation(latitude, longitude);
+
+                Toast.makeText(this, "Location retrieved: Lat=" + latitude + ", Lng=" + longitude, Toast.LENGTH_SHORT).show();
+            } else {
+                // 注册监听器以获取实时位置更新
+                locationManager.requestLocationUpdates(
+                        LocationManager.GPS_PROVIDER,
+                        1000, // 更新间隔时间（毫秒）
+                        10,   // 最小距离（米）
+                        locationListener
+                );
+            }
+        } else {
+            Toast.makeText(this, "Location permission is not granted.", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Location permission not granted. Unable to proceed.");
+        }
+    }
+
+    // 定义 LocationListener 以接收实时位置更新
+    private final LocationListener locationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(@NonNull Location location) {
+            double latitude = location.getLatitude();
+            double longitude = location.getLongitude();
+            Log.d(TAG, "Real-time Location - Lat: " + latitude + ", Lng: " + longitude);
+
+            // 在这里存储用户的位置信息到数据库或服务器
+            saveUserLocation(latitude, longitude);
+
+            Toast.makeText(EventDetailActivity.this, "Real-time location retrieved: Lat=" + latitude + ", Lng=" + longitude, Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+        @Override
+        public void onProviderEnabled(@NonNull String provider) {}
+
+        @Override
+        public void onProviderDisabled(@NonNull String provider) {}
+    };
+
+    private void saveUserLocation(double latitude, double longitude) {
+        Log.d(TAG, "Saving user location: Lat=" + latitude + ", Lng=" + longitude);
+
+        if (currentUser != null) {
+            // Store location in the current user object
+            ArrayList<Double> location = new ArrayList<>();
+            location.add(latitude);
+            location.add(longitude);
+            currentUser.setLocation(location);
+
+            // Update user information in the database
+            userController.updateUserLocation(currentUser, latitude, longitude, new DataCallback<User>() {
+                @Override
+                public void onSuccess(User result) {
+                    Log.d(TAG, "User location updated successfully in database.");
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Log.e(TAG, "Failed to update user location in database.", e);
+                }
+            });
+        } else {
+            Log.e(TAG, "Current user is null. Unable to save location.");
+        }
+    }
+
+
+    private void navigateToUserHome() {
+        Intent intent = new Intent(EventDetailActivity.this, UserHomeActivity.class);
+        startActivity(intent);
+        finish();
+    }
 
     private void updateUI(Event event) {
         this.event = event;

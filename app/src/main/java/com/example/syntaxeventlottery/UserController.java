@@ -22,7 +22,7 @@ import android.Manifest;
 public class UserController {
 
     private UserRepository userRepository;
-    private LocationManager locationManager;
+    // private LocationManager locationManager;
 
 
 
@@ -32,7 +32,7 @@ public class UserController {
     }
     public UserController(UserRepository userRepository,LocationManager locationManager) {
         this.userRepository = userRepository;
-        this.locationManager = locationManager;
+    //    this.locationManager = locationManager;
     }
     // User validation
     private boolean validateUser(User user, DataCallback<?> callback) {
@@ -98,6 +98,24 @@ public class UserController {
         }
         userRepository.updateUserDetails(user, imageUri, callback);
     }
+
+    // For location
+    public void updateUserLocation(User user, double latitude, double longitude, DataCallback<User> callback) {
+        if (user == null) {
+            callback.onError(new IllegalArgumentException("User cannot be null"));
+            return;
+        }
+
+        // update user location info
+        ArrayList<Double> location = new ArrayList<>();
+        location.add(latitude);
+        location.add(longitude);
+        user.setLocation(location);
+
+        userRepository.updateUserDetails(user, null, callback); // only update the location info
+    }
+
+
 
     public void deleteUserProfilePhoto(User user, DataCallback<User> callback) {
         if (!validateUser(user, callback)) {
