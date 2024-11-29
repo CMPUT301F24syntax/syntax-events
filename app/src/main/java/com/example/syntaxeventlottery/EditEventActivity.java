@@ -10,6 +10,7 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -38,6 +39,7 @@ public class EditEventActivity extends AppCompatActivity {
     private Button backButton;
     private Button updatePosterButton;
     private ImageView updatePosterView;
+    private Switch locationSwitch;
     private Uri imageUri;
 
     private EventController eventController;
@@ -68,6 +70,7 @@ public class EditEventActivity extends AppCompatActivity {
         backButton = findViewById(R.id.backButton);
         updatePosterButton = findViewById(R.id.updatePosterButton);
         updatePosterView = findViewById(R.id.updatePosterView);
+        locationSwitch = findViewById(R.id.locationSwitch);
 
         // initialize event controller
         eventController = new EventController(new EventRepository());
@@ -112,6 +115,7 @@ public class EditEventActivity extends AppCompatActivity {
         editStartDate.setText(startDateStr);
         editEndDate.setText(endDateStr);
         editCapacity.setText(String.valueOf(currentEvent.getCapacity()));
+        locationSwitch.setChecked(currentEvent.isLocationRequired());
     }
 
     /**
@@ -128,6 +132,7 @@ public class EditEventActivity extends AppCompatActivity {
         String startDateStr = editStartDate.getText().toString().trim();
         String endDateStr = editEndDate.getText().toString().trim();
         String capacityStr = editCapacity.getText().toString().trim();
+        boolean isLocationRequired = locationSwitch.isChecked();
 
         // Validate input fields
         if (TextUtils.isEmpty(eventName) || TextUtils.isEmpty(eventDescription) ||
@@ -168,6 +173,7 @@ public class EditEventActivity extends AppCompatActivity {
         currentEvent.setStartDate(startDate);
         currentEvent.setEndDate(endDate);
         currentEvent.setCapacity(capacity);
+        currentEvent.setLocationRequired(isLocationRequired);
 
         eventController.updateEvent(currentEvent, imageUri, null, new DataCallback<Event>() {
             @Override

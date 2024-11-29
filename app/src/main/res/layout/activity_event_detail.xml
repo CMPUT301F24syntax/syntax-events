@@ -153,11 +153,18 @@
             android:gravity="center"
             android:orientation="vertical">
 
+            <TextView
+                android:id="@+id/eventActionsTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:textStyle="italic"
+                tools:text="Display possible actions" />
+
             <Button
                 android:id="@+id/editInfoButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="0dp"
                 android:text="Edit Event Information"
                 android:visibility="visible"
                 tools:visibility="gone" />
@@ -166,7 +173,6 @@
                 android:id="@+id/manageParticipantsButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="0dp"
                 android:text="Manage Participants"
                 android:visibility="visible"
                 tools:visibility="gone" />
@@ -182,26 +188,31 @@
                 android:id="@+id/joinEventButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:text="Join Event"
-                android:visibility="visible" />
+                android:text="Join Waiting List"
+                android:visibility="visible"
+                tools:visibility="gone" />
 
             <Button
                 android:id="@+id/leaveEventButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:text="Leave Event"
+                android:text="Leave Waiting List"
                 android:visibility="gone"
-                tools:visibility="visible" />
+                tools:visibility="gone" />
 
             <Button
                 android:id="@+id/acceptButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
                 android:text="Accept"
-                android:visibility="gone" />
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <Button
+                android:id="@+id/declineInvitationButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Decline Invitation" />
 
         </LinearLayout>
 

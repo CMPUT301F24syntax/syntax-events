@@ -2,6 +2,8 @@ package com.example.syntaxeventlottery;
 
 import com.google.firebase.firestore.ServerTimestamp;
 
+import org.checkerframework.checker.units.qual.A;
+
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -42,6 +44,7 @@ public class Event implements Serializable {
     private ArrayList<String> participants; // those who have joined waiting list
     private ArrayList<String> selectedParticipants; // those who have been selected by lottery
     private ArrayList<String> confirmedParticipants; // those who have confirmed to take part of event
+    private ArrayList<String> cancelledParticipants; // those who have rejected their invitation or have been cancelled by the organizer
 
     // Geolocation new attributes
     private boolean isLocationRequired;
@@ -83,6 +86,7 @@ public class Event implements Serializable {
         this.participants = new ArrayList<>();
         this.selectedParticipants = new ArrayList<>();
         this.confirmedParticipants = new ArrayList<>();
+        this.cancelledParticipants = new ArrayList<>();
         this.waitingListLimit = waitingListLimit;
         this.capacityFull = false;
         this.waitingListFull = false;
@@ -251,6 +255,14 @@ public class Event implements Serializable {
 
     public void setConfirmedParticipants(ArrayList<String> confirmedParticipants) {
         this.confirmedParticipants = confirmedParticipants;
+    }
+
+    public ArrayList<String> getCancelledParticipants() {
+        return cancelledParticipants;
+    }
+
+    public void setCancelledParticipants(ArrayList<String> cancelledParticipants) {
+        this.cancelledParticipants = cancelledParticipants;
     }
 
     // GEOlocation

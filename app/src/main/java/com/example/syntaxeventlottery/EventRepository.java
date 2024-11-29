@@ -198,6 +198,7 @@ public class EventRepository  {
         data.put("selectedParticipants", event.getSelectedParticipants());
         data.put("confirmedParticipants", event.getConfirmedParticipants());
         data.put("waitingListLimit", event.getWaitingListLimit());
+        data.put("cancelledParticipants", event.getCancelledParticipants());
         data.put("capacityFull", event.getCapacityFull());
         data.put("waitingListFull", event.getWaitingListFull());
         data.put("drawed", event.isDrawed());
