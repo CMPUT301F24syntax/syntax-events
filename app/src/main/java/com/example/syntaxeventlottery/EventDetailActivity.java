@@ -88,7 +88,7 @@ public class EventDetailActivity extends AppCompatActivity {
             @Override
             public void onError(Exception e) {
                 Log.d(TAG, e.toString());
-                Toast.makeText(EventDetailActivity.this, "Failed to get updated data", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EventDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 finish();
             }
         });
@@ -173,8 +173,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
         // Draw button state
         if (isOrganizer && event.isDrawed()) {
-            drawButton.setEnabled(false);
-            drawButton.setText("Event Already Drawn");
+            drawButton.setText("Draw Replacement Participants");
         }
     }
 
@@ -197,7 +196,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
                                 @Override
                                 public void onError(Exception e) {
-                                    Toast.makeText(EventDetailActivity.this, "Error joining the waiting list", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(EventDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                                 }
                             });
                         })
@@ -215,7 +214,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(Exception e) {
-                        Toast.makeText(EventDetailActivity.this, "Error joining the waiting list", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(EventDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -240,7 +239,7 @@ public class EventDetailActivity extends AppCompatActivity {
                             @Override
                             public void onError(Exception e) {
                                 Log.e(TAG, "Error leaving the Event", e);
-                                Toast.makeText(EventDetailActivity.this, "Error leaving the event", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(EventDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         });
                     })
@@ -269,7 +268,7 @@ public class EventDetailActivity extends AppCompatActivity {
                             @Override
                             public void onError(Exception e) {
                                 Log.e(TAG, "Error leaving the Event", e);
-                                Toast.makeText(EventDetailActivity.this, "Error declining your invitation", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(EventDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         });
                     })
@@ -292,31 +291,46 @@ public class EventDetailActivity extends AppCompatActivity {
             @Override
             public void onError(Exception e) {
                 Log.e(TAG, "Error adding user to confirmed list", e);
-                Toast.makeText(EventDetailActivity.this, "Error accepting invitation", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EventDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }));
 
 
         // perform event draw
         drawButton.setOnClickListener(v -> {
-            if (event.isDrawed()) {
-                Toast.makeText(this, "Event draw has already occured", Toast.LENGTH_SHORT).show();
-                return;
+            // if draw has not occurred, redraw
+            if (!event.isDrawed()) {
+                eventController.performDraw(event, new DataCallback<Event>() {
+                    @Override
+                    public void onSuccess(Event result) {
+                        Log.d(TAG, "Event draw performed: updated event info: "+  result);
+                        Toast.makeText(EventDetailActivity.this, "Draw perfomed successfully", Toast.LENGTH_SHORT).show();
+                        loadEvent();
+                    }
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e(TAG, "Event draw error", e);
+                        Toast.makeText(EventDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                eventController.performRedraw(event, new DataCallback<Event>() {
+                    @Override
+                    public void onSuccess(Event result) {
+                        Log.d(TAG, "Event redraw performed: updated event info: "+  result);
+                        Toast.makeText(EventDetailActivity.this, "Redraw perfomed successfully", Toast.LENGTH_SHORT).show();
+                        loadEvent();
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e(TAG, "Event draw error", e);
+                        Toast.makeText(EventDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
 
-            eventController.performDraw(event, new DataCallback<Event>() {
-                @Override
-                public void onSuccess(Event result) {
-                    Log.d(TAG, "Event draw performed: updated event info: "+  result);
-                    Toast.makeText(EventDetailActivity.this, "Draw perfomed successfully", Toast.LENGTH_SHORT).show();
-                    loadEvent();
-                }
-                @Override
-                public void onError(Exception e) {
-                    Log.d(TAG, "Event draw error");
-                    Toast.makeText(EventDetailActivity.this, "Event draw error", Toast.LENGTH_SHORT).show();
-                }
-            });
+
         });
 
         editInfoButton.setOnClickListener(v -> {
@@ -363,8 +377,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
         // Handle Waiting List buttons
         if (isInWaitingList && !isInSelectedList) {
-            eventActionsTextView.setText("You are currently in the waiting list for this event!\n" +
-                    "You will be notified once the event draw is performed.");
+            eventActionsTextView.setText("You are currently in the waiting list for this event!");
             joinWaitingListButton.setVisibility(View.GONE);
             acceptInvitationButton.setVisibility(View.GONE);
             declineInvitationButton.setVisibility(View.GONE);
