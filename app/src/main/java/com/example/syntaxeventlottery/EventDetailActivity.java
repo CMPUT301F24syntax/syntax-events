@@ -6,6 +6,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -28,6 +29,9 @@ public class EventDetailActivity extends AppCompatActivity {
     private Button joinWaitingListButton, acceptInvitationButton, declineInvitationButton, leaveWaitingListButton;
     private Button manageParticipantsButton, editInfoButton, drawButton;
     private ImageButton backButton;
+    private Button notifyWaitingListButton;
+    private Button notifySelectedEntrantsButton;
+    private Button notifyCancelledEntrantsButton;
 
     // Controller and Data
     private EventController eventController;
@@ -110,6 +114,7 @@ public class EventDetailActivity extends AppCompatActivity {
         eventCapacityTextView.setText("Capacity: " + String.valueOf(event.getCapacity()));
         eventDrawedStatusTextView.setText("Drawed: "+event.isDrawed());
 
+
         if (event.getPosterUrl() != null && !event.getPosterUrl().isEmpty()) {
             Glide.with(this).load(event.getPosterUrl()).into(posterImageView);
             Log.d(TAG, "Loaded poster image. poster url: " + event.getPosterUrl());
@@ -150,6 +155,12 @@ public class EventDetailActivity extends AppCompatActivity {
         editInfoButton = findViewById(R.id.editInfoButton);
         drawButton = findViewById(R.id.drawParticipantsButton);
 
+        // notification part
+        notifyWaitingListButton = findViewById(R.id.notifyWaitingListButton);
+        notifySelectedEntrantsButton = findViewById(R.id.notifySelectedEntrantsButton);
+        notifyCancelledEntrantsButton = findViewById(R.id.notifyCancelledEntrantsButton);
+
+
         configureButtonVisibility();
         setupButtonListeners();
     }
@@ -161,6 +172,10 @@ public class EventDetailActivity extends AppCompatActivity {
         editInfoButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
         manageParticipantsButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
         drawButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
+        notifyWaitingListButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
+        notifySelectedEntrantsButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
+        notifyCancelledEntrantsButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
+
 
         // Determine which buttons to display
         if (!isOrganizer) {
@@ -336,6 +351,40 @@ public class EventDetailActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(EventDetailActivity.this, "You are not authorized to view the waiting list.", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "User is not authorized to view the waiting list.");
+            }
+        });
+
+        notifyWaitingListButton.setOnClickListener(v -> sendNotificationToGroup("waitingList"));
+        notifySelectedEntrantsButton.setOnClickListener(v -> sendNotificationToGroup("selectedParticipants"));
+        notifyCancelledEntrantsButton.setOnClickListener(v -> sendNotificationToGroup("cancelledParticipants"));
+    }
+
+    private void sendNotificationToGroup(String group) {
+        // Optional: Prompt organizer for custom message
+        final EditText input = new EditText(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle("Send Notification")
+                .setMessage("Enter the notification message:")
+                .setView(input)
+                .setPositiveButton("Send", (dialog, which) -> {
+                    String customMessage = input.getText().toString();
+                    sendNotifications(group, customMessage);
+                })
+                .setNegativeButton("Cancel", null);
+        builder.show();
+    }
+
+    private void sendNotifications(String group, String message) {
+        eventController.sendNotificationsToGroup(event, group, message, this, new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                Toast.makeText(EventDetailActivity.this, "Notifications sent.", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(EventDetailActivity.this, "Failed to send notifications.", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Error sending notifications", e);
             }
         });
     }

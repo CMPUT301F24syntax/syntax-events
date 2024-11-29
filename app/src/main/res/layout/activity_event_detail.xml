@@ -185,6 +185,24 @@
                 tools:visibility="gone" />
 
             <Button
+                android:id="@+id/notifyWaitingListButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Notify Waiting List" />
+
+            <Button
+                android:id="@+id/notifySelectedEntrantsButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Notify Selected Entrants" />
+
+            <Button
+                android:id="@+id/notifyCancelledEntrantsButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Notify Cancelled Entrants" />
+
+            <Button
                 android:id="@+id/joinEventButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -227,6 +245,7 @@
             android:textColor="@android:color/black"
             android:textSize="16sp"
             android:visibility="gone" />
+
 
     </RelativeLayout>
 </ScrollView>
