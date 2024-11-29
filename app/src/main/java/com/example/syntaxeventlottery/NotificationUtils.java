@@ -12,7 +12,6 @@ import android.os.Build;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-
 import com.example.syntaxeventlottery.EventDetailActivity;
 
 
@@ -32,17 +31,20 @@ public class NotificationUtils {
         }
     }
 
-
     public static void sendNotification(Context context, String title, String message, int notificationId, String eventID) {
         // Create an explicit intent for an Activity in your app
         Intent intent = new Intent(context, EventDetailActivity.class);
         intent.putExtra("eventID", eventID);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
-
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                context,
+                notificationId, // Use notificationId to ensure uniqueness
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_news) 
+                .setSmallIcon(R.drawable.ic_news) // Ensure this icon exists
                 .setContentTitle(title)
                 .setContentText(message)
 
@@ -51,7 +53,6 @@ public class NotificationUtils {
                 .setAutoCancel(true);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {

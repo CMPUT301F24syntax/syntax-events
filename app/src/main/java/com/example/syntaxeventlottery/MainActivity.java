@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
+
         // Retrieve the device ID
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
