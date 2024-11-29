@@ -28,6 +28,7 @@ public class EventParticipantsListActivity extends AppCompatActivity {
     private Button waitingListButton;
     private Button selectedListButton;
     private Button confirmedListButton;
+    private Button cancelledListButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +58,7 @@ public class EventParticipantsListActivity extends AppCompatActivity {
         waitingListButton = findViewById(R.id.waitingListButton);
         selectedListButton = findViewById(R.id.selectedParticipantsButton);
         confirmedListButton = findViewById(R.id.confirmedParticipantsButton);
+        cancelledListButton = findViewById(R.id.cancelledParticipantsButton);
 
         // set up button listeners
         backButton.setOnClickListener(v -> finish());
@@ -68,6 +70,7 @@ public class EventParticipantsListActivity extends AppCompatActivity {
             loadEventData();
         } else {
             Toast.makeText(this, "Couldn't find event participants", Toast.LENGTH_SHORT).show();
+            finish();
         }
     }
 
@@ -94,48 +97,75 @@ public class EventParticipantsListActivity extends AppCompatActivity {
         // clear old list
         usersList.clear();
         ArrayList<User> waitingList = new ArrayList<>();
-        for (String userId : event.getParticipants()) {
-            User user = userController.getUserByDeviceID(userId);
-            if (user != null) {
-                waitingList.add(user);
-            }
-        }
-        // set details header
-        if (waitingList.isEmpty()) {
-            listDetails.setText("No Entrants have joined the waiting list");
-        } else {
-            if (event.getWaitingListLimit() == null) {
-                listDetails.setText(waitingList.size()+" Entrants in the waiting list");
-            } else {
-                listDetails.setText(waitingList.size()+" / "+ event.getWaitingListLimit()+ " Entrants in the waiting list");
-            }
-        }
 
-        usersList.addAll(waitingList);
-        participantsListAdapter.notifyDataSetChanged();
+        // get most updated users
+        userController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                for (String userId : eventController.getEventWaitingList(event)) {
+                    User user = userController.getUserByDeviceID(userId);
+                    if (user != null) {
+                        waitingList.add(user);
+                    }
+                }
+                Log.d(TAG, "Waiting List Array:"+ waitingList);
+                // set details header
+                if (waitingList.isEmpty()) {
+                    listDetails.setText("No Entrants have joined the waiting list");
+                } else {
+                    if (event.getWaitingListLimit() == null) {
+                        listDetails.setText(waitingList.size()+" Entrants in the waiting list");
+                    } else {
+                        listDetails.setText(waitingList.size()+" / "+ event.getWaitingListLimit()+ " Entrants in the waiting list");
+                    }
+                }
+                usersList.addAll(waitingList);
+                participantsListAdapter.notifyDataSetChanged();
+
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error refreshing user repository",e);
+            }
+        });
     }
 
     private void loadSelectedList() {
         // set title
         listTitle.setText("Selected Participants");
+
         // clear old list
         usersList.clear();
         ArrayList<User> selectedList = new ArrayList<>();
-        for (String userId : event.getSelectedParticipants()) {
-            User user = userController.getUserByDeviceID(userId);
-            if (user != null) {
-                selectedList.add(user);
-            }
-        }
-        // set details header
-        if (!event.isDrawed()) {
-            listDetails.setText("Event draw has not occured");
-        } else {
-            listDetails.setText(selectedList.size() + " Entrants invited");
-        }
 
-        usersList.addAll(selectedList);
-        participantsListAdapter.notifyDataSetChanged();
+        // get most updated users
+        userController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                for (String userId : eventController.getEventSelectedList(event)) {
+                    User user = userController.getUserByDeviceID(userId);
+                    if (user != null) {
+                        selectedList.add(user);
+                    }
+                }
+                Log.d(TAG, "Selected List Array:"+ selectedList);
+                // set details header
+                if (!event.isDrawed()) {
+                    listDetails.setText("Event draw has not occured");
+                } else {
+                    listDetails.setText(selectedList.size() + " Entrants invited");
+                }
+
+                usersList.addAll(selectedList);
+                participantsListAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error refreshing user repository",e);
+            }
+        });
     }
 
     private void loadConfirmedList() {
@@ -144,46 +174,35 @@ public class EventParticipantsListActivity extends AppCompatActivity {
         // clear old list
         usersList.clear();
         ArrayList<User> confirmedList = new ArrayList<>();
-        for (String userId : event.getConfirmedParticipants()) {
-            User user = userController.getUserByDeviceID(userId);
-            if (user != null) {
-                confirmedList.add(user);
-            }
-        }
-        // set details header
-        if (!event.isDrawed()) {
-            listDetails.setText("Event draw has not occured");
-        } else if (confirmedList.isEmpty()) {
-            listDetails.setText("No Entrants have accepted their invitation");
-        } else {
-                listDetails.setText(confirmedList.size() +" / "+ event.getCapacity() +" Entrants have joined the event");
-        }
 
-        usersList.addAll(confirmedList);
-        participantsListAdapter.notifyDataSetChanged();
-    }
-
-
-    /*
-    // method might not be necessary
-    private void loadUserInfo(String deviceCode) {
-        db.collection("Users").whereEqualTo("deviceCode", deviceCode).get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        for (DocumentSnapshot document : queryDocumentSnapshots) {
-                            User user = document.toObject(User.class);
-                            if (user != null) {
-                                waitingList.add(user);
-                                waitingListAdapter.notifyDataSetChanged();
-                            }
-                        }
-                    } else {
-                        Log.d("EventWaitingList", "User not found for deviceCode: " + deviceCode);
+        // get most updated users
+        userController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                for (String userId : eventController.getEventConfirmedList(event)) {
+                    User user = userController.getUserByDeviceID(userId);
+                    if (user != null) {
+                        confirmedList.add(user);
                     }
-                })
-                .addOnFailureListener(e -> Log.e("EventWaitingList", "Error loading user info for deviceCode: " + deviceCode, e));
-    }
+                }
+                Log.d(TAG, "Confirmed List Array:"+ confirmedList);
+                // set details header
+                if (!event.isDrawed()) {
+                    listDetails.setText("Event draw has not occured");
+                } else if (confirmedList.isEmpty()) {
+                    listDetails.setText("No Entrants have accepted their invitation");
+                } else {
+                    listDetails.setText(confirmedList.size() +" / "+ event.getCapacity() +" Entrants have joined the event");
+                }
 
-     */
-    
+                usersList.addAll(confirmedList);
+                participantsListAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error refreshing user repository",e);
+            }
+        });
+    }
 }

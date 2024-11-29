@@ -6,6 +6,9 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Represents an event in the Event Lottery System.
@@ -40,6 +43,10 @@ public class Event implements Serializable {
     private ArrayList<String> selectedParticipants; // those who have been selected by lottery
     private ArrayList<String> confirmedParticipants; // those who have confirmed to take part of event
 
+    // Geolocation new attributes
+    private boolean isLocationRequired;
+    private List<Map<String, String>> locationDetails;
+
     // -------------------------------------------------------------------------
     // Constructors
     // -------------------------------------------------------------------------
@@ -63,7 +70,7 @@ public class Event implements Serializable {
      * @param waitingListLimit Limit of the waiting list (i.e., participants list). No limit if null
      */
     public Event(String eventName, String facilityName, String facilityLocation, String description, int capacity,
-                 Date startDate, Date endDate, String organizerId, Integer waitingListLimit) {
+                 Date startDate, Date endDate, String organizerId, Integer waitingListLimit, boolean isLocationRequired) {
         this.eventID = null;
         this.eventName = eventName;
         this.facilityName = facilityName;
@@ -80,6 +87,9 @@ public class Event implements Serializable {
         this.capacityFull = false;
         this.waitingListFull = false;
         this.drawed = false;
+        this.isLocationRequired = isLocationRequired;
+        this.locationDetails = new ArrayList<>();
+
     }
 
     // -------------------------------------------------------------------------
@@ -243,6 +253,28 @@ public class Event implements Serializable {
         this.confirmedParticipants = confirmedParticipants;
     }
 
+    // GEOlocation
+    public boolean isLocationRequired() {
+        return isLocationRequired;
+    }
+
+    public void setLocationRequired(boolean locationRequired) {
+        isLocationRequired = locationRequired;
+    }
+
+    public List<Map<String, String>> getLocationDetails() {
+        return locationDetails;
+    }
+
+    public void setLocationDetails(List<Map<String, String>> locationDetails) {
+        this.locationDetails = locationDetails;
+    }
+
+    public void addLocationDetail(String eventID, String location) {
+        Map<String, String> locationDetail = new HashMap<>();
+        locationDetail.put(eventID, location);
+        this.locationDetails.add(locationDetail);
+    }
 
     @Override
     public String toString() {

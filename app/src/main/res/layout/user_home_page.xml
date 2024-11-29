@@ -103,6 +103,7 @@
                 android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="QR Scan"
+                android:scaleType="centerInside"
                 android:src="@drawable/ic_qr_code" />
 
             <TextView

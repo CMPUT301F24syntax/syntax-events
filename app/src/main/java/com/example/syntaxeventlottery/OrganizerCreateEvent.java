@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import android.view.View;
@@ -44,6 +45,8 @@ public class OrganizerCreateEvent extends AppCompatActivity {
     private Uri imageUri;
     private EventController eventController;
     private UserController userController;
+    private Switch locationRequiredSwitch;
+
 
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -72,6 +75,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         backButton = findViewById(R.id.backButton);
         uploadButton = findViewById(R.id.updatePosterButton);
         eventImageView = findViewById(R.id.updatePosterView);
+        locationRequiredSwitch = findViewById(R.id.locationRequiredSwitch);
 
         // Initialize controllers with repository
         eventController = new EventController(new EventRepository());
@@ -111,6 +115,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         String eventStartDateText = eventStartDateEditText.getText().toString();
         String eventEndDateText = eventEndDateEditText.getText().toString();
         String capacityStr = capacityEditText.getText().toString();
+        boolean isLocationRequired = locationRequiredSwitch.isChecked();
         // check if there is a waiting list limit
         if (waitingListLimitEditText != null) {
             waitingListLimitStr = waitingListLimitEditText.getText().toString();
@@ -161,7 +166,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
                     finish();
                     return;
                 }
-                Event event = new Event(eventName, user.getFacility().getName(), user.getFacility().getLocation(), eventDescription, capacity, startDate, endDate, organizerId, finalWaitingListLimit);
+                Event event = new Event(eventName, user.getFacility().getName(), user.getFacility().getLocation(), eventDescription, capacity, startDate, endDate, organizerId, finalWaitingListLimit, isLocationRequired);
                 eventController.addEvent(event, imageUri, new DataCallback<Event>() {
                     @Override
                     public void onSuccess(Event result) {
@@ -172,7 +177,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
 
                     @Override
                     public void onError(Exception e) {
-                        Toast.makeText(OrganizerCreateEvent.this, "Event creation Error!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(OrganizerCreateEvent.this, "Start Date must later than now!", Toast.LENGTH_SHORT).show();
                         Log.e(TAG, e.toString());
                         finish();
                     }
@@ -180,7 +185,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
             }
             @Override
             public void onError(Exception e) {
-                Toast.makeText(OrganizerCreateEvent.this, "Event creation Error!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(OrganizerCreateEvent.this, "Event creation Error2!", Toast.LENGTH_SHORT).show();
                 Log.e(TAG, e.toString());
                 finish();
             }
