@@ -180,19 +180,47 @@ public class EventDetailActivity extends AppCompatActivity {
 
     private void setupButtonListeners() {
         // user joins waiting list
-        joinWaitingListButton.setOnClickListener(v -> eventController.addUserToWaitingList(event, deviceID, new DataCallback<Event>() {
-            @Override
-            public void onSuccess(Event result) {
-                Toast.makeText(EventDetailActivity.this, "You have joined the waiting list", Toast.LENGTH_SHORT).show();
-                // refresh event data
-                loadEvent();
-            }
+        joinWaitingListButton.setOnClickListener(v -> {
+            if (event.isLocationRequired()) {
+                // Show an AlertDialog if geolocation is required
+                new AlertDialog.Builder(EventDetailActivity.this)
+                        .setTitle("Geolocation Required")
+                        .setMessage("This event requires your geolocation to join the waiting list. Do you want to proceed?")
+                        .setPositiveButton("Yes", (dialog, which) -> {
+                            eventController.addUserToWaitingList(event, deviceID, new DataCallback<Event>() {
+                                @Override
+                                public void onSuccess(Event result) {
+                                    Toast.makeText(EventDetailActivity.this, "You have joined the waiting list", Toast.LENGTH_SHORT).show();
+                                    // Refresh event data
+                                    loadEvent();
+                                }
 
-            @Override
-            public void onError(Exception e) {
-                Toast.makeText(EventDetailActivity.this, "Error joining the waiting list", Toast.LENGTH_SHORT).show();
+                                @Override
+                                public void onError(Exception e) {
+                                    Toast.makeText(EventDetailActivity.this, "Error joining the waiting list", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        })
+                        .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
+                        .show();
+            } else {
+                // Proceed to join the waiting list without showing a dialog
+                eventController.addUserToWaitingList(event, deviceID, new DataCallback<Event>() {
+                    @Override
+                    public void onSuccess(Event result) {
+                        Toast.makeText(EventDetailActivity.this, "You have joined the waiting list", Toast.LENGTH_SHORT).show();
+                        // Refresh event data
+                        loadEvent();
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Toast.makeText(EventDetailActivity.this, "Error joining the waiting list", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
-        }));
+        });
+
 
         // user leaves the waiting list, remove user from all event data
         leaveWaitingListButton.setOnClickListener(v -> {
@@ -315,6 +343,23 @@ public class EventDetailActivity extends AppCompatActivity {
         boolean isInSelectedList = eventController.isUserInSelectedList(event, deviceID);
         boolean isInConfirmedList = eventController.isUserInConfirmedList(event, deviceID);
         boolean isInCancelledList = eventController.isUserInCancelledList(event, deviceID);
+
+        // if user is not associated with the event
+        if (!isInWaitingList && !isInSelectedList && !isInCancelledList) {
+            // if the waiting list is full
+            if (event.getWaitingListFull()) {
+                eventActionsTextView.setText("Event waiting list is currently full, come back later");
+            }
+            if (event.isDrawed()) {
+                eventActionsTextView.setText("Event draw has already occurred, check out another event!");
+            }
+
+            joinWaitingListButton.setVisibility(View.GONE);
+            acceptInvitationButton.setVisibility(View.GONE);
+            declineInvitationButton.setVisibility(View.GONE);
+            leaveWaitingListButton.setVisibility(View.GONE);
+            return;
+        }
 
         // Handle Waiting List buttons
         if (isInWaitingList && !isInSelectedList) {
