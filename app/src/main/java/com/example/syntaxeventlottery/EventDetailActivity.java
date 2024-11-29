@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -95,9 +96,9 @@ public class EventDetailActivity extends AppCompatActivity {
                     finish();  // Exit the activity as the event wasn't found
                     return;    // Early return to prevent the rest of the code from executing
                 }
-                Log.d("EventDetailActivivty","check islocationn11"+event.getLocationRequired());
-                Log.d("EventDetailActivivty","check islocationn1122"+event);
-                //event.setLocationRequired(true);
+                // Log.d("EventDetailActivivty","check islocationn11"+event.getLocationRequired());
+                // Log.d("EventDetailActivivty","check islocationn1122"+event);
+                // event.setLocationRequired(true);
                 // check if need location
                 if (event.getLocationRequired()) {
                     Log.d("EventDetailActivivty","check islocationn"+event.getLocationRequired());
@@ -105,8 +106,47 @@ public class EventDetailActivity extends AppCompatActivity {
                 } else {
                     updateUI(event); // Proceed if location is not required
                 }
-
             }
+
+            private void handleLocationRequirement() {
+                // Create an AlertDialog to inform the user about the location requirement
+                AlertDialog.Builder builder = new AlertDialog.Builder(EventDetailActivity.this);
+                builder.setTitle("Location Required")
+                        .setMessage("This event requires your location. Do you want to enable location permissions?")
+                        .setCancelable(false) // Ensure the dialog cannot be canceled by tapping outside
+                        .setPositiveButton("Yes", (dialog, which) -> {
+                            // Check if location permission is already granted
+                            if (ContextCompat.checkSelfPermission(EventDetailActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
+                                    == PackageManager.PERMISSION_GRANTED) {
+                                isRequireLocation = true; // Set the flag to indicate location is required
+                                getLocation(); // Fetch the location
+                            } else {
+                                // Request location permission if not granted
+                                requestLocationPermission();
+                            }
+                        })
+                        // if no, jump to the UserHomeActivity
+                        .setNegativeButton("No", (dialog, which) -> {
+                            // Handle the case where the user declines location access
+                            Toast.makeText(EventDetailActivity.this, "Location not enabled. Returning to home screen.", Toast.LENGTH_SHORT).show();
+                            // Navigate back to the UserHomeActivity
+                            Intent intent = new Intent(EventDetailActivity.this, UserHomeActivity.class);
+                            startActivity(intent);
+                            finish(); // Finish the current activity to remove it from the back stack
+                        });
+
+                // Create and show the AlertDialog
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+
+            private void requestLocationPermission() {
+                // Request the ACCESS_FINE_LOCATION permission from the user
+                ActivityCompat.requestPermissions(EventDetailActivity.this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1001);
+            }
+
+
 
             @Override
             public void onError(Exception e) {
@@ -117,70 +157,6 @@ public class EventDetailActivity extends AppCompatActivity {
         });
     }
 
-    private void handleLocationRequirement() {
-        // Check if the app has the permission to access fine location
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            isRequireLocation = true; // Set the flag indicating location is required
-            getLocation(); // Call the method to retrieve the current location
-        } else {
-            requestLocationPermission(); // Request location permission from the user
-        }
-    }
-
-    private void requestLocationPermission() {
-        // Request fine location permission with a unique request code
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1001);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        // Handle the result of the location permission request
-        if (requestCode == 1001) { // Match the request code for location permission
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted by the user
-                isRequireLocation = true; // Update the flag
-                getLocation(); // Retrieve the location since permission is granted
-            } else {
-                // Permission denied by the user
-                Toast.makeText(this, "Location permission denied. Unable to proceed.", Toast.LENGTH_SHORT).show();
-                updateUI(event); // Update the UI even if permission is denied
-            }
-        }
-    }
-
-    private void getLocation() {
-        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        fusedLocationClient.getLastLocation()
-                .addOnSuccessListener(location -> {
-                    if (location != null) {
-                        // Successfully retrieved location
-                        Log.d(TAG, "Location: Latitude=" + location.getLatitude() + ", Longitude=" + location.getLongitude());
-
-                        // Create and set location details
-                        Map<String, String> locationDetail = new HashMap<>();
-                        locationDetail.put("latitude", String.valueOf(location.getLatitude()));
-                        locationDetail.put("longitude", String.valueOf(location.getLongitude()));
-
-                        List<Map<String, String>> locationDetails = new ArrayList<>();
-                        locationDetails.add(locationDetail);
-                        event.setLocationDetails(locationDetails);
-
-                        updateUI(event); // Update the UI with the retrieved location
-                    } else {
-                        // Location is null
-                        Log.e(TAG, "Unable to retrieve location");
-                        updateUI(event);
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    // Failed to retrieve location
-                    Log.e(TAG, "Error retrieving location: " + e.getMessage());
-                    updateUI(event);
-                });
-    }
 
 
     private void updateUI(Event event) {
