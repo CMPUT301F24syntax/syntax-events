@@ -47,7 +47,7 @@ public class Event implements Serializable {
     private ArrayList<String> cancelledParticipants; // those who have rejected their invitation or have been cancelled by the organizer
 
     // Geolocation new attributes
-    private boolean isLocationRequired;
+    private boolean locationRequired;
     private List<Map<String, String>> locationDetails;
 
     // -------------------------------------------------------------------------
@@ -73,7 +73,7 @@ public class Event implements Serializable {
      * @param waitingListLimit Limit of the waiting list (i.e., participants list). No limit if null
      */
     public Event(String eventName, String facilityName, String facilityLocation, String description, int capacity,
-                 Date startDate, Date endDate, String organizerId, Integer waitingListLimit, boolean isLocationRequired) {
+                 Date startDate, Date endDate, String organizerId, Integer waitingListLimit, boolean locationRequired) {
         this.eventID = null;
         this.eventName = eventName;
         this.facilityName = facilityName;
@@ -91,7 +91,7 @@ public class Event implements Serializable {
         this.capacityFull = false;
         this.waitingListFull = false;
         this.drawed = false;
-        this.isLocationRequired = isLocationRequired;
+        this.locationRequired = locationRequired;
         this.locationDetails = new ArrayList<>();
 
     }
@@ -266,12 +266,12 @@ public class Event implements Serializable {
     }
 
     // GEOlocation
-    public boolean isLocationRequired() {
-        return isLocationRequired;
+    public boolean locationRequired() {
+        return locationRequired;
     }
 
     public void setLocationRequired(boolean locationRequired) {
-        isLocationRequired = locationRequired;
+        locationRequired = locationRequired;
     }
 
     public List<Map<String, String>> getLocationDetails() {
