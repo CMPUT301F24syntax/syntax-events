@@ -51,7 +51,7 @@ public class EventRepository  {
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error fetching events", e);
-                    callback.onError(new IllegalArgumentException("Failed to retrieve data"));
+                    callback.onError(e);
                 });
     }
 
@@ -88,7 +88,7 @@ public class EventRepository  {
                                 }))
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Failed to upload image", e);
-                    callback.onError(new IllegalArgumentException("Failed to save image"));
+                    callback.onError(e);
                 });
     }
 
@@ -109,7 +109,7 @@ public class EventRepository  {
                                 }))
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Failed to upload QR code", e);
-                    callback.onError(new IllegalArgumentException("Failed to save QR code"));
+                    callback.onError(e);
                 });
     }
 
@@ -121,7 +121,7 @@ public class EventRepository  {
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Failed to save event", e);
-                    callback.onError(new IllegalArgumentException("Failed to save event"));
+                    callback.onError(e);
                 });
     }
 

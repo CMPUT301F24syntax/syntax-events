@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * OrganizerActivity allows the event organizer to view and manage their created events.
  */
-public class    OrganizerActivity extends AppCompatActivity {
+public class OrganizerActivity extends AppCompatActivity {
     private static final String TAG = "OrganizerActivity";
 
     private Button createEventButton;

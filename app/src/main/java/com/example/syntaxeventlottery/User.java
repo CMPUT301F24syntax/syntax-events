@@ -21,6 +21,7 @@ public class User implements Serializable {
     private Set<String> roles;
     private Facility facility;
     private ArrayList<Double> location;
+    private boolean receiveNotifications = true;
 
     // No-argument constructor required by Firebase
     public User() {}
@@ -122,6 +123,13 @@ public class User implements Serializable {
 
     public void setLocation(ArrayList<Double> location){this.location = location;}
 
+    public boolean isReceiveNotifications() {
+        return receiveNotifications;
+    }
+
+    public void setReceiveNotifications(boolean receiveNotifications) {
+        this.receiveNotifications = receiveNotifications;
+    }
 
     @Override
     public String toString() {
