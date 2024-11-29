@@ -20,6 +20,7 @@ public class FacilityTest {
 
     @Test
     public void testFacilityFields() {
+
         // Verify initial fields of the Facility object
         assertEquals("Test Facility", facility.getName());
         assertEquals("123 Test Location", facility.getLocation());
@@ -28,6 +29,7 @@ public class FacilityTest {
 
     @Test
     public void testSetters() {
+
         // Update fields using setters
         facility.setLocation("456 New Location");
         facility.setOrganizer("NewOrganizer456");
@@ -39,6 +41,7 @@ public class FacilityTest {
 
     @Test
     public void testNoArgumentConstructor() {
+
         // Test the no-argument constructor
         Facility emptyFacility = new Facility();
 

@@ -138,6 +138,7 @@ public class EventTest {
 
     @Test
     public void testDrawedFlag() {
+
         assertFalse(event.isDrawed());
         event.setDrawed(true);
         assertTrue(event.isDrawed());
