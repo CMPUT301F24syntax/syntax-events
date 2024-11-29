@@ -65,6 +65,7 @@ public class EventParticipantsListActivity extends AppCompatActivity {
         waitingListButton.setOnClickListener(v -> loadWaitingList());
         selectedListButton.setOnClickListener(v -> loadSelectedList());
         confirmedListButton.setOnClickListener(v -> loadConfirmedList());
+        cancelledListButton.setOnClickListener(v -> loadCancelledList());
 
         if (eventId != null) {
             loadEventData();
@@ -196,6 +197,37 @@ public class EventParticipantsListActivity extends AppCompatActivity {
                 }
 
                 usersList.addAll(confirmedList);
+                participantsListAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error refreshing user repository",e);
+            }
+        });
+    }
+
+    private void loadCancelledList() {
+        // set title
+        listTitle.setText("Cancelled Participants");
+        // clear old list
+        usersList.clear();
+        ArrayList<User> cancelledList = new ArrayList<>();
+
+        // get most updated users
+        userController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                for (String userId : eventController.getEventCancelledList(event)) {
+                    User user = userController.getUserByDeviceID(userId);
+                    if (user != null) {
+                        cancelledList.add(user);
+                    }
+                }
+                Log.d(TAG, "Cancelled List Array:"+ cancelledList);
+                listDetails.setText("Entrants you have cancelled or who have declined their invitation");
+
+                usersList.addAll(cancelledList);
                 participantsListAdapter.notifyDataSetChanged();
             }
 
