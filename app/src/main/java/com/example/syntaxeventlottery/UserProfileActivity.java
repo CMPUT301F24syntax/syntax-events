@@ -92,7 +92,7 @@ public class UserProfileActivity extends AppCompatActivity {
         }
     }
 
-    private void loadUserProfile() {
+    public void loadUserProfile() {
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
@@ -108,7 +108,7 @@ public class UserProfileActivity extends AppCompatActivity {
         });
     }
 
-    private void displayUserDetails(User user) {
+    public void displayUserDetails(User user) {
         nameTextView.setText(user.getUsername());
         emailTextView.setText(user.getEmail());
         phoneTextView.setText(user.getPhoneNumber());

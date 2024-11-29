@@ -15,6 +15,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunnerArguments["clearPackageData"] = "true"
+    }
+
+    testOptions {
+        execution = "ANDROIDX_TEST_ORCHESTRATOR"
     }
 
     buildTypes {
@@ -37,6 +42,7 @@ android {
 dependencies {
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation("com.google.zxing:core:3.4.1")
+    implementation(libs.espresso.intents)
     testImplementation(libs.core)
     testImplementation(libs.espresso.core)
     testImplementation(libs.ext.junit)
@@ -78,6 +84,12 @@ dependencies {
     // Mockito core library for unit testing
     testImplementation("org.mockito:mockito-core:5.4.0")
 
-    implementation ("androidx.core:core:1.8.0")
-}
+    // Mockito core library for android testing
+    androidTestImplementation("org.mockito:mockito-android:5.2.0")
 
+    implementation ("androidx.core:core:1.8.0")
+
+    androidTestUtil("androidx.test:orchestrator:1.4.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+}
