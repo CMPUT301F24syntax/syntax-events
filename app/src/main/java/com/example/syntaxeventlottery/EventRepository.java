@@ -44,6 +44,20 @@ public class EventRepository  {
                     eventsDataList.clear();
                     for (QueryDocumentSnapshot doc : querySnapshot) {
                         Event event = doc.toObject(Event.class);
+
+                        if (event.getParticipants() == null) {
+                            event.setParticipants(new ArrayList<>());
+                        }
+                        if (event.getSelectedParticipants() == null) {
+                            event.setSelectedParticipants(new ArrayList<>());
+                        }
+                        if (event.getConfirmedParticipants() == null) {
+                            event.setConfirmedParticipants(new ArrayList<>());
+                        }
+                        if (event.getCancelledParticipants() == null) {
+                            event.setCancelledParticipants(new ArrayList<>());
+                        }
+
                         eventsDataList.add(event);
                     }
                     Log.d(TAG, "Local Events List updated");
@@ -51,7 +65,7 @@ public class EventRepository  {
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error fetching events", e);
-                    callback.onError(new IllegalArgumentException("Failed to retrieve data"));
+                    callback.onError(e);
                 });
     }
 
@@ -88,7 +102,7 @@ public class EventRepository  {
                                 }))
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Failed to upload image", e);
-                    callback.onError(new IllegalArgumentException("Failed to save image"));
+                    callback.onError(e);
                 });
     }
 
@@ -109,7 +123,7 @@ public class EventRepository  {
                                 }))
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Failed to upload QR code", e);
-                    callback.onError(new IllegalArgumentException("Failed to save QR code"));
+                    callback.onError(e);
                 });
     }
 
@@ -121,7 +135,7 @@ public class EventRepository  {
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Failed to save event", e);
-                    callback.onError(new IllegalArgumentException("Failed to save event"));
+                    callback.onError(e);
                 });
     }
 
@@ -202,7 +216,7 @@ public class EventRepository  {
         data.put("capacityFull", event.getCapacityFull());
         data.put("waitingListFull", event.getWaitingListFull());
         data.put("drawed", event.isDrawed());
-        data.put("isLocationRequired", event.isLocationRequired());
+        data.put("isLocationRequired", event.locationRequired());
         data.put("locationDetails", event.getLocationDetails());
         return data;
     }

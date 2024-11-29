@@ -107,4 +107,12 @@
         android:layout_below="@id/editFacility"
         android:layout_marginTop="16dp" />
 
+    <!-- Add this switch to your layout -->
+    <Switch
+        android:id="@+id/notificationSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Receive Notifications"
+        android:checked="true"/>
+
 </RelativeLayout>

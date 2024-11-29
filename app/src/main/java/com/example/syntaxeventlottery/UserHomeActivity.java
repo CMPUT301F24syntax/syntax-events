@@ -42,7 +42,7 @@ public class UserHomeActivity extends AppCompatActivity {
         organizerButton = findViewById(R.id.organizerButton);
         profileButton = findViewById(R.id.profileButton);
         newsButton = findViewById(R.id.newsButton);
-        scanButton = findViewById(R.id.qrScanButton);
+        scanButton = findViewById(R.id.qrScanButton2);
 
         // Initialize controllers
         eventController = new EventController(new EventRepository());

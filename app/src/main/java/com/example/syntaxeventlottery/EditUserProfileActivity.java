@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -30,6 +31,7 @@ public class EditUserProfileActivity extends AppCompatActivity {
     private String deviceID;
     private static final String TAG = "EditUserProfileActivity";
     private static final int REQUEST_CODE_SELECTED_IMAGE = 1002;
+    private Switch notificationSwitch;
 
 
 
@@ -59,6 +61,7 @@ public class EditUserProfileActivity extends AppCompatActivity {
         emailEditText = findViewById(R.id.editEmail);
         phoneEditText = findViewById(R.id.editPhone);
         saveButton = findViewById(R.id.saveButton);
+        notificationSwitch = findViewById(R.id.notificationSwitch);
 
 
         loadUserProfile();
@@ -68,6 +71,7 @@ public class EditUserProfileActivity extends AppCompatActivity {
         uploadImageButton.setOnClickListener(v -> openImagePicker());// Set click listener for reset image button
         resetImageButton.setOnClickListener(v -> resetProfilePhoto());
         saveButton.setOnClickListener(v -> saveUserProfile());
+
     }
 
     private void loadUserProfile() {
@@ -88,33 +92,33 @@ public class EditUserProfileActivity extends AppCompatActivity {
     }
 
     private void displayUserDetails(User user) {
-        nameEditText.setText((user.getUsername()));
+        nameEditText.setText(user.getUsername());
         emailEditText.setText(user.getEmail());
         phoneEditText.setText(user.getPhoneNumber());
+        notificationSwitch.setChecked(user.isReceiveNotifications());
 
         Glide.with(this)
                 .load(user.getProfilePhotoUrl())
                 .placeholder(R.drawable.ic_profile)
                 .into(profileImageView);
-        Log.d(TAG, "Profile data successfully loaded");
     }
 
     private void saveUserProfile() {
         String newName = nameEditText.getText().toString().trim();
         String newEmail = emailEditText.getText().toString().trim();
         String newPhone = phoneEditText.getText().toString().trim();
+        boolean receiveNotifications = notificationSwitch.isChecked();
 
         user.setUsername(newName);
         user.setEmail(newEmail);
         user.setPhoneNumber(newPhone);
+        user.setReceiveNotifications(receiveNotifications);
+
 
         userController.updateUser(user, selectedImageUri, new DataCallback<User>() {
             @Override
             public void onSuccess(User updatedUser) {
                 Toast.makeText(EditUserProfileActivity.this, "Profile updated successfully", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(EditUserProfileActivity.this, UserProfileActivity.class);
-                intent.putExtra("deviceID", deviceID);
-                startActivity(intent);
                 finish();
             }
 

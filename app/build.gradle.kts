@@ -77,5 +77,7 @@ dependencies {
 
     // Mockito core library for unit testing
     testImplementation("org.mockito:mockito-core:5.4.0")
+
+    implementation ("androidx.core:core:1.8.0")
 }
 

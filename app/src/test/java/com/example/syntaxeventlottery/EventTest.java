@@ -138,7 +138,6 @@ public class EventTest {
 
     @Test
     public void testDrawedFlag() {
-
         assertFalse(event.isDrawed());
         event.setDrawed(true);
         assertTrue(event.isDrawed());
@@ -206,12 +205,12 @@ public class EventTest {
     public void testIsLocationRequired() {
 
         // Verify that the event initially requires a location
-        assertTrue(event.isLocationRequired());
+        assertTrue(event.locationRequired());
 
         // Set now to false
         event.setLocationRequired(false);
 
         // Verify the event location required is set to false
-        assertFalse(event.isLocationRequired());
+        assertFalse(event.locationRequired());
     }
 }

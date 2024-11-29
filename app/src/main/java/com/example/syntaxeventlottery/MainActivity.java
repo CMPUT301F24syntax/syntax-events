@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -11,12 +12,15 @@ import android.widget.Button;
 import android.widget.Toast;
 import android.Manifest;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 public class MainActivity extends AppCompatActivity {
+    private static final int REQUEST_NOTIFICATION_PERMISSION = 101;
     private final String TAG = "MainActivity";
 
     private Button adminButton;
@@ -25,11 +29,22 @@ public class MainActivity extends AppCompatActivity {
     private UserController userController;
     private User currentUser;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+    private ActivityResultLauncher<String> requestPermissionLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        NotificationUtils.createNotificationChannel(this);
+
+        requestPermissionLauncher =
+                registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                    if (isGranted) {
+                        Log.d(TAG, "Notification permission granted.");
+                    } else {
+                        Toast.makeText(this, "Reject permission, you won't get notification", Toast.LENGTH_LONG).show();
+                    }
+                });
 
         // Retrieve the device ID
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -60,9 +75,18 @@ public class MainActivity extends AppCompatActivity {
 
         // Set click listener for the User button
         userButton.setOnClickListener(v -> checkUserInDatabase());
+        checkAndRequestNotificationPermission();
         checkAndRequestLocationPermission();
     }
 
+    private void checkAndRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+    }
 
     private void checkAndRequestLocationPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -73,17 +97,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+        if (requestCode == REQUEST_NOTIFICATION_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // 权限已授予
-                Log.d(TAG, "Location permission granted.");
+                // Permission granted
+                Log.d(TAG, "Notification permission granted.");
             } else {
-                // 权限被拒绝
-                Toast.makeText(this, "Location permission is required to update user location.", Toast.LENGTH_LONG).show();
+                // Permission denied
+                Toast.makeText(this, "Notification permission is required to receive notifications.", Toast.LENGTH_LONG).show();
             }
         }
     }
