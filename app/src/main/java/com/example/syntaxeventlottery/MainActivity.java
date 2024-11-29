@@ -45,8 +45,6 @@ public class MainActivity extends AppCompatActivity {
         userController = new UserController(new UserRepository(), locationManager);
 
 
-
-
         // Initialize buttons
         adminButton = findViewById(R.id.adminButton);
         userButton = findViewById(R.id.userButton);
@@ -110,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(Void result) {
                 currentUser = userController.getUserByDeviceID(deviceId);
                 Log.d(TAG, "current user " + currentUser);
-                if (currentUser == null) { // 如果用户不存在
+                if (currentUser == null) {
                     openCreateProfileActivity();
                 } else {
                     // 更新用户位置
@@ -148,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
     private void openUserHomeActivity(String userId) {
         Toast.makeText(this, "Welcome back!", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(MainActivity.this, UserHomeActivity.class);
-        intent.putExtra("USER_ID", userId);
+        intent.putExtra("userId", userId);
         startActivity(intent);
     }
 
@@ -158,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
     private void openCreateProfileActivity() {
         Toast.makeText(this, "User Mode Selected", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(MainActivity.this, CreateUserProfileActivity.class);
-        intent.putExtra("DEVICE_ID", deviceId);
+        intent.putExtra("deviceId", deviceId);
         startActivity(intent);
     }
 

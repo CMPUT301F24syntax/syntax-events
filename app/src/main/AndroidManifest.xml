@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.syntaxeventlottery">
@@ -7,17 +6,16 @@
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
-
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
-
-
+    <uses-permission
+        android:name="android.permission.ACCESS_BACKGROUND_LOCATION"
+        tools:targetApi="31" />
 
     <application
         android:allowBackup="true"
@@ -40,43 +38,25 @@
             </intent-filter>
         </activity>
 
-        <!-- Existing Activity Declarations -->
+        <!-- Other Activities -->
         <activity android:name=".UserHomeActivity" android:exported="true" />
         <activity android:name=".OrganizerActivity" android:exported="true" />
         <activity android:name=".OrganizerCreateEvent" android:exported="true" />
         <activity android:name=".EventDetailActivity" android:exported="true" />
         <activity android:name=".UserProfileActivity" android:exported="true" />
         <activity android:name=".EditUserProfileActivity" android:exported="true" />
-        <activity android:name=".EditEventActivity" />
+        <activity android:name=".EditEventActivity" android:exported="false" />
         <activity android:name=".FacilityProfileActivity" android:exported="true" />
-        <activity android:name=".AdminActivity"></activity>
-        <activity android:name=".AdminEventsActivity"></activity>
-        <activity android:name=".AdminUsersActivity"></activity>
-        <activity android:name=".AdminUserDetailActivity"></activity>
-        <activity android:name=".AdminEventDetailActivity"></activity>
-        <activity android:name=".QRScanActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-
-
-
-        <activity android:name=".EventParticipantsListActivity" />
-
-        <activity android:name=".NotificationCenterActivity"></activity>
-
-        <!-- New Activity Declaration: UserProfileActivity -->
-        <activity
-            android:name=".CreateUserProfileActivity"
+        <activity android:name=".AdminActivity" android:exported="false" />
+        <activity android:name=".AdminEventsActivity" android:exported="false" />
+        <activity android:name=".AdminUsersActivity" android:exported="false" />
+        <activity android:name=".AdminUserDetailActivity" android:exported="false" />
+        <activity android:name=".AdminEventDetailActivity" android:exported="false" />
+        <activity android:name=".QRScanActivity" android:exported="true" />
+        <activity android:name=".EventParticipantsListActivity" android:exported="true" />
+        <activity android:name=".NotificationCenterActivity" android:exported="true" />
+        <activity android:name=".CreateUserProfileActivity"
             android:exported="true"
             android:label="User Profile" />
-
-
     </application>
-
 </manifest>
-

@@ -116,8 +116,8 @@ public class UserController {
             return;
         }
         HashMap<String, Object> data = new HashMap<>();
-        data.put("userId", user.getUserID());
-        data.put("userName", user.getUsername());
+        data.put("userID", user.getUserID());
+        data.put("username", user.getUsername());
         userRepository.uploadProfilePhoto(user, data, imageUri, callback);
     }
 
@@ -140,53 +140,56 @@ public class UserController {
     }
     public void updateUserLocation(User user, Context context, DataCallback<User> callback) {
         if (user == null) {
+            Log.d("MainActivity","AAAAAAAAAAAA"+user);
             callback.onError(new IllegalArgumentException("User object is null"));
             return;
         }
-
+        Log.d("MainActivity","AAAABBBB"+user);
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             callback.onError(new SecurityException("Location permission not granted"));
             return;
         }
-
+        Log.d("MainActivity","AAAABBBB1"+user);
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 
         if (locationManager == null) {
             callback.onError(new Exception("LocationManager is unavailable"));
             return;
         }
-
+        Log.d("MainActivity","AAAABBBB2"+user);
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
             callback.onError(new Exception("Location services are disabled"));
             return;
         }
-
+        Log.d("MainActivity","AAAABBBB3"+user);
         Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
         if (location == null) {
             location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
         }
-
+        Log.d("MainActivity","AAAABBBB4"+user);
         if (location == null) {
             callback.onError(new Exception("Unable to fetch location"));
             return;
         }
-
+        Log.d("MainActivity","AAAABBBB5"+user);
         // Update user location
         ArrayList<Double> newLocation = new ArrayList<>();
         newLocation.add(location.getLatitude());
         newLocation.add(location.getLongitude());
         user.setLocation(newLocation);
-
+        Log.d("MainActivity","AAAABBBB6"+user);
         // Update Firestore
         userRepository.updateLocation(user, newLocation, new DataCallback<User>() {
             @Override
             public void onSuccess(User result) {
+                Log.d("MainActivity","AAAABBBBsueccess"+user);
                 callback.onSuccess(user); // Return updated user
             }
 
             @Override
             public void onError(Exception e) {
+                Log.d("MainActivity","AAAABBBBerror"+user);
                 callback.onError(e);
             }
         });

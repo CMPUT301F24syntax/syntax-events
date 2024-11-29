@@ -1,6 +1,9 @@
 // EventDetailActivity.java
 package com.example.syntaxeventlottery;
+import static androidx.constraintlayout.motion.widget.Debug.getLocation;
+
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -11,8 +14,18 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.bumptech.glide.Glide;
+import android.Manifest;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Activity to display event details and manage event actions.
@@ -31,6 +44,7 @@ public class EventDetailActivity extends AppCompatActivity {
     private EventController eventController;
     private String eventID, deviceID;
     private Event event;
+    private boolean isRequireLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +86,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
                 // Fetch the event by ID from the controller
                 event = eventController.getEventById(eventID);
+                Log.d(TAG, "Event from local cache: " + event.getLocationRequired());
                 Log.d(TAG, "Refreshed repository, event details:"+event);
                 // If the event is not found, show an error and finish
                 if (event == null) {
@@ -80,7 +95,17 @@ public class EventDetailActivity extends AppCompatActivity {
                     finish();  // Exit the activity as the event wasn't found
                     return;    // Early return to prevent the rest of the code from executing
                 }
-                updateUI(event); // display the most updated event details
+                Log.d("EventDetailActivivty","check islocationn11"+event.getLocationRequired());
+                Log.d("EventDetailActivivty","check islocationn1122"+event);
+                //event.setLocationRequired(true);
+                // check if need location
+                if (event.getLocationRequired()) {
+                    Log.d("EventDetailActivivty","check islocationn"+event.getLocationRequired());
+                    handleLocationRequirement();
+                } else {
+                    updateUI(event); // Proceed if location is not required
+                }
+
             }
 
             @Override
@@ -91,6 +116,72 @@ public class EventDetailActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void handleLocationRequirement() {
+        // Check if the app has the permission to access fine location
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            isRequireLocation = true; // Set the flag indicating location is required
+            getLocation(); // Call the method to retrieve the current location
+        } else {
+            requestLocationPermission(); // Request location permission from the user
+        }
+    }
+
+    private void requestLocationPermission() {
+        // Request fine location permission with a unique request code
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1001);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        // Handle the result of the location permission request
+        if (requestCode == 1001) { // Match the request code for location permission
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted by the user
+                isRequireLocation = true; // Update the flag
+                getLocation(); // Retrieve the location since permission is granted
+            } else {
+                // Permission denied by the user
+                Toast.makeText(this, "Location permission denied. Unable to proceed.", Toast.LENGTH_SHORT).show();
+                updateUI(event); // Update the UI even if permission is denied
+            }
+        }
+    }
+
+    private void getLocation() {
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(location -> {
+                    if (location != null) {
+                        // Successfully retrieved location
+                        Log.d(TAG, "Location: Latitude=" + location.getLatitude() + ", Longitude=" + location.getLongitude());
+
+                        // Create and set location details
+                        Map<String, String> locationDetail = new HashMap<>();
+                        locationDetail.put("latitude", String.valueOf(location.getLatitude()));
+                        locationDetail.put("longitude", String.valueOf(location.getLongitude()));
+
+                        List<Map<String, String>> locationDetails = new ArrayList<>();
+                        locationDetails.add(locationDetail);
+                        event.setLocationDetails(locationDetails);
+
+                        updateUI(event); // Update the UI with the retrieved location
+                    } else {
+                        // Location is null
+                        Log.e(TAG, "Unable to retrieve location");
+                        updateUI(event);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    // Failed to retrieve location
+                    Log.e(TAG, "Error retrieving location: " + e.getMessage());
+                    updateUI(event);
+                });
+    }
+
 
     private void updateUI(Event event) {
         this.event = event;

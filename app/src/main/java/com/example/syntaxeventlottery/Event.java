@@ -1,5 +1,6 @@
 package com.example.syntaxeventlottery;
 
+import com.google.firebase.firestore.PropertyName;
 import com.google.firebase.firestore.ServerTimestamp;
 
 import java.io.Serializable;
@@ -44,6 +45,7 @@ public class Event implements Serializable {
     private ArrayList<String> confirmedParticipants; // those who have confirmed to take part of event
 
     // Geolocation new attributes
+    @PropertyName("isLocationRequired")
     private boolean isLocationRequired;
     private List<Map<String, String>> locationDetails;
 
@@ -254,10 +256,12 @@ public class Event implements Serializable {
     }
 
     // GEOlocation
-    public boolean isLocationRequired() {
+    @PropertyName("isLocationRequired")
+    public boolean getLocationRequired() {
         return isLocationRequired;
     }
 
+    @PropertyName("isLocationRequired")
     public void setLocationRequired(boolean locationRequired) {
         isLocationRequired = locationRequired;
     }
@@ -294,6 +298,7 @@ public class Event implements Serializable {
                 ", qrCode='" + qrCode + '\'' +
                 ", participants=" + participants +
                 ", selectedParticipants=" + selectedParticipants +
+                ", isLocationRequired=" + isLocationRequired +
                 '}';
     }
 }
