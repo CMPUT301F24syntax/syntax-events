@@ -448,4 +448,66 @@ public class EventController {
         }
     }
 
+    public void sendNotificationsToGroup(Event event, String group, String message, Context context, DataCallback<Void> callback) {
+        // Ensure message is assigned before the inner class
+        if (message == null || message.isEmpty()) {
+            message = getDefaultMessage(group, event.getEventName());
+        }
+
+        // Declare a final variable for use inside the inner class
+        final String finalMessage = message;
+
+        UserController userController = new UserController(new UserRepository());
+        userController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                List<String> userIds;
+
+                switch (group) {
+                    case "waitingList":
+                        userIds = event.getParticipants();
+                        break;
+                    case "selectedParticipants":
+                        userIds = event.getSelectedParticipants();
+                        break;
+                    case "cancelledParticipants":
+                        userIds = event.getCancelledParticipants();
+                        break;
+                    default:
+                        callback.onError(new Exception("Invalid group specified"));
+                        return;
+                }
+
+                for (String userId : userIds) {
+                    User user = userController.getUserByDeviceID(userId);
+                    if (user != null && user.isReceiveNotifications()) {
+                        String title = "Message from Organizer";
+                        NotificationUtils.sendNotification(context, title, finalMessage, generateNotificationId(), event.getEventID());
+                    }
+                }
+                callback.onSuccess(null);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error sending notifications to group", e);
+                callback.onError(e);
+            }
+        });
+    }
+
+    private String getDefaultMessage(String group, String eventName) {
+        switch (group) {
+            case "waitingList":
+                return "You are on the waiting list for " + eventName + ". Stay tuned for updates!";
+            case "selectedParticipants":
+                return "You have been selected for " + eventName + "! Please confirm your participation.";
+            case "cancelledParticipants":
+                return "Your participation in " + eventName + " has been cancelled.";
+            default:
+                return "Notification regarding " + eventName;
+        }
+    }
+
+
 }
