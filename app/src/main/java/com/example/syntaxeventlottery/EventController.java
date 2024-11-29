@@ -244,6 +244,8 @@ public class EventController {
     public void performDraw(Event event, Context context, DataCallback<Event> callback) {
         if (event.isDrawed()) {
             callback.onError(new IllegalArgumentException("Event draw has already been performed"));
+            sendLotteryResultNotifications(event, context);
+
             return;
         }
 
@@ -279,6 +281,7 @@ public class EventController {
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
+
                 // Get the list of selected participant IDs
                 Set<String> selectedParticipantIds = new HashSet<>(event.getSelectedParticipants());
 
