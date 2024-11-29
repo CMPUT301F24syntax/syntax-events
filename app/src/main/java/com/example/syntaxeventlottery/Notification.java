@@ -18,12 +18,13 @@ public class Notification {
     private boolean read;
     @ServerTimestamp
     private Date timestamp;
+    private String notificationType;
+    private boolean systemNotification;
 
     // Required empty constructor
     public Notification() {}
 
     // Getters and Setters
-
     public String getId() {
         return id;
     }
@@ -59,6 +60,18 @@ public class Notification {
     }
 
     public void setTimestamp(Date timestamp) { this.timestamp = timestamp; }
+
+    public String getNotificationType() {
+        return notificationType;
+    }
+
+    public void setNotificationType(String notificationType) {
+        this.notificationType = notificationType;
+    }
+
+    public boolean isSystemNotification() {
+        return systemNotification;
+    }
 
     public String getFormattedTimestamp() {
         if (timestamp != null) {
