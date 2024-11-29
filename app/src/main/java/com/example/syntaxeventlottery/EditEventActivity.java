@@ -115,7 +115,7 @@ public class EditEventActivity extends AppCompatActivity {
         editStartDate.setText(startDateStr);
         editEndDate.setText(endDateStr);
         editCapacity.setText(String.valueOf(currentEvent.getCapacity()));
-        locationSwitch.setChecked(currentEvent.isLocationRequired());
+        locationSwitch.setChecked(currentEvent.locationRequired());
     }
 
     /**

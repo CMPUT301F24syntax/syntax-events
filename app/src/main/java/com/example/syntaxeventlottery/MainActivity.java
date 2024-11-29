@@ -17,6 +17,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 public class MainActivity extends AppCompatActivity {
+    private static final int REQUEST_NOTIFICATION_PERMISSION = 101;
     private final String TAG = "MainActivity";
 
     private Button adminButton;
@@ -30,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        NotificationUtils.createNotificationChannel(this);
 
         // Retrieve the device ID
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -61,6 +63,12 @@ public class MainActivity extends AppCompatActivity {
         // Set click listener for the User button
         userButton.setOnClickListener(v -> checkUserInDatabase());
         checkAndRequestLocationPermission();
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATION_PERMISSION);
+            }
+        }
     }
 
 
@@ -73,17 +81,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+        if (requestCode == REQUEST_NOTIFICATION_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // 权限已授予
-                Log.d(TAG, "Location permission granted.");
+                // Permission granted
+                Log.d(TAG, "Notification permission granted.");
             } else {
-                // 权限被拒绝
-                Toast.makeText(this, "Location permission is required to update user location.", Toast.LENGTH_LONG).show();
+                // Permission denied
+                Toast.makeText(this, "Notification permission is required to receive notifications.", Toast.LENGTH_LONG).show();
             }
         }
     }

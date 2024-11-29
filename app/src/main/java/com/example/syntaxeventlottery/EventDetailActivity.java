@@ -181,7 +181,7 @@ public class EventDetailActivity extends AppCompatActivity {
     private void setupButtonListeners() {
         // user joins waiting list
         joinWaitingListButton.setOnClickListener(v -> {
-            if (event.isLocationRequired()) {
+            if (event.locationRequired()) {
                 // Show an AlertDialog if geolocation is required
                 new AlertDialog.Builder(EventDetailActivity.this)
                         .setTitle("Geolocation Required")
@@ -298,19 +298,22 @@ public class EventDetailActivity extends AppCompatActivity {
 
 
         // perform event draw
+        // Inside the drawButton.setOnClickListener
+
         drawButton.setOnClickListener(v -> {
             if (event.isDrawed()) {
-                Toast.makeText(this, "Event draw has already occured", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Event draw has already occurred", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            eventController.performDraw(event, new DataCallback<Event>() {
+            eventController.performDraw(event, EventDetailActivity.this, new DataCallback<Event>() {
                 @Override
                 public void onSuccess(Event result) {
-                    Log.d(TAG, "Event draw performed: updated event info: "+  result);
-                    Toast.makeText(EventDetailActivity.this, "Draw perfomed successfully", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Event draw performed: updated event info: " + result);
+                    Toast.makeText(EventDetailActivity.this, "Draw performed successfully", Toast.LENGTH_SHORT).show();
                     loadEvent();
                 }
+
                 @Override
                 public void onError(Exception e) {
                     Log.d(TAG, "Event draw error");

@@ -238,6 +238,7 @@ public class UserRepository {
         data.put("profilePhotoUrl", user.getProfilePhotoUrl());
         data.put("username", user.getUsername());
         data.put("facility", user.getFacility());
+        data.put("receiveNotifications", user.isReceiveNotifications());
         return data;
     }
 

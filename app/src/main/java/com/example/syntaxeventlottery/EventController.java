@@ -1,8 +1,12 @@
 package com.example.syntaxeventlottery;
 
+import static android.content.ContentValues.TAG;
+
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.util.Log;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.common.BitMatrix;
@@ -235,28 +239,24 @@ public class EventController {
     // lottery implementation
     // perform a draw on the waiting list
     // if chosen, remove them from the waiting list and add them to the selected list
-    public void performDraw(Event event, DataCallback<Event> callback) {
+    public void performDraw(Event event, Context context, DataCallback<Event> callback) {
         if (event.isDrawed()) {
             callback.onError(new IllegalArgumentException("Event draw has already been performed"));
             return;
         }
 
         ArrayList<String> selectedList = new ArrayList<>();
-        ArrayList<String> participants = event.getParticipants(); // Assuming this returns the waiting list
-        ArrayList<String> updatedWaitingList = new ArrayList<>(participants); // Clone the waiting list
+        ArrayList<String> participants = event.getParticipants();
+        ArrayList<String> updatedWaitingList = new ArrayList<>(participants);
         int capacity = event.getCapacity();
 
-        // If the number of participants is less than or equal to capacity, add all participants to the selected list
         if (participants.size() <= capacity) {
             selectedList.addAll(participants);
-            updatedWaitingList.clear(); // All participants are selected, so clear the waiting list
+            updatedWaitingList.clear();
         } else {
-            // Select a random subset of participants equal to the event capacity
-            Collections.shuffle(participants); // Randomize the order
-            List<String> chosenParticipants = participants.subList(0, capacity); // Take the first `capacity` participants
+            Collections.shuffle(participants);
+            List<String> chosenParticipants = participants.subList(0, capacity);
             selectedList.addAll(chosenParticipants);
-
-            // Remove selected participants from the waiting list
             updatedWaitingList.removeAll(chosenParticipants);
         }
 
@@ -265,8 +265,47 @@ public class EventController {
         event.setParticipants(updatedWaitingList);
         event.setDrawed(true);
 
+        // Send notifications to participants
+        sendLotteryResultNotifications(event, context);
+
         // Save the event with the updated information
         updateEvent(event, null, null, callback);
+    }
+
+    private void sendLotteryResultNotifications(Event event, Context context) {
+        UserController userController = new UserController(new UserRepository());
+        userController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                // Notify selected participants
+                for (String userId : event.getSelectedParticipants()) {
+                    User user = userController.getUserByDeviceID(userId);
+                    if (user != null && user.isReceiveNotifications()) {
+                        String title = "Congratulations!";
+                        String message = "You've been selected for the event: " + event.getEventName();
+                        NotificationUtils.sendNotification(context, title, message, generateNotificationId());
+                    }
+                }
+                // Notify participants who were not selected
+                for (String userId : event.getParticipants()) {
+                    User user = userController.getUserByDeviceID(userId);
+                    if (user != null && user.isReceiveNotifications()) {
+                        String title = "Lottery Result";
+                        String message = "You were not selected for the event: " + event.getEventName();
+                        NotificationUtils.sendNotification(context, title, message, generateNotificationId());
+                    }
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error sending notifications", e);
+            }
+        });
+    }
+
+    private int generateNotificationId() {
+        return (int) System.currentTimeMillis();
     }
 
     /**
