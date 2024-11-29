@@ -114,7 +114,6 @@ public class EditUserProfileActivity extends AppCompatActivity {
         user.setPhoneNumber(newPhone);
         user.setReceiveNotifications(receiveNotifications);
 
-
         userController.updateUser(user, selectedImageUri, new DataCallback<User>() {
             @Override
             public void onSuccess(User updatedUser) {
@@ -146,7 +145,7 @@ public class EditUserProfileActivity extends AppCompatActivity {
     }
 
     private void openImagePicker() {
-        Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        Intent intent new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, REQUEST_CODE_SELECTED_IMAGE);
     }
 

@@ -243,6 +243,7 @@ public class EventController {
         if (event.isDrawed()) {
             callback.onError(new IllegalArgumentException("Event draw has already been performed"));
             sendLotteryResultNotifications(event, context);
+
             return;
         }
 
@@ -278,12 +279,13 @@ public class EventController {
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                // Notify selected participants (winners)
+                // Notify selected participants (winners)n
                 for (String userId : event.getSelectedParticipants()) {
                     User user = userController.getUserByDeviceID(userId);
                     if (user != null && user.isReceiveNotifications()) {
                         String title = "Congratulations!";
                         String message = "You've been selected for the event: " + event.getEventName();
+                      
                         NotificationUtils.sendNotification(context, title, message, generateNotificationId(), event.getEventID());
                     }
                 }
@@ -293,6 +295,7 @@ public class EventController {
                     if (user != null && user.isReceiveNotifications()) {
                         String title = "Lottery Result";
                         String message = "You were not selected for the event: " + event.getEventName();
+                      
                         NotificationUtils.sendNotification(context, title, message, generateNotificationId(), event.getEventID());
                     }
                 }

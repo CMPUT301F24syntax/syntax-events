@@ -77,6 +77,12 @@ public class MainActivity extends AppCompatActivity {
         userButton.setOnClickListener(v -> checkUserInDatabase());
         checkAndRequestNotificationPermission();
         checkAndRequestLocationPermission();
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATION_PERMISSION);
+            }
+        }
     }
 
     private void checkAndRequestNotificationPermission() {
@@ -133,10 +139,9 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(Void result) {
                 currentUser = userController.getUserByDeviceID(deviceId);
                 Log.d(TAG, "current user " + currentUser);
-                if (currentUser == null) { // 如果用户不存在
+                if (currentUser == null) {
                     openCreateProfileActivity();
                 } else {
-                    // 更新用户位置
                     userController.updateUserLocation(currentUser, MainActivity.this, new DataCallback<User>() {
                         @Override
                         public void onSuccess(User result) {
