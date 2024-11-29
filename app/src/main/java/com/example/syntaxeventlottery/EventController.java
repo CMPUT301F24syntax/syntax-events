@@ -16,7 +16,9 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -277,22 +279,24 @@ public class EventController {
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                // Notify selected participants
-                for (String userId : event.getSelectedParticipants()) {
-                    User user = userController.getUserByDeviceID(userId);
-                    if (user != null && user.isReceiveNotifications()) {
-                        String title = "Congratulations!";
-                        String message = "You've been selected for the event: " + event.getEventName();
-                        NotificationUtils.sendNotification(context, title, message, generateNotificationId());
-                    }
-                }
-                // Notify participants who were not selected
+                // Get the list of selected participant IDs
+                Set<String> selectedParticipantIds = new HashSet<>(event.getSelectedParticipants());
+
+                // Iterate over all participants
                 for (String userId : event.getParticipants()) {
                     User user = userController.getUserByDeviceID(userId);
                     if (user != null && user.isReceiveNotifications()) {
-                        String title = "Lottery Result";
-                        String message = "You were not selected for the event: " + event.getEventName();
-                        NotificationUtils.sendNotification(context, title, message, generateNotificationId());
+                        if (selectedParticipantIds.contains(userId)) {
+                            // User is in selectedParticipants - send success notification
+                            String title = "Congratulations!";
+                            String message = "You've been selected for the event: " + event.getEventName();
+                            NotificationUtils.sendNotification(context, title, message, generateNotificationId(), event.getEventID());
+                        } else {
+                            // User is not in selectedParticipants - send failure notification
+                            String title = "Lottery Result";
+                            String message = "You were not selected for the event: " + event.getEventName();
+                            NotificationUtils.sendNotification(context, title, message, generateNotificationId(), event.getEventID());
+                        }
                     }
                 }
             }
