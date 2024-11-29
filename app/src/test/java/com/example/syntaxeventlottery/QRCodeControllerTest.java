@@ -47,7 +47,7 @@ public class QRCodeControllerTest {
         qrCodeController.handleQRCode(emptyQRCode);
 
         // Check if the callback's error method onError was called with the correct error message
-        verify(mockCallback).onError("QR code is empty");
+        verify(mockCallback).onError("QR code is empty or invalid");
 
         // Check that the success method onQRCodeScanned was never called
         verify(mockCallback, never()).onQRCodeScanned(anyString());
@@ -60,7 +60,7 @@ public class QRCodeControllerTest {
         qrCodeController.handleQRCode(null);
 
         // Check if the callback's error method onError was called with the correct error message
-        verify(mockCallback).onError("QR code is invalid");
+        verify(mockCallback).onError("QR code is empty or invalid");
 
         // Check that the success method onQRCodeScanned was never called
         verify(mockCallback, never()).onQRCodeScanned(anyString());
