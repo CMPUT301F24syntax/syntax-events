@@ -2,6 +2,7 @@ package com.example.syntaxeventlottery;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,8 +51,9 @@ public class EventParticipantsListActivity extends AppCompatActivity {
         listRecyclerView = findViewById(R.id.waitingListRecyclerView);
         listRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         usersList = new ArrayList<>();
-        participantsListAdapter = new WaitingListAdapter(usersList);
+        participantsListAdapter = new WaitingListAdapter(usersList, cancelEntrant(), "Waiting List"); // Initial list type
         listRecyclerView.setAdapter(participantsListAdapter);
+
 
         // initialize buttons
         backButton = findViewById(R.id.backButton);
@@ -121,8 +123,9 @@ public class EventParticipantsListActivity extends AppCompatActivity {
                     }
                 }
                 usersList.addAll(waitingList);
-                participantsListAdapter.notifyDataSetChanged();
 
+                participantsListAdapter.notifyDataSetChanged();
+                participantsListAdapter.setCurrentListType("Waiting List");
             }
 
             @Override
@@ -159,7 +162,9 @@ public class EventParticipantsListActivity extends AppCompatActivity {
                 }
 
                 usersList.addAll(selectedList);
+
                 participantsListAdapter.notifyDataSetChanged();
+                participantsListAdapter.setCurrentListType("Selected Participants");
             }
 
             @Override
@@ -197,7 +202,9 @@ public class EventParticipantsListActivity extends AppCompatActivity {
                 }
 
                 usersList.addAll(confirmedList);
+
                 participantsListAdapter.notifyDataSetChanged();
+                participantsListAdapter.setCurrentListType("Confirmed Participants");
             }
 
             @Override
@@ -226,9 +233,10 @@ public class EventParticipantsListActivity extends AppCompatActivity {
                 }
                 Log.d(TAG, "Cancelled List Array:"+ cancelledList);
                 listDetails.setText("Entrants you have cancelled or who have declined their invitation");
-
                 usersList.addAll(cancelledList);
+
                 participantsListAdapter.notifyDataSetChanged();
+                participantsListAdapter.setCurrentListType("Cancelled Participants");
             }
 
             @Override
@@ -236,5 +244,47 @@ public class EventParticipantsListActivity extends AppCompatActivity {
                 Log.e(TAG, "Error refreshing user repository",e);
             }
         });
+    }
+
+    // listener for moving entrants to cancelled
+    private WaitingListAdapter.OnClickListener cancelEntrant() {
+        return position -> {
+            if (position != RecyclerView.NO_POSITION) {
+                User userToCancel = usersList.get(position);
+                eventController.setUserCancelled(event, userToCancel.getUserID(), new DataCallback<Event>() {
+                    @Override
+                    public void onSuccess(Event result) {
+                        Log.d(TAG, "Event details" + event);
+                        Toast.makeText(EventParticipantsListActivity.this, "Entrant " + userToCancel.getUsername() + " has been cancelled", Toast.LENGTH_SHORT).show();
+                        refreshCurrentList();
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Toast.makeText(EventParticipantsListActivity.this, "Failed to cancel entrant: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Error cancelling entrant", e);
+                    }
+                });
+            }
+        };
+    }
+
+
+    private void refreshCurrentList() {
+        String currentTitle = listTitle.getText().toString();
+        switch (currentTitle) {
+            case "Waiting List":
+                loadWaitingList();
+                break;
+            case "Selected Participants":
+                loadSelectedList();
+                break;
+            case "Confirmed Participants":
+                loadConfirmedList();
+                break;
+            case "Cancelled Participants":
+                loadCancelledList();
+                break;
+        }
     }
 }
