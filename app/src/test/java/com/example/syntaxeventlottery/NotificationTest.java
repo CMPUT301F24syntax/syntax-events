@@ -11,17 +11,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import android.app.Notification;
-
 public class NotificationTest {
 
-    // Initialize notification object
+    // Notification object for testing
     private Notification notification;
 
     @Before
     public void setUp() {
-
-        // Create a new notification object for each test
+        // Create a new Notification object for each test
         notification = new Notification();
     }
 
@@ -34,33 +31,33 @@ public class NotificationTest {
         // Set the test ID
         notification.setId(testId);
 
-        // Check if the ID was set successfully
+        // Check if the ID was set correctly
         assertEquals(testId, notification.getId());
     }
 
     @Test
     public void testSetAndGetDeviceId() {
 
-        // Create an device ID
+        // Create a test device ID
         String testDeviceId = "Device123";
 
         // Set the device ID
         notification.setDeviceId(testDeviceId);
 
-        // Check if the Device ID was set successfully
+        // Check if the device ID was set correctly
         assertEquals(testDeviceId, notification.getDeviceId());
     }
 
     @Test
     public void testSetAndGetEventId() {
 
-        // Create an event ID
+        // Create a test event ID
         String testEventId = "Event123";
 
         // Set the event ID
         notification.setEventId(testEventId);
 
-        // Check if the event ID was set successfully
+        // Check if the event ID was set correctly
         assertEquals(testEventId, notification.getEventId());
     }
 
@@ -83,45 +80,53 @@ public class NotificationTest {
         // Set the read status to true
         notification.setRead(true);
 
-        // Check if the read status is correct
+        // Check if the read status is true
         assertTrue(notification.isRead());
 
         // Set the read status to false
         notification.setRead(false);
 
-        // Check if the read status is correct
+        // Check if the read status is false
         assertFalse(notification.isRead());
     }
 
     @Test
     public void testSetAndGetTimestamp() {
 
-        // Create a timestamp
+        // Create a test timestamp
         Date testDate = new Date();
 
-        // Set the timestamp
+        // Set the test timestamp
         notification.setTimestamp(testDate);
 
-        // Check if timestamp was set correctly
+        // Check if the timestamp was set correctly
         assertEquals(testDate, notification.getTimestamp());
     }
 
     @Test
     public void testGetFormattedTimestamp() {
 
-        // Create a test date
+        // Create a test timestamp
         Date testDate = new Date();
 
-        // Set the test date
+        // Set the test timestamp
         notification.setTimestamp(testDate);
 
         // Format the date as year-month-day hour:minute
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
-
-        // Use the formatter to turn the test date into a string with the expected format
         String expectedFormattedDate = formatter.format(testDate);
 
-        // Check that the date was formatted correctly
+        // Check if the formatted timestamp matches the expected format
         assertEquals(expectedFormattedDate, notification.getFormattedTimestamp());
+    }
+
+    @Test
+    public void testGetFormattedTimestampEmptyWhenNull() {
+
+        // Ensure the timestamp is null
+        notification.setTimestamp(null);
+
+        // Check if the formatted timestamp returns an empty string
+        assertEquals("", notification.getFormattedTimestamp());
     }
 }
