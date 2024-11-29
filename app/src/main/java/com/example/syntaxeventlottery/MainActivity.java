@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -11,6 +12,8 @@ import android.widget.Button;
 import android.widget.Toast;
 import android.Manifest;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -26,12 +29,22 @@ public class MainActivity extends AppCompatActivity {
     private UserController userController;
     private User currentUser;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+    private ActivityResultLauncher<String> requestPermissionLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         NotificationUtils.createNotificationChannel(this);
+
+        requestPermissionLauncher =
+                registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                    if (isGranted) {
+                        Log.d(TAG, "Notification permission granted.");
+                    } else {
+                        Toast.makeText(this, "Reject permission, you won't get notification", Toast.LENGTH_LONG).show();
+                    }
+                });
 
         // Retrieve the device ID
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -62,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Set click listener for the User button
         userButton.setOnClickListener(v -> checkUserInDatabase());
+        checkAndRequestNotificationPermission();
         checkAndRequestLocationPermission();
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
@@ -71,6 +85,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void checkAndRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+    }
 
     private void checkAndRequestLocationPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -117,10 +139,9 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(Void result) {
                 currentUser = userController.getUserByDeviceID(deviceId);
                 Log.d(TAG, "current user " + currentUser);
-                if (currentUser == null) { // 如果用户不存在
+                if (currentUser == null) {
                     openCreateProfileActivity();
                 } else {
-                    // 更新用户位置
                     userController.updateUserLocation(currentUser, MainActivity.this, new DataCallback<User>() {
                         @Override
                         public void onSuccess(User result) {

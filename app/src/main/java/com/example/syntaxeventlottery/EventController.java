@@ -242,6 +242,8 @@ public class EventController {
     public void performDraw(Event event, Context context, DataCallback<Event> callback) {
         if (event.isDrawed()) {
             callback.onError(new IllegalArgumentException("Event draw has already been performed"));
+            sendLotteryResultNotifications(event, context);
+
             return;
         }
 
@@ -277,22 +279,24 @@ public class EventController {
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                // Notify selected participants
+                // Notify selected participants (winners)n
                 for (String userId : event.getSelectedParticipants()) {
                     User user = userController.getUserByDeviceID(userId);
                     if (user != null && user.isReceiveNotifications()) {
                         String title = "Congratulations!";
                         String message = "You've been selected for the event: " + event.getEventName();
-                        NotificationUtils.sendNotification(context, title, message, generateNotificationId());
+                      
+                        NotificationUtils.sendNotification(context, title, message, generateNotificationId(), event.getEventID());
                     }
                 }
-                // Notify participants who were not selected
+                // Notify participants who were not selected (non-winners)
                 for (String userId : event.getParticipants()) {
                     User user = userController.getUserByDeviceID(userId);
                     if (user != null && user.isReceiveNotifications()) {
                         String title = "Lottery Result";
                         String message = "You were not selected for the event: " + event.getEventName();
-                        NotificationUtils.sendNotification(context, title, message, generateNotificationId());
+                      
+                        NotificationUtils.sendNotification(context, title, message, generateNotificationId(), event.getEventID());
                     }
                 }
             }
