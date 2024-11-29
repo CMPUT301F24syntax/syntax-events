@@ -34,7 +34,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
 
     private User currentUser;
-    private UserController userController;
+    public UserController userController;
     private String deviceID;
     private static final String TAG = "UserProfileActivity";
     private static final int REQUEST_CODE_EDIT_PROFILE = 2001;
