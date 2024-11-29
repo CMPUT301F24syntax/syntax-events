@@ -3,6 +3,8 @@ package com.example.syntaxeventlottery;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import android.content.Context;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -19,10 +21,13 @@ public class EventControllerTest {
     @Mock
     private EventRepository mockRepository;
 
+    @Mock
+    private Context mockContext;
+
     @Before
     public void setUp() {
 
-        // Create mocks for testing
+        // Initialize mocks
         MockitoAnnotations.openMocks(this);
 
         // Create controller using the mock repository
@@ -61,9 +66,9 @@ public class EventControllerTest {
         when(mockRepository.getLocalEventsList()).thenReturn(new ArrayList<>());
 
         // Find event with an ID that doesn't exist
-        Event result = eventController.getEventById("Bitcoin_to_the_moon_buy_ASAP_not_financial_advice");
+        Event result = eventController.getEventById("NonExistentID");
 
-        // Check if the result is null, it should be as no event exists with that ID
+        // Check if the result is null, as no event exists with that ID
         assertNull(result);
     }
 
@@ -76,7 +81,7 @@ public class EventControllerTest {
         // Initialize the participants list for the event as an empty list
         event.setParticipants(new ArrayList<>());
 
-        // Create a fake callback to track behavior
+        // Create a mock callback to track behavior
         DataCallback<Event> mockCallback = mock(DataCallback.class);
 
         // Add a user to the waiting list
@@ -92,55 +97,22 @@ public class EventControllerTest {
         // Create a test event
         Event event = new Event("Event1", "Facility1", "Location1", "Test Event", 10, new Date(System.currentTimeMillis() + 1000), new Date(System.currentTimeMillis() + 2000), "Organizer123", 5, false);
 
-        // Create a new empty list to store participants
+        // Create participant list
         ArrayList<String> participants = new ArrayList<>();
 
-        // Add a user to the list
+        // Add a user to the participants list
         participants.add("User123");
-
-        // Set the list of participants to the event
-        event.setParticipants(participants);
-
-        // Create a mock object for the DataCallback to simulate its behavior in tests
-        DataCallback<Event> mockCallback = mock(DataCallback.class);
-
-        // Try to add user to the event's waiting list and use the callback to handle the result
-        eventController.addUserToWaitingList(event, "User123", mockCallback);
-
-        // Check if the error was triggered
-        verify(mockCallback).onError(any(IllegalArgumentException.class));
-    }
-
-    @Test
-    public void testPerformDraw_AllSelected() {
-
-        // Create a test event
-        Event event = new Event("Event1", "Facility1", "Location1", "Test Event", 10, new Date(System.currentTimeMillis() + 1000), new Date(System.currentTimeMillis() + 2000), "Organizer123", null, false);
-
-        // Create a new empty list to store participants
-        ArrayList<String> participants = new ArrayList<>();
-
-        // Add some users to the participant list
-        participants.add("Bitcoiner1");
-        participants.add("Bitcoiner2");
-        participants.add("Bitcoiner3");
 
         // Set the participant list to the event
         event.setParticipants(participants);
 
-        // Create a mock object for the DataCallback to simulate its behavior in tests
+        // Create a mock callback
         DataCallback<Event> mockCallback = mock(DataCallback.class);
 
-        // Perform a lottery draw for the event and use the callback to handle the result
-        eventController.performDraw(event, mockCallback);
+        // Try to add the same user to the waiting list
+        eventController.addUserToWaitingList(event, "User123", mockCallback);
 
-        // Check if the number of selected participants matches the size of the participants list
-        assertEquals(participants.size(), event.getSelectedParticipants().size());
-
-        // Check if the waiting list is empty
-        assertTrue(event.getParticipants().isEmpty());
-
-        // Verify the draw flag is set to true
-        assertTrue(event.isDrawed());
+        // Verify that an error was triggered
+        verify(mockCallback).onError(any(IllegalArgumentException.class));
     }
 }

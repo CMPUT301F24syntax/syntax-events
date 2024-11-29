@@ -276,7 +276,7 @@ public class EventController {
         updateEvent(event, null, null, callback);
     }
 
-    private void sendLotteryResultNotifications(Event event, Context context) {
+    public void sendLotteryResultNotifications(Event event, Context context) {
         UserController userController = new UserController(new UserRepository());
         userController.refreshRepository(new DataCallback<Void>() {
             @Override

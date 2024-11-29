@@ -271,7 +271,7 @@ public class Event implements Serializable {
     }
 
     public void setLocationRequired(boolean locationRequired) {
-        locationRequired = locationRequired;
+        this.locationRequired = locationRequired;
     }
 
     public List<Map<String, String>> getLocationDetails() {
