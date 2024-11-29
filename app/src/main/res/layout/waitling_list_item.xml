@@ -1,34 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
     android:padding="8dp">
 
-    <!-- Username TextView -->
-    <TextView
-        android:id="@+id/usernameTextView"
-        android:layout_width="wrap_content"
+    <!-- Profile Image and Text -->
+    <LinearLayout
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Username"
-        android:textSize="16sp"
-        android:textColor="@android:color/black" />
+        android:layout_weight="1"
+        android:orientation="horizontal">
 
-    <!-- Phone Number TextView -->
-    <TextView
-        android:id="@+id/phoneNumberTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Phone Number"
-        android:textSize="16sp"
-        android:textColor="@android:color/black" />
+        <!-- Profile Picture -->
+        <ImageView
+            android:id="@+id/userProfileImageView"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_marginEnd="16dp"
+            app:srcCompat="@drawable/ic_empty_profile_picture" />
 
-    <!-- Email TextView -->
-    <TextView
-        android:id="@+id/emailTextView"
+        <!-- Text Views -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/usernameTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Username"
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/phoneNumberTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Phone Number"
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/emailTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Email"
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Cancel Button -->
+    <ImageButton
+        android:id="@+id/cancelEntrantButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Email"
-        android:textSize="16sp"
-        android:textColor="@android:color/black" />
+        android:layout_gravity="center_vertical"
+        android:contentDescription="Cancel Entrant"
+        app:srcCompat="@android:drawable/ic_delete" />
 </LinearLayout>
+
