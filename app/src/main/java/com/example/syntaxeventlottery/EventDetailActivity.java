@@ -182,6 +182,7 @@ public class EventDetailActivity extends AppCompatActivity {
         // Determine which buttons to display
         if (!isOrganizer) {
             displayParticipantButtons();
+            showAllParticipantButtons();
         } else {
             eventActionsTextView.setText("You are the organizer of this event!\n"
                     +"Edit event details, perfom the event draw or manage entrants who have joined");
@@ -504,4 +505,12 @@ public class EventDetailActivity extends AppCompatActivity {
         leaveWaitingListButton.setVisibility(View.GONE);
         declineInvitationButton.setVisibility(View.GONE);
     }
+
+    private void showAllParticipantButtons() {
+        joinWaitingListButton.setVisibility(View.VISIBLE);
+        acceptInvitationButton.setVisibility(View.VISIBLE);
+        leaveWaitingListButton.setVisibility(View.VISIBLE);
+        declineInvitationButton.setVisibility(View.VISIBLE);
+    }
+
 }

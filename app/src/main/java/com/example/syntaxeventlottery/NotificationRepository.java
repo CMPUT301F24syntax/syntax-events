@@ -2,6 +2,7 @@ package com.example.syntaxeventlottery;
 
 import android.util.Log;
 
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -31,7 +32,7 @@ public class NotificationRepository {
             notificationData.put("message", message);
             notificationData.put("eventId", eventId);
             notificationData.put("isRead", false);
-            notificationData.put("timestamp", System.currentTimeMillis());
+            notificationData.put("timestamp", FieldValue.serverTimestamp());
 
             db.collection("notifications")
                     .add(notificationData)

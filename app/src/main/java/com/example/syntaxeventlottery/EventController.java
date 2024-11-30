@@ -354,19 +354,8 @@ public class EventController {
             @Override
             public void onSuccess(Void result) {
                 // Prepare lists
-                final Set<String> selectedParticipantIds = new HashSet<>(event.getSelectedParticipants());
-                final List<String> allUserIds = new ArrayList<>(event.getParticipants());
-
-                final List<String> selectedUsers = new ArrayList<>();
-                final List<String> notSelectedUsers = new ArrayList<>();
-
-                for (String userId : allUserIds) {
-                    if (selectedParticipantIds.contains(userId)) {
-                        selectedUsers.add(userId);
-                    } else {
-                        notSelectedUsers.add(userId);
-                    }
-                }
+                final List<String> selectedUsers = new ArrayList<>(event.getSelectedParticipants());
+                final List<String> notSelectedUsers = new ArrayList<>(event.getParticipants());
 
                 final String selectedMessage = "You've been selected for the event: " + event.getEventName();
                 final String notSelectedMessage = "You were not selected for the event: " + event.getEventName();
@@ -395,7 +384,6 @@ public class EventController {
                     @Override
                     public void onError(Exception e) {
                         Log.e(TAG, "Error adding notifications for not selected users.", e);
-                        // Optionally, handle the error
                     }
                 });
 

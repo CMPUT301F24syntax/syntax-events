@@ -17,6 +17,8 @@ import androidx.core.app.NotificationManagerCompat;
 
 import android.util.Log;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
 public class NotificationUtils {
     private static final String CHANNEL_ID = "event_lottery_channel";
     private static final String CHANNEL_NAME = "Event Lottery Notifications";
@@ -59,25 +61,22 @@ public class NotificationUtils {
      * @param eventID         The event ID associated with the notification.
      */
     public static void sendNotification(Context context, String title, String message, int notificationId, String eventID) {
-        Log.d(TAG, "Preparing to send notification: " + message);
-
-        // Create an explicit intent for an Activity in your app
         Intent intent = new Intent(context, EventDetailActivity.class);
         intent.putExtra("eventID", eventID);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 context,
-                notificationId, // Use notificationId to ensure uniqueness
+                notificationId,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_news) // Ensure this icon exists in res/drawable
+                .setSmallIcon(R.drawable.ic_news)
                 .setContentTitle(title)
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setContentIntent(pendingIntent) // Set the intent that will fire when the user taps the notification
+                .setContentIntent(pendingIntent)
                 .setAutoCancel(true);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
@@ -86,12 +85,19 @@ public class NotificationUtils {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 Log.e(TAG, "POST_NOTIFICATIONS permission not granted");
-                // Optionally, notify the user within the app
                 return;
             }
         }
 
         notificationManager.notify(notificationId, builder.build());
         Log.d(TAG, "Notification sent with ID: " + notificationId);
+    }
+
+    private void markNotificationAsRead(Notification notification) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("notifications").document(notification.getId())
+                .update("isRead", true)
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Notification marked as read"))
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to mark notification as read", e));
     }
 }

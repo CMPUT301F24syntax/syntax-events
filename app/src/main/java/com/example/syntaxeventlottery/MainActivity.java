@@ -1,5 +1,6 @@
 package com.example.syntaxeventlottery;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -10,7 +11,6 @@ import android.provider.Settings;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
-import android.Manifest;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -19,62 +19,56 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_NOTIFICATION_PERMISSION = 101;
-    private final String TAG = "MainActivity";
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+    private static final String TAG = "MainActivity";
 
     private Button adminButton;
     private Button userButton;
-    private String deviceId; // Variable to store the device ID
+    private String deviceId;
     private UserController userController;
     private User currentUser;
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
-    private ActivityResultLauncher<String> requestPermissionLauncher;
     private ListenerRegistration notificationListener;
+    private ActivityResultLauncher<String> requestPermissionLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         // Create notification channel
         NotificationUtils.createNotificationChannel(this);
 
-        // Initialize the permission launcher
+        // Initialize the permission launcher for notifications
         requestPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
                 isGranted -> {
                     if (isGranted) {
-                        // Permission is granted. Continue with notifications
+                        Log.d(TAG, "Notification permission granted.");
                     } else {
+                        Toast.makeText(this, "Notification permission is required to receive notifications.", Toast.LENGTH_LONG).show();
                     }
                 }
         );
 
-        // Check and request permission
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                    != PackageManager.PERMISSION_GRANTED) {
-                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
-            }
-        }
-
-
+        // Check and request notification permission
+        checkAndRequestNotificationPermission();
 
         // Retrieve the device ID
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
+        // Initialize UserController
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (locationManager == null) {
             Log.e(TAG, "LocationManager is null");
             Toast.makeText(this, "Error: Unable to initialize LocationManager", Toast.LENGTH_LONG).show();
             return;
         }
-
-        // Initialize UserController
         userController = new UserController(new UserRepository(), locationManager);
 
         // Initialize buttons
@@ -90,16 +84,14 @@ public class MainActivity extends AppCompatActivity {
 
         // Set click listener for the User button
         userButton.setOnClickListener(v -> checkUserInDatabase());
-        checkAndRequestNotificationPermission();
-        checkAndRequestLocationPermission();
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATION_PERMISSION);
-            }
-        }
+        // Check and request location permission
+        checkAndRequestLocationPermission();
     }
 
+    /**
+     * Checks and requests notification permission for Android 13 and above.
+     */
     private void checkAndRequestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
@@ -109,6 +101,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Checks and requests location permission.
+     */
     private void checkAndRequestLocationPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -117,31 +112,29 @@ public class MainActivity extends AppCompatActivity {
                     LOCATION_PERMISSION_REQUEST_CODE);
         }
     }
+
+    /**
+     * Handles the result of permission requests.
+     */
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == REQUEST_NOTIFICATION_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted
                 Log.d(TAG, "Notification permission granted.");
             } else {
-                // Permission denied
                 Toast.makeText(this, "Notification permission is required to receive notifications.", Toast.LENGTH_LONG).show();
             }
         }
     }
 
-
     /**
      * Checks if the user with the current device ID exists in the Firestore database.
-     * If user does not have an existing profile, launch the activity which creates one
+     * If the user does not have an existing profile, launch the activity to create one.
      */
     private void checkUserInDatabase() {
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        userController = new UserController(new UserRepository(),locationManager);
-        Log.d(TAG, "deviceId: " + deviceId);
-
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, "Location permission not granted. Please enable it.", Toast.LENGTH_SHORT).show();
@@ -152,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Void result) {
                 currentUser = userController.getUserByDeviceID(deviceId);
-                Log.d(TAG, "current user " + currentUser);
+                Log.d(TAG, "Current user: " + currentUser);
                 if (currentUser == null) {
                     openCreateProfileActivity();
                 } else {
@@ -181,7 +174,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
     /**
      * Opens UserHomeActivity with the given user ID.
      *
@@ -195,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Opens UserProfileActivity and passes the device ID.
+     * Opens CreateUserProfileActivity and passes the device ID.
      */
     private void openCreateProfileActivity() {
         Toast.makeText(this, "User Mode Selected", Toast.LENGTH_SHORT).show();
@@ -211,5 +203,78 @@ public class MainActivity extends AppCompatActivity {
      */
     private void handleDatabaseError(Exception e) {
         Toast.makeText(this, "Error checking device ID: " + e.getMessage(), Toast.LENGTH_LONG).show();
+    }
+
+    /**
+     * Sets up the notification listener when the activity starts.
+     */
+    @Override
+    protected void onStart() {
+        super.onStart();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // Set up a listener for new notifications specific to this device
+        notificationListener = db.collection("notifications")
+                .whereEqualTo("deviceId", deviceId)
+                .whereEqualTo("isRead", false)
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        Log.w(TAG, "Listen failed.", e);
+                        return;
+                    }
+
+                    if (snapshots != null && !snapshots.isEmpty()) {
+                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                            if (dc.getType() == DocumentChange.Type.ADDED) {
+                                try {
+                                    Notification notification = dc.getDocument().toObject(Notification.class);
+                                    notification.setId(dc.getDocument().getId());
+
+                                    // Send system notification
+                                    NotificationUtils.sendNotification(
+                                            getApplicationContext(),
+                                            "Event Notification",
+                                            notification.getMessage(),
+                                            notification.generateNotificationId(),
+                                            notification.getEventId()
+                                    );
+
+                                    // Optionally mark the notification as read
+                                    markNotificationAsRead(notification);
+                                } catch (Exception ex) {
+                                    Log.e(TAG, "Failed to deserialize notification", ex);
+                                    // Handle the error, e.g., skip this notification
+                                }
+                            }
+                        }
+                    }
+                });
+    }
+
+    /**
+     * Removes the notification listener when the activity stops.
+     */
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (notificationListener != null) {
+            notificationListener.remove();
+            notificationListener = null;
+        }
+    }
+
+    /**
+     * Marks a notification as read in Firestore.
+     *
+     * @param notification The notification to mark as read.
+     */
+    private void markNotificationAsRead(Notification notification) {
+        if (notification == null || notification.getId() == null) return;
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("notifications").document(notification.getId())
+                .update("isRead", true)
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Notification marked as read"))
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to mark notification as read", e));
     }
 }
