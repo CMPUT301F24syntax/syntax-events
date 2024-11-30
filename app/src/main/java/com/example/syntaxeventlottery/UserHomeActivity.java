@@ -1,3 +1,5 @@
+// UserHomeActivity.java
+
 package com.example.syntaxeventlottery;
 
 import android.content.Intent;
@@ -25,8 +27,11 @@ public class UserHomeActivity extends AppCompatActivity {
     private RecyclerView waitlistEventsRecyclerView;
     private ImageButton organizerButton, newsButton, profileButton, scanButton;
 
+    // Controllers
     private EventController eventController;
     private UserController userController;
+
+    // Adapter and Data
     private EventAdapter eventAdapter;
     private String deviceID;
     private User currentUser;
@@ -44,23 +49,23 @@ public class UserHomeActivity extends AppCompatActivity {
         newsButton = findViewById(R.id.newsButton);
         scanButton = findViewById(R.id.qrScanButton2);
 
-        // Initialize controllers
+        // Initialize Controllers
         eventController = new EventController(new EventRepository());
         userController = new UserController(new UserRepository());
 
         // Get deviceId
         deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        // Set up RecyclerView for Future Events
+        // Set up RecyclerView for Waitlisted Events
         waitlistEventsRecyclerView = findViewById(R.id.futureEventsRecyclerView);
         waitlistEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         eventAdapter = new EventAdapter(new ArrayList<>(), this);
         waitlistEventsRecyclerView.setAdapter(eventAdapter);
 
-        // load all events
+        // Load Waitlisted Events
         loadUserWaitlistedEvents();
 
-        // Set button listeners
+        // Set Button Listeners
         organizerButton.setOnClickListener(v -> checkFacilityProfileAndLaunch());
 
         profileButton.setOnClickListener(v -> {
@@ -79,36 +84,13 @@ public class UserHomeActivity extends AppCompatActivity {
             startActivity(new Intent(UserHomeActivity.this, QRScanActivity.class));
         });
 
-        // Set up date and time updater
+        // Set up Date and Time Updater
         updateDateTime();
     }
 
-    // reload events when activity is resumed
-    @Override
-    protected void onResume() {
-        super.onResume();
-        loadAllEvents();
-        /*
-        changed for testing
-        loadUserWaitlistedEvents();
-
-         */
-    }
-
-    private void loadAllEvents() {
-        eventController.refreshRepository(new DataCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                eventAdapter.updateEvents(eventController.getLocalEventsList());
-            }
-
-            @Override
-            public void onError(Exception e) {
-
-            }
-        });
-    }
-
+    /**
+     * Loads waitlisted events for the current user.
+     */
     private void loadUserWaitlistedEvents() {
         eventController.getUserWaitlistedEvents(deviceID, new DataCallback<ArrayList<Event>>() {
             @Override
@@ -125,6 +107,9 @@ public class UserHomeActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Updates the date and time display.
+     */
     private void updateDateTime() {
         final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault());
         dateFormat.setTimeZone(TimeZone.getTimeZone("America/Edmonton"));
@@ -141,8 +126,9 @@ public class UserHomeActivity extends AppCompatActivity {
         }).start();
     }
 
-    // get the most updated user info and check if they have a facility profile
-    // launch create facility activity if they do not have a facility
+    /**
+     * Checks if the user has a facility profile and launches the appropriate activity.
+     */
     private void checkFacilityProfileAndLaunch() {
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
@@ -152,6 +138,7 @@ public class UserHomeActivity extends AppCompatActivity {
                     Log.e(TAG, "No user found with this device ID");
                     Toast.makeText(UserHomeActivity.this, "Couldn't load user information, try again", Toast.LENGTH_SHORT).show();
                     finish();
+                    return;
                 }
                 Facility facility = currentUser.getFacility();
                 if (facility == null) {

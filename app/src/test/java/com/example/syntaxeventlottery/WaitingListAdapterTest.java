@@ -27,7 +27,7 @@ public class WaitingListAdapterTest {
         mockUserList.add(new User("Device20", "test2@example.com", "0987654321", "url2", "User20", null, null));
 
         // Initialize the adapter with the mock data
-        adapter = new WaitingListAdapter(mockUserList);
+        //adapter = new WaitingListAdapter(mockUserList);
     }
 
     @Test

@@ -16,6 +16,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 
+import java.util.List;
+
 /**
  * Activity to display event details and manage event actions.
  */
@@ -323,6 +325,7 @@ public class EventDetailActivity extends AppCompatActivity {
                         Log.d(TAG, "Event draw performed: updated event info: " + result);
                         Toast.makeText(EventDetailActivity.this, "Draw performed successfully", Toast.LENGTH_SHORT).show();
                         loadEvent();
+                        checkForNewNotifications();
                     }
 
                     @Override
@@ -339,6 +342,7 @@ public class EventDetailActivity extends AppCompatActivity {
                         Log.d(TAG, "Event redraw performed: updated event info: "+  result);
                         Toast.makeText(EventDetailActivity.this, "Redraw perfomed successfully", Toast.LENGTH_SHORT).show();
                         loadEvent();
+                        checkForNewNotifications();
                     }
                     // Inside the drawButton.setOnClickListener
 
@@ -399,6 +403,27 @@ public class EventDetailActivity extends AppCompatActivity {
             public void onError(Exception e) {
                 Toast.makeText(EventDetailActivity.this, "Failed to send notifications.", Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "Error sending notifications", e);
+            }
+        });
+    }
+
+    private void checkForNewNotifications() {
+        NotificationController notificationController = new NotificationController();
+        notificationController.fetchUnreadNotificationsForUser(deviceID, new DataCallback<List<Notification>>() {
+            @Override
+            public void onSuccess(List<Notification> notifications) {
+                for (Notification notification : notifications) {
+                    // Display the notification
+                    NotificationUtils.sendNotification(EventDetailActivity.this, "Event Notification", notification.getMessage(), notification.generateNotificationId(), notification.getEventId());
+
+                    // Mark the notification as read in the database
+                    notificationController.markNotificationAsRead(notification);
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error fetching notifications", e);
             }
         });
     }

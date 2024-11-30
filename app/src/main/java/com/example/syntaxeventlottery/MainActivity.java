@@ -19,6 +19,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
+
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_NOTIFICATION_PERMISSION = 101;
     private final String TAG = "MainActivity";
@@ -30,21 +34,34 @@ public class MainActivity extends AppCompatActivity {
     private User currentUser;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private ActivityResultLauncher<String> requestPermissionLauncher;
+    private ListenerRegistration notificationListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        // Create notification channel
         NotificationUtils.createNotificationChannel(this);
 
-        requestPermissionLauncher =
-                registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+        // Initialize the permission launcher
+        requestPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
                     if (isGranted) {
-                        Log.d(TAG, "Notification permission granted.");
+                        // Permission is granted. Continue with notifications
                     } else {
-                        Toast.makeText(this, "Reject permission, you won't get notification", Toast.LENGTH_LONG).show();
                     }
-                });
+                }
+        );
+
+        // Check and request permission
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+
 
 
         // Retrieve the device ID
@@ -59,9 +76,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize UserController
         userController = new UserController(new UserRepository(), locationManager);
-
-
-
 
         // Initialize buttons
         adminButton = findViewById(R.id.adminButton);
@@ -128,11 +142,10 @@ public class MainActivity extends AppCompatActivity {
         userController = new UserController(new UserRepository(),locationManager);
         Log.d(TAG, "deviceId: " + deviceId);
 
-        // 检查权限是否已授予
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, "Location permission not granted. Please enable it.", Toast.LENGTH_SHORT).show();
-            return; // 停止操作
+            return;
         }
 
         userController.refreshRepository(new DataCallback<Void>() {
