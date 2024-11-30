@@ -117,7 +117,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
                 // Check if the event requires location permissions
                 if (event.getLocationRequired()) {
-                    handleLocationRequirement(deviceID);
+                    showLocationWarningDialog(deviceID);
                 } else {
                     updateUI(event);
                 }
@@ -131,6 +131,31 @@ public class EventDetailActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void showLocationWarningDialog(String deviceID) {
+        new AlertDialog.Builder(this)
+                .setTitle("Location Permission Required")
+                .setMessage("This event requires access to your location. Do you want to enable location access?")
+                .setCancelable(false) // Prevent dismissing by tapping outside the dialog
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    // User agrees to enable location permissions
+                    handleLocationRequirement(deviceID);
+                })
+                .setNegativeButton("No", (dialog, which) -> {
+                    // User declines to enable location permissions
+                    Toast.makeText(EventDetailActivity.this, "Location is required for this event.", Toast.LENGTH_SHORT).show();
+                    navigateToUserHome(); // Redirect to UserHomeActivity
+                })
+                .show();
+    }
+
+    private void navigateToUserHome() {
+        // Redirect the user to the UserHomeActivity
+        Intent intent = new Intent(this, UserHomeActivity.class);
+        startActivity(intent);
+        finish(); // End the current activity
+    }
+
 
     private void handleLocationRequirement(String deviceID) {
         Log.d(TAG, "Entered handleLocationRequirement with deviceID: " + deviceID);
@@ -320,12 +345,6 @@ public class EventDetailActivity extends AppCompatActivity {
         }
     }
 
-    private void navigateToUserHome() {
-        // Redirect the user to the home screen
-        Intent intent = new Intent(EventDetailActivity.this, UserHomeActivity.class);
-        startActivity(intent);
-        finish();
-    }
 
     private void updateUI(Event event) {
         // Update the UI with the event details
