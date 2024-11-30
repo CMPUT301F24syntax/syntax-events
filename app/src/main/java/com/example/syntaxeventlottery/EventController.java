@@ -62,6 +62,7 @@ public class EventController {
     public Event getEventById(String eventId) {
         // Check if eventId is null
         if (eventId == null) {
+
             return null;
         }
         ArrayList<Event> events = getLocalEventsList();

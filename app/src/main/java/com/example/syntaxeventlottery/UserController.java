@@ -1,6 +1,8 @@
 // Refactor Complete
 package com.example.syntaxeventlottery;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -74,12 +76,15 @@ public class UserController {
             return null;
         }
         ArrayList<User> users = getLocalUsersList();
+        Log.d(TAG,"usercontroller:" + "1234");
         for (User user : users) {
+            Log.d(TAG,"usercontroller:" + user.getUserID());
             if (user.getUserID().equals(deviceId)) {
+                Log.d(TAG,"usercontroller:" + user.getUserID());
                 return user;
             }
         }
-        // return null if no matching user found
+
         return null;
 
 
@@ -116,7 +121,7 @@ public class UserController {
             return;
         }
         HashMap<String, Object> data = new HashMap<>();
-        data.put("userId", user.getUserID());
+        data.put("userID", user.getUserID());
         data.put("userName", user.getUsername());
         userRepository.uploadProfilePhoto(user, data, imageUri, callback);
     }

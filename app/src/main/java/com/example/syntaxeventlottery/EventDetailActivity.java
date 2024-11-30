@@ -90,37 +90,51 @@ public class EventDetailActivity extends AppCompatActivity {
     }
 
     private void loadEvent() {
+        Log.d(TAG, "Starting loadEvent()");
         // Refresh repository to get the latest data
         eventController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
+                Log.d(TAG, "onSuccess called");
 
-                // Fetch the event by ID from the controller
-                event = eventController.getEventById(eventID);
-                Log.d(TAG, "Refreshed repository, event details:"+event);
-                Log.d(TAG, "123");
-                System.out.println(event.locationRequired());
-                // If the event is not found, show an error and finish
-                if (event == null) {
-                    Log.e(TAG, "Failed to find event in repository");
-                    Toast.makeText(EventDetailActivity.this, "Failed to find the event", Toast.LENGTH_SHORT).show();
-                    finish();  // Exit the activity as the event wasn't found
-                    return;    // Early return to prevent the rest of the code from executing
-                }
-                if (event.locationRequired()) {
-                    Log.d("test","test for location123");
-                    handleLocationRequirement();
-                } else {
+                try {
+                    // Fetch the event by ID from the controller
+                    event = eventController.getEventById(eventID);
+                    Log.d(TAG, "Refreshed repository, event details:" + event);
+
                     Log.d(TAG, "123");
-                    updateUI(event);
-                }
 
-                // display the most updated event details
+                    if (event == null) {
+                        Log.e(TAG, "Failed to find event in repository");
+                        Toast.makeText(EventDetailActivity.this, "Failed to find the event", Toast.LENGTH_SHORT).show();
+                        finish();  // Exit the activity as the event wasn't found
+                        return;    // Early return to prevent the rest of the code from executing
+                    }
+
+                    boolean locationReq = event.getlocationRequired();
+                    Log.d(TAG, "Location Required: " + locationReq);
+                    System.out.println(locationReq);
+
+                    if (locationReq) {
+                        Log.d(TAG, "Handling location requirement");
+                        updateUI(event);
+                        handleLocationRequirement();
+                    } else {
+                        Log.d(TAG, "Updating UI");
+                        updateUI(event);
+                    }
+
+                    Log.d(TAG, "Finished onSuccess");
+                    // display the most updated event details
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in onSuccess: " + e.getMessage());
+                    e.printStackTrace();
+                }
             }
 
             @Override
             public void onError(Exception e) {
-                Log.d(TAG, e.toString());
+                Log.d(TAG, "onError called: " + e.toString());
                 Toast.makeText(EventDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 finish();
             }
@@ -170,6 +184,7 @@ public class EventDetailActivity extends AppCompatActivity {
                 LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                 userController = new UserController(new UserRepository(), locationManager);
                 currentUser = userController.getUserByDeviceID(deviceID);
+                Log.d(TAG,"123456789:" + (currentUser == null));
                 userController.updateUserLocation(currentUser,this, new DataCallback<User>() {
                     @Override
                     public void onSuccess(User result) {
@@ -298,7 +313,7 @@ public class EventDetailActivity extends AppCompatActivity {
     private void setupButtonListeners() {
         // user joins waiting list
         joinWaitingListButton.setOnClickListener(v -> {
-            if (event.locationRequired()) {
+            if (event.getlocationRequired()) {
                 // Show an AlertDialog if geolocation is required
                 new AlertDialog.Builder(EventDetailActivity.this)
                         .setTitle("Geolocation Required")

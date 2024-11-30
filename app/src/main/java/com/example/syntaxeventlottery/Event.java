@@ -266,7 +266,7 @@ public class Event implements Serializable {
     }
 
     // GEOlocation
-    public boolean locationRequired() {
+    public boolean getlocationRequired() {
         return locationRequired;
     }
 
