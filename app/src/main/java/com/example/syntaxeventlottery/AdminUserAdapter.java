@@ -21,16 +21,16 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.List;
 
 public class AdminUserAdapter extends ArrayAdapter<User> {
+    private final String TAG="AdminUserAdapter";
 
     private final Context context;
-    private final List<User> userList;
-    private final FirebaseFirestore db;
+    private List<User> userList;
+    private UserController userController;
 
     public AdminUserAdapter(Context context, List<User> userList) {
         super(context, R.layout.admin_user_item, userList);
         this.context = context;
         this.userList = userList;
-        this.db = FirebaseFirestore.getInstance();
     }
 
     @NonNull
@@ -42,6 +42,9 @@ public class AdminUserAdapter extends ArrayAdapter<User> {
 
         // Get the current user based on position
         User user = userList.get(position);
+
+        // initalize user controller
+        userController = new UserController(new UserRepository());
 
         // Find and set views
         TextView userName = convertView.findViewById(R.id.userName);
@@ -61,7 +64,7 @@ public class AdminUserAdapter extends ArrayAdapter<User> {
             new AlertDialog.Builder(context)
                     .setTitle("Delete Profile")
                     .setMessage("Are you sure you want to delete this profile?")
-                    .setPositiveButton("Yes", (dialog, which) -> deleteUserProfile(user.getUserID()))
+                    .setPositiveButton("Yes", (dialog, which) -> deleteUserProfile(user))
                     .setNegativeButton("No", null)
                     .show();
         });
@@ -70,36 +73,25 @@ public class AdminUserAdapter extends ArrayAdapter<User> {
     }
 
     private void fetchUserDetailsAndShow(String userID) {
-        db.collection("Users").document(userID)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        // Prepare intent to start AdminEventDetailActivity
-                        Intent intent = new Intent(context, AdminUserDetailActivity.class);
-                        intent.putExtra("userID", userID);
-                        intent.putExtra("username", documentSnapshot.getString("username"));
-                        intent.putExtra("email", documentSnapshot.getString("email"));
-                        intent.putExtra("facility", documentSnapshot.getString("facility"));
-                        intent.putExtra("phoneNumber", documentSnapshot.getString("phoneNumber"));
-                        intent.putExtra("profilePhotoUrl", documentSnapshot.getString("profilePhotoUrl"));
-                        context.startActivity(intent);
-                    } else {
-                        Toast.makeText(context, "User not found in the database.", Toast.LENGTH_SHORT).show();
-                        Log.d("AdminUserAdapter","user ID is :"+userID);
-                    }
-                })
-                .addOnFailureListener(e -> Toast.makeText(context, "Failed to load user details", Toast.LENGTH_SHORT).show());
-
+        Intent intent = new Intent(context, AdminUserDetailActivity.class);
+        intent.putExtra("userID", userID);
+        context.startActivity(intent);
     }
 
-    private void deleteUserProfile(String userID) {
-        db.collection("Users").document(userID)
-                .delete()
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(context, "Profile deleted", Toast.LENGTH_SHORT).show();
-                    userList.removeIf(user -> user.getUserID().equals(userID));
-                    notifyDataSetChanged();
-                })
-                .addOnFailureListener(e -> Toast.makeText(context, "Failed to delete profile", Toast.LENGTH_SHORT).show());
+    private void deleteUserProfile(User user) {
+        userController.deleteUser(user, new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                Log.d(TAG, "User deleted");
+                userList.remove(user);
+                notifyDataSetChanged();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error deleting user", e);
+                Toast.makeText(AdminUserAdapter.this.getContext(), "Error deleting user: "+e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

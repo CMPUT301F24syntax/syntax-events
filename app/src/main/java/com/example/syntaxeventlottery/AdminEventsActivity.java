@@ -62,6 +62,7 @@ public class AdminEventsActivity extends AppCompatActivity {
             @Override
             public void onError(Exception e) {
                 Log.e(TAG, "Error refreshing events: " +e.getMessage());
+                Toast.makeText(AdminEventsActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -20,22 +20,26 @@ import java.util.Map;
 import java.util.Set;
 
 public class AdminUsersActivity extends AppCompatActivity {
+    private final String TAG="AdminUsersActivity";
 
     private ListView listViewUsers;
     private AdminUserAdapter userAdapter;
     private List<User> userList;
     private Button backButton;
-    private FirebaseFirestore db;
+    private UserController userController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_users_main);
 
-        // Initialize ListView, Back button, and Firestore
+        // Initialize ListView, Back button
         listViewUsers = findViewById(R.id.listViewUsers);
         backButton = findViewById(R.id.backButton);
-        db = FirebaseFirestore.getInstance();
+
+        // initialize controller
+        userController = new UserController(new UserRepository());
+
 
         // Set up Back button to close the activity
         backButton.setOnClickListener(v -> finish());
@@ -45,49 +49,26 @@ public class AdminUsersActivity extends AppCompatActivity {
         userAdapter = new AdminUserAdapter(this, userList);
         listViewUsers.setAdapter(userAdapter);
 
-        // Load users from Firestore
+        // Load most updated users
         loadUsersFromDatabase();
     }
 
     private void loadUsersFromDatabase() {
-        // Reference to the "Users" collection
-        CollectionReference usersRef = db.collection("Users");
+        // refresh user repository to get most updated data
+        userController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                userList.clear();
+                ArrayList<User> refreshedUsers = userController.getLocalUsersList();
+                userList.addAll(refreshedUsers);
+                userAdapter.notifyDataSetChanged();
+            }
 
-        usersRef.get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        QuerySnapshot querySnapshot = task.getResult();
-                        if (querySnapshot != null && !querySnapshot.isEmpty()) {
-                            // Clear the existing list to avoid duplicates
-                            userList.clear();
-                            for (DocumentSnapshot document : querySnapshot.getDocuments()) {
-                                // Retrieve data from each document and create User object
-                                String userID = document.getString("userID");
-                                String username = document.getString("username");
-                                String email = document.getString("email");
-                                String phoneNumber = document.getString("phoneNumber");
-                                String profilePhotoUrl = document.getString("profilePhotoUrl");
-                                List<String> rolesList = (List<String>) document.get("roles");
-                                Set<String> roles = new HashSet<>(rolesList);
-                                Map<String, Object> facilityMap = (Map<String, Object>) document.get("facility");
-                                Facility facility = document.toObject(Facility.class);
-
-                                // Make sure all required fields are present
-                                if (userID != null && username != null) {
-                                    User user = new User(userID, email, phoneNumber, profilePhotoUrl, username, roles, facility);
-                                    userList.add(user);
-                                }
-                            }
-                            // Notify adapter that data has changed
-                            userAdapter.notifyDataSetChanged();
-                        } else {
-                            Toast.makeText(this, "No users found in the database.", Toast.LENGTH_SHORT).show();
-                            Log.d("AdminUserActivity","aaaaaaaaaaaaaaa");
-                        }
-                    } else {
-                        Log.e("AdminUsersActivity", "Error getting documents: ", task.getException());
-                        Toast.makeText(this, "Failed to load users from database.", Toast.LENGTH_SHORT).show();
-                    }
-                });
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "error refreshing user repository", e);
+                Toast.makeText(AdminUsersActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

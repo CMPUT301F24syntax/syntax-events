@@ -136,6 +136,14 @@ public class UserRepository {
         }
     }
 
+    public void getGeneratedUserProfilePhoto(String username) {
+        // get first letter of username
+        if (Character.isLetter(username.charAt(0))) { // make sure it is a letter
+            char firstLetter = Character.toUpperCase(username.charAt(0));
+            StorageReference defaultPhotoRef = usersImageRef.child(firstLetter + ".png");
+        }
+    }
+
     public void getUserByDeviceCode(String deviceCode, DataCallback<User> callback) {
         usersRef.whereEqualTo("deviceCode", deviceCode).get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -242,7 +250,8 @@ public class UserRepository {
         return data;
     }
 
+    /*
     public String generateDefaultProfilePhotoUrl(String username) {
         return "https://robohash.org/" + username + ".png";
-    }
+    }*/
 }
