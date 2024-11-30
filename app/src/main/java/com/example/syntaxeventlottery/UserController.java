@@ -17,23 +17,18 @@ import java.util.HashMap;
 import android.Manifest;
 
 
-
-
 public class UserController {
 
     private UserRepository userRepository;
     // private LocationManager locationManager;
-
-
-
 
     public UserController(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
     public UserController(UserRepository userRepository,LocationManager locationManager) {
         this.userRepository = userRepository;
-    //    this.locationManager = locationManager;
     }
+
     // User validation
     private boolean validateUser(User user, DataCallback<?> callback) {
         if (user == null) {
