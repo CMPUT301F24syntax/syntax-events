@@ -1,6 +1,10 @@
 // EventDetailActivity.java
 package com.example.syntaxeventlottery;
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -12,8 +16,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.bumptech.glide.Glide;
 
 /**
@@ -37,14 +45,25 @@ public class EventDetailActivity extends AppCompatActivity {
     private EventController eventController;
     private String eventID, deviceID;
     private Event event;
+    // locaiton
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+    private boolean isLocationPermissionGranted = false;
+    private UserController userController;
+    private User currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (locationManager == null) {
+            Log.e(TAG, "LocationManager is null");
+            Toast.makeText(this, "Error: Unable to initialize LocationManager", Toast.LENGTH_LONG).show();
+            return;
+        }
         // initialize controller
         eventController = new EventController(new EventRepository());
-
+        userController = new UserController(new UserRepository(), locationManager);
         // Get device ID
         deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
@@ -79,6 +98,8 @@ public class EventDetailActivity extends AppCompatActivity {
                 // Fetch the event by ID from the controller
                 event = eventController.getEventById(eventID);
                 Log.d(TAG, "Refreshed repository, event details:"+event);
+                Log.d(TAG, "123");
+                System.out.println(event.locationRequired());
                 // If the event is not found, show an error and finish
                 if (event == null) {
                     Log.e(TAG, "Failed to find event in repository");
@@ -86,7 +107,15 @@ public class EventDetailActivity extends AppCompatActivity {
                     finish();  // Exit the activity as the event wasn't found
                     return;    // Early return to prevent the rest of the code from executing
                 }
-                updateUI(event); // display the most updated event details
+                if (event.locationRequired()) {
+                    Log.d("test","test for location123");
+                    handleLocationRequirement();
+                } else {
+                    Log.d(TAG, "123");
+                    updateUI(event);
+                }
+
+                // display the most updated event details
             }
 
             @Override
@@ -102,6 +131,78 @@ public class EventDetailActivity extends AppCompatActivity {
         this.event = event;
         initializeUI(event);
         displayEventDetails(event);
+    }
+    private void handleLocationRequirement() {
+        Log.d(TAG, "Entered handleLocationRequirement.");
+        AlertDialog.Builder builder = new AlertDialog.Builder(EventDetailActivity.this);
+        builder.setTitle("Location Required")
+                .setMessage("This event requires your location. Do you want to enable location permissions?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    Log.d(TAG, "User chose to enable location permissions.");
+                    checkAndRequestLocationPermission();
+                })
+                .setNegativeButton("No", (dialog, which) -> {
+                    Log.d(TAG, "User chose not to enable location permissions.");
+                    navigateToUserHome();
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+    private void navigateToUserHome() {
+        Intent intent = new Intent(EventDetailActivity.this, UserHomeActivity.class);
+        startActivity(intent);
+        finish();
+    }
+    private void checkAndRequestLocationPermission() {
+        try {
+            Log.d(TAG, "Checking and requesting location permission.");
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                Log.d(TAG, "Permission not granted. Requesting now...");
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        LOCATION_PERMISSION_REQUEST_CODE);
+            } else {
+                Log.d(TAG, "Permission already granted.");
+                isLocationPermissionGranted = true;
+                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                userController = new UserController(new UserRepository(), locationManager);
+                currentUser = userController.getUserByDeviceID(deviceID);
+                userController.updateUserLocation(currentUser,this, new DataCallback<User>() {
+                    @Override
+                    public void onSuccess(User result) {
+                        Log.d(TAG, "Location updated successfully");
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.d(TAG, "Location updated error");
+
+                    }
+                });
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Exception in checkAndRequestLocationPermission: ", e);
+        }
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        Log.d(TAG, "onRequestPermissionsResult triggered with requestCode: " + requestCode);
+
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d(TAG, "Location permission granted.");
+                isLocationPermissionGranted = true;
+
+            } else {
+                Log.d(TAG, "Location permission denied.");
+                isLocationPermissionGranted = false;
+            }
+        }
     }
 
     private void displayEventDetails(Event event) {
@@ -178,8 +279,10 @@ public class EventDetailActivity extends AppCompatActivity {
 
 
         // Determine which buttons to display
+        // Determine which buttons to display
         if (!isOrganizer) {
             displayParticipantButtons();
+            showAllParticipantButtons();
         } else {
             eventActionsTextView.setText("You are the organizer of this event!\n"
                     +"Edit event details, perfom the event draw or manage entrants who have joined");
@@ -479,4 +582,11 @@ public class EventDetailActivity extends AppCompatActivity {
         leaveWaitingListButton.setVisibility(View.GONE);
         declineInvitationButton.setVisibility(View.GONE);
     }
+    private void showAllParticipantButtons() {
+        joinWaitingListButton.setVisibility(View.VISIBLE);
+        acceptInvitationButton.setVisibility(View.VISIBLE);
+        leaveWaitingListButton.setVisibility(View.VISIBLE);
+        declineInvitationButton.setVisibility(View.VISIBLE);
+    }
 }
+

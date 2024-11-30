@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         // Set click listener for the User button
         userButton.setOnClickListener(v -> checkUserInDatabase());
         checkAndRequestNotificationPermission();
-        checkAndRequestLocationPermission();
+//        checkAndRequestLocationPermission();
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -95,14 +95,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void checkAndRequestLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_PERMISSION_REQUEST_CODE);
-        }
-    }
+//    private void checkAndRequestLocationPermission() {
+//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+//                != PackageManager.PERMISSION_GRANTED) {
+//
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+//                    LOCATION_PERMISSION_REQUEST_CODE);
+//        }
+//    }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -124,16 +124,6 @@ public class MainActivity extends AppCompatActivity {
      * If user does not have an existing profile, launch the activity which creates one
      */
     private void checkUserInDatabase() {
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        userController = new UserController(new UserRepository(),locationManager);
-        Log.d(TAG, "deviceId: " + deviceId);
-
-        // 检查权限是否已授予
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Location permission not granted. Please enable it.", Toast.LENGTH_SHORT).show();
-            return; // 停止操作
-        }
 
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
@@ -143,22 +133,10 @@ public class MainActivity extends AppCompatActivity {
                 if (currentUser == null) {
                     openCreateProfileActivity();
                 } else {
-                    userController.updateUserLocation(currentUser, MainActivity.this, new DataCallback<User>() {
-                        @Override
-                        public void onSuccess(User result) {
-                            Log.d(TAG, "Location updated successfully for user: " + result.getUserID());
-                            openUserHomeActivity(currentUser.getUserID());
-                        }
 
-                        @Override
-                        public void onError(Exception e) {
-                            Log.e(TAG, "Error updating location", e);
-                            Toast.makeText(MainActivity.this, "Error updating location: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                             openUserHomeActivity(currentUser.getUserID());
                         }
-                    });
-                }
-            }
+                    }
 
             @Override
             public void onError(Exception e) {
