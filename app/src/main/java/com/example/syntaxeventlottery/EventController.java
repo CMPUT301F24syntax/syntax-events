@@ -12,7 +12,6 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -77,7 +76,7 @@ public class EventController {
 
     public ArrayList<Event> getOrganizerEvents(String organizerID) {
         if (organizerID == null || organizerID.isEmpty()) {
-            return null; 
+            return null;
         }
         // get all events where the passed id is the event's organizer
         ArrayList<Event> organizerEvents = new ArrayList<>();
@@ -244,8 +243,6 @@ public class EventController {
     public void performDraw(Event event, Context context, DataCallback<Event> callback) {
         if (event.isDrawed()) {
             callback.onError(new IllegalArgumentException("Event draw has already been performed"));
-            sendLotteryResultNotifications(event, context);
-
             return;
         }
 
@@ -273,7 +270,16 @@ public class EventController {
         event.setDrawed(true);
 
         // Send notifications to participants
-        sendLotteryResultNotifications(event, context);
+        sendLotteryResultNotifications(event, new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error queuing notifications", e);
+            }
+        });
 
         // Save the event with the updated information
         updateEvent(event, null, null, callback);
@@ -324,45 +330,81 @@ public class EventController {
         event.setParticipants(participants);
 
         // Send notifications to participants
-        sendLotteryResultNotifications(event, context);
+        sendLotteryResultNotifications(event, new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error queuing notifications", e);
+            }
+        });
 
         // Save the updated event
         updateEvent(event, null, null, callback);
     }
 
-    public void sendLotteryResultNotifications(Event event, Context context) {
+    /**
+     * Sends lottery result notifications by adding them to the database.
+     */
+    public void sendLotteryResultNotifications(Event event, DataCallback<Void> callback) {
         UserController userController = new UserController(new UserRepository());
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
+                // Prepare lists
+                final List<String> selectedUsers = new ArrayList<>(event.getSelectedParticipants());
+                final List<String> notSelectedUsers = new ArrayList<>(event.getParticipants());
 
-                // Get the list of selected participant IDs
-                Set<String> selectedParticipantIds = new HashSet<>(event.getSelectedParticipants());
+                final String selectedMessage = "You've been selected for the event: " + event.getEventName();
+                final String notSelectedMessage = "You were not selected for the event: " + event.getEventName();
+                final String eventId = event.getEventID();
 
-                // Iterate over all participants
-                for (String userId : event.getParticipants()) {
-                    User user = userController.getUserByDeviceID(userId);
-                    if (user != null && user.isReceiveNotifications()) {
-                        if (selectedParticipantIds.contains(userId)) {
-                            // User is in selectedParticipants - send success notification
-                            String title = "Congratulations!";
-                            String message = "You've been selected for the event: " + event.getEventName();
-                            NotificationUtils.sendNotification(context, title, message, generateNotificationId(), event.getEventID());
-                        } else {
-                            // User is not in selectedParticipants - send failure notification
-                            String title = "Lottery Result";
-                            String message = "You were not selected for the event: " + event.getEventName();
-                            NotificationUtils.sendNotification(context, title, message, generateNotificationId(), event.getEventID());
-                        }
+                // Add notifications for selected users
+                addNotificationsToDatabase(selectedUsers, selectedMessage, eventId, new DataCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        Log.d(TAG, "Notifications for selected users added successfully.");
                     }
-                }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e(TAG, "Error adding notifications for selected users.", e);
+                    }
+                });
+
+                // Add notifications for not selected users
+                addNotificationsToDatabase(notSelectedUsers, notSelectedMessage, eventId, new DataCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        Log.d(TAG, "Notifications for not selected users added successfully.");
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e(TAG, "Error adding notifications for not selected users.", e);
+                    }
+                });
+
+                // Notify the original callback that the process is complete
+                callback.onSuccess(null);
             }
 
             @Override
             public void onError(Exception e) {
-                Log.e(TAG, "Error sending notifications", e);
+                Log.e(TAG, "Error refreshing user repository while sending notifications.", e);
+                callback.onError(e);
             }
         });
+    }
+
+    /**
+     * Adds notifications to the database for a list of users.
+     */
+    public void addNotificationsToDatabase(List<String> userIds, String message, String eventId, DataCallback<Void> callback) {
+        NotificationRepository notificationRepository = new NotificationRepository();
+        notificationRepository.addNotifications(userIds, message, eventId, callback);
     }
 
     private int generateNotificationId() {
@@ -502,16 +544,13 @@ public class EventController {
         }
     }
 
-    public void sendNotificationsToGroup(Event event, String group, String message, Context context, DataCallback<Void> callback) {
-        // Ensure message is assigned before the inner class
+    public void sendNotificationsToGroup(Event event, String group, String message, EventDetailActivity eventDetailActivity, DataCallback<Void> callback) {
         if (message == null || message.isEmpty()) {
             message = getDefaultMessage(group, event.getEventName());
         }
 
-        // Declare a final variable for use inside the inner class
-        final String finalMessage = message;
-
         UserController userController = new UserController(new UserRepository());
+        String finalMessage = message;
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
@@ -532,14 +571,18 @@ public class EventController {
                         return;
                 }
 
-                for (String userId : userIds) {
-                    User user = userController.getUserByDeviceID(userId);
-                    if (user != null && user.isReceiveNotifications()) {
-                        String title = "Message from Organizer";
-                        NotificationUtils.sendNotification(context, title, finalMessage, generateNotificationId(), event.getEventID());
+                addNotificationsToDatabase(userIds, finalMessage, event.getEventID(), new DataCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        callback.onSuccess(null);
                     }
-                }
-                callback.onSuccess(null);
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e(TAG, "Error adding notifications to database", e);
+                        callback.onError(e);
+                    }
+                });
             }
 
             @Override
@@ -549,6 +592,7 @@ public class EventController {
             }
         });
     }
+
 
     private String getDefaultMessage(String group, String eventName) {
         switch (group) {

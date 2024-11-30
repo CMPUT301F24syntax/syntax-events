@@ -60,6 +60,18 @@ public class Notification {
 
     public void setTimestamp(Date timestamp) { this.timestamp = timestamp; }
 
+    // Add the generateNotificationId() method
+    public int generateNotificationId() {
+        // Use a hash of the Firestore document ID to ensure uniqueness
+        if (id != null) {
+            return id.hashCode();
+        } else {
+            // Fallback to current time in milliseconds if ID is not set
+            return (int) System.currentTimeMillis();
+        }
+    }
+
+
     public String getFormattedTimestamp() {
         if (timestamp != null) {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
