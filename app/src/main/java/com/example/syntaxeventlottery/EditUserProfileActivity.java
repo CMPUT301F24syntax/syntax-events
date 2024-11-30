@@ -79,7 +79,7 @@ public class EditUserProfileActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Void result) {
                 user = userController.getUserByDeviceID(deviceID);
-                displayUserDetails(user);
+                displayUserDetails();
             }
 
             @Override
@@ -91,7 +91,7 @@ public class EditUserProfileActivity extends AppCompatActivity {
         });
     }
 
-    private void displayUserDetails(User user) {
+    private void displayUserDetails() {
         nameEditText.setText(user.getUsername());
         emailEditText.setText(user.getEmail());
         phoneEditText.setText(user.getPhoneNumber());
@@ -124,24 +124,16 @@ public class EditUserProfileActivity extends AppCompatActivity {
             @Override
             public void onError(Exception e) {
                 Log.e(TAG, "Failed to update profile", e);
-                Toast.makeText(EditUserProfileActivity.this, "Failed to update profile", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EditUserProfileActivity.this, "Failed to update profile, try again later", Toast.LENGTH_SHORT).show();
+                finish();
             }
         });
     }
 
     private void resetProfilePhoto() {
-        userController.deleteUserProfilePhoto(user, new DataCallback<User>() {
-            @Override
-            public void onSuccess(User user) {
-                Toast.makeText(EditUserProfileActivity.this, "Profile photo deleted successfully", Toast.LENGTH_SHORT).show();
-                displayUserDetails(user);
-            }
-            @Override
-            public void onError(Exception e) {
-                Log.e(TAG, "Failed to delete profile photo", e);
-                Toast.makeText(EditUserProfileActivity.this, "Failed to delete profile photo", Toast.LENGTH_SHORT).show();
-            }
-        });
+        selectedImageUri = null;
+        user.setProfilePhotoUrl(null);
+        displayUserDetails();
     }
 
     private void openImagePicker() {
