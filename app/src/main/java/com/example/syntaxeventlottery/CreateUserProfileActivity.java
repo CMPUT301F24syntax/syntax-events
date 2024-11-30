@@ -73,7 +73,7 @@ public class CreateUserProfileActivity extends AppCompatActivity {
      * Initialize UI components.
      */
     private void initializeUI() {
-        editUsername = findViewById(R.id.facilityNameEditText);
+        editUsername = findViewById(R.id.userNameEditText);
         editEmail = findViewById(R.id.edit_text_email);
         editPhone = findViewById(R.id.edit_text_phone);
         btnSave = findViewById(R.id.button_save);

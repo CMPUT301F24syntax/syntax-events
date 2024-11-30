@@ -43,7 +43,7 @@ public class UserRepository {
     }
 
     // Returns the cached list of users
-    public List<User> getLocalUsersList() {
+    public ArrayList<User> getLocalUsersList() {
         return new ArrayList<>(usersDataList);
     }
 
@@ -63,16 +63,17 @@ public class UserRepository {
                 });
     }
 
+
     public void addUserToRepo(User user, @Nullable Uri imageUri, DataCallback<User> callback) {
         usersDataList.add(user);
         HashMap<String, Object> data = userToHashData(user);
         if (imageUri != null) {
             uploadProfilePhoto(user, data, imageUri, callback);
         } else {
+            // generate default photo if there is not image uri
             if (user.getProfilePhotoUrl() == null || user.getProfilePhotoUrl().isEmpty()) {
-                user.setProfilePhotoUrl(generateDefaultProfilePhotoUrl(user.getUsername()));
+                uploadDefaultPhoto(user, data, callback);
             }
-            uploadUserData(user, data, callback);
         }
     }
 
@@ -86,7 +87,7 @@ public class UserRepository {
     }
 
     public void uploadProfilePhoto(User user, HashMap<String, Object> data, Uri imageUri, DataCallback<User> callback) {
-        StorageReference profilePhotoRef = usersImageRef.child("user_images/" + user.getUserID() + ".png");
+        StorageReference profilePhotoRef = usersImageRef.child("user_images/" + user.getUserID());
         profilePhotoRef.putFile(imageUri)
                 .addOnSuccessListener(taskSnapshot ->
                         profilePhotoRef.getDownloadUrl()
@@ -129,83 +130,33 @@ public class UserRepository {
         if (imageUri != null) {
             uploadProfilePhoto(user, data, imageUri, callback);
         } else {
+            // generate default photo if there is not image uri
             if (user.getProfilePhotoUrl() == null || user.getProfilePhotoUrl().isEmpty()) {
-                user.setProfilePhotoUrl(generateDefaultProfilePhotoUrl(user.getUsername()));
+                uploadDefaultPhoto(user, data, callback);
             }
-            uploadUserData(user, data, callback);
         }
     }
 
-    public void getGeneratedUserProfilePhoto(String username) {
+    public void uploadDefaultPhoto(User user, HashMap<String, Object> data, DataCallback<User> callback) {
+        String username = user.getUsername();
         // get first letter of username
         if (Character.isLetter(username.charAt(0))) { // make sure it is a letter
             char firstLetter = Character.toUpperCase(username.charAt(0));
             StorageReference defaultPhotoRef = usersImageRef.child(firstLetter + ".png");
+            defaultPhotoRef.getDownloadUrl()
+                    .addOnSuccessListener(url -> {
+                        data.put("profilePhotoUrl", url.toString());
+                        user.setProfilePhotoUrl(url.toString());
+                        uploadUserData(user, data, callback);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Failed to generate default profile photo");
+                        callback.onError(e);
+                    });
         }
     }
 
-    public void getUserByDeviceCode(String deviceCode, DataCallback<User> callback) {
-        usersRef.whereEqualTo("deviceCode", deviceCode).get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        User user = queryDocumentSnapshots.getDocuments().get(0).toObject(User.class);
-                        callback.onSuccess(user);
-                    } else {
-                        callback.onError(new Exception("User not found"));
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Failed to get user by device code", e);
-                    callback.onError(e);
-                });
-    }
 
-    /**
-     * Retrieves an Entrant's data from Firebase using the device ID.
-     *
-     * @param context  The context to access system services.
-     * @param callback Callback to handle the retrieved data or errors.
-     */
-    public void getEntrantByDeviceId(Context context, DataCallback<User> callback) {
-        // Retrieve the device ID
-        String deviceId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-
-        // Query Firestore to find any document in "Users" collection with deviceCode equal to deviceId
-        usersRef.whereEqualTo("deviceCode", deviceId).get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        // If a match is found, get the first document
-                        DocumentSnapshot document = queryDocumentSnapshots.getDocuments().get(0);
-                        User user = document.toObject(User.class);
-
-                        if (user != null) {
-                            user.setUserID(document.getId()); // Set the document ID as userID
-                        }
-                        callback.onSuccess(user);
-                    } else {
-                        callback.onError(new Exception("Entrant not found"));
-                    }
-                })
-                .addOnFailureListener(callback::onError);
-    }
-
-    public void deleteProfilePhoto(User user, DataCallback<User> callback) {
-        if (user.getProfilePhotoUrl() == null || user.getProfilePhotoUrl().isEmpty()) {
-            callback.onError(new Exception("No profile photo exists to be deleted"));
-            return;
-        }
-        StorageReference profilePhotoRef = storage.getReferenceFromUrl(user.getProfilePhotoUrl());
-        profilePhotoRef.delete()
-                .addOnSuccessListener(aVoid -> {
-                    user.setProfilePhotoUrl(generateDefaultProfilePhotoUrl(user.getUsername()));
-                    updateUserDetails(user, null, callback);
-                    Log.d(TAG, "Profile photo successfully deleted");
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Failed to delete profile photo");
-                    callback.onError(e);
-                });
-    }
     /**
      * Updates the user's location data in Firestore.
      *
@@ -249,9 +200,4 @@ public class UserRepository {
         data.put("receiveNotifications", user.isReceiveNotifications());
         return data;
     }
-
-    /*
-    public String generateDefaultProfilePhotoUrl(String username) {
-        return "https://robohash.org/" + username + ".png";
-    }*/
 }
