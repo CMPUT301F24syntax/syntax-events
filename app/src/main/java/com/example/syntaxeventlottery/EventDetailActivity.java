@@ -379,7 +379,6 @@ public class EventDetailActivity extends AppCompatActivity {
     }
 
     private void sendNotificationToGroup(String group) {
-        // Optional: Prompt organizer for custom message
         final EditText input = new EditText(this);
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
                 .setTitle("Send Notification")
@@ -398,6 +397,7 @@ public class EventDetailActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Void result) {
                 Toast.makeText(EventDetailActivity.this, "Notifications sent.", Toast.LENGTH_SHORT).show();
+                checkForNewNotifications();
             }
 
             @Override
