@@ -533,6 +533,10 @@ public class EventController {
             callback.onError(new IllegalArgumentException("Start date cannot be in the past"));
             return false;
         }
+        if (event.getWaitingListLimit() != null)
+            if (event.getWaitingListLimit() < event.getCapacity()) {
+            callback.onError(new IllegalArgumentException("Waiting list limit cannot be smaller than the capacity"));
+        }
         return true;
     }
 

@@ -188,9 +188,8 @@ public class OrganizerCreateEvent extends AppCompatActivity {
 
                     @Override
                     public void onError(Exception e) {
-                        Toast.makeText(OrganizerCreateEvent.this, "Start Date must later than now!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(OrganizerCreateEvent.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                         Log.e(TAG, e.toString());
-                        finish();
                     }
                 });
             }

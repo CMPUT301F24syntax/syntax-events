@@ -209,7 +209,7 @@ public class EditEventActivity extends AppCompatActivity {
             @Override
             public void onError(Exception e) {
                 Log.e(TAG, "Error updating event information");
-                finish();
+                Toast.makeText(EditEventActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
