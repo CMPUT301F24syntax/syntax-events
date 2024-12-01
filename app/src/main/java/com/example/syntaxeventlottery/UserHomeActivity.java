@@ -14,6 +14,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -37,8 +41,13 @@ public class UserHomeActivity extends AppCompatActivity {
     private User currentUser;
     private final String TAG = "UserHomeActivity";
 
+    // Notification
+    private ListenerRegistration notificationListener;
+    private String deviceId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_home_page);
 
@@ -88,21 +97,27 @@ public class UserHomeActivity extends AppCompatActivity {
         updateDateTime();
     }
 
+
     /**
-     * Loads waitlisted events for the current user.
-     */
+
+     Loads waitlisted events for the current user.*/
     private void loadUserWaitlistedEvents() {
-        eventController.getUserWaitlistedEvents(deviceID, new DataCallback<ArrayList<Event>>() {
-            @Override
-            public void onSuccess(ArrayList<Event> waitlistedEvents) {
-                Log.d(TAG, "Waitlisted events loaded successfully");
-                eventAdapter.updateEvents(waitlistedEvents);
-            }
+        eventController.refreshRepository(new DataCallback<Void>() {@Override
+        public void onSuccess(Void result) {
+            eventController.getUserWaitlistedEvents(deviceID, new DataCallback<ArrayList<Event>>() {@Override
+            public void onSuccess(ArrayList<Event> result) {
+                eventAdapter.updateEvents(result);}
+
+                @Override
+                public void onError(Exception e) {
+
+                }
+            });
+        }
 
             @Override
             public void onError(Exception e) {
-                Log.e(TAG, "Failed to Load Waitlisted events", e);
-                Toast.makeText(UserHomeActivity.this, "Failed to Load Waitlisted events", Toast.LENGTH_SHORT).show();
+
             }
         });
     }
@@ -156,5 +171,76 @@ public class UserHomeActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    /**
+     * Sets up the notification listener when the activity starts.
+     */
+    @Override
+    protected void onStart() {
+        super.onStart();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // Set up a listener for new notifications specific to this device
+        notificationListener = db.collection("notifications")
+                .whereEqualTo("deviceId", deviceId)
+                .whereEqualTo("isRead", false)
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        Log.w(TAG, "Listen failed.", e);
+                        return;
+                    }
+
+                    if (snapshots != null && !snapshots.isEmpty()) {
+                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                            if (dc.getType() == DocumentChange.Type.ADDED) {
+                                try {
+                                    Notification notification = dc.getDocument().toObject(Notification.class);
+                                    notification.setId(dc.getDocument().getId());
+
+                                    // Send system notification
+                                    NotificationUtils.sendNotification(
+                                            getApplicationContext(),
+                                            "Event Notification",
+                                            notification.getMessage(),
+                                            notification.generateNotificationId(),
+                                            notification.getEventId()
+                                    );
+
+                                    markNotificationAsRead(notification);
+                                } catch (Exception ex) {
+                                    Log.e(TAG, "Failed to deserialize notification", ex);
+                                }
+                            }
+                        }
+                    }
+                });
+    }
+
+    /**
+     * Removes the notification listener when the activity stops.
+     */
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (notificationListener != null) {
+            notificationListener.remove();
+            notificationListener = null;
+        }
+    }
+
+    /**
+     * Marks a notification as read in Firestore.
+     *
+     * @param notification The notification to mark as read.
+     */
+    private void markNotificationAsRead(Notification notification) {
+        if (notification == null || notification.getId() == null) return;
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("notifications").document(notification.getId())
+                .update("isRead", true)
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Notification marked as read"))
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to mark notification as read", e));
     }
 }
