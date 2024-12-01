@@ -1,5 +1,6 @@
 package com.example.syntaxeventlottery;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.DocumentReference;
 
+import java.util.ArrayList;
+
 /**
  * The {@code AdminUserDetailActivity} class displays detailed information about a user
  * to administrators, including username, user ID, email, phone number, and profile image.
@@ -26,6 +29,7 @@ public class AdminUserDetailActivity extends AppCompatActivity {
     private TextView userNameTextView, userIdTextView, userEmailTextView, userPhoneTextView, userFacilityNameTextView, userFacilityLocationTextView;
     private ImageView profileImageView;
     private UserController userController;
+    private EventController eventController;
     private String userID;
     private User user;
 
@@ -34,8 +38,9 @@ public class AdminUserDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_user_detail);
 
-        // Initialize user controller
+        // Initialize controllers
         userController = new UserController(new UserRepository());
+        eventController = new EventController(new EventRepository());
 
         // Initialize views
         backButton = findViewById(R.id.backButton);
@@ -62,7 +67,19 @@ public class AdminUserDetailActivity extends AppCompatActivity {
         deleteImageButton.setOnClickListener(v -> deleteProfileImage());
 
         // Set up delete facility button functionality
-        deleteFacilityButton.setOnClickListener(v -> deleteFacility());
+        deleteFacilityButton.setOnClickListener(v -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("Delete Facility")
+                    .setMessage("Are you sure you want to delete this facility profile? All events associated with this facility will also be deleted.")
+                    .setPositiveButton("Yes, Delete", (dialog, which) -> {
+                        deleteFacility();
+                    })
+                    .setNegativeButton("Cancel", (dialog, which) -> {
+                        dialog.dismiss(); // Dismiss the dialog if the user cancels
+                    })
+                    .setCancelable(false) // Prevent dismissal by clicking outside the dialog
+                    .show();
+        });
     }
 
     // get the most updated user info
@@ -116,7 +133,7 @@ public class AdminUserDetailActivity extends AppCompatActivity {
     }
 
     /**
-     * Deletes the user's facility profile
+     * Deletes the user's facility profile, and all events created with this profile
      */
     private void deleteFacility() {
         user.setFacility(null);
@@ -124,6 +141,7 @@ public class AdminUserDetailActivity extends AppCompatActivity {
             @Override
             public void onSuccess(User result) {
                 Toast.makeText(AdminUserDetailActivity.this, "Deleted user facility profile", Toast.LENGTH_SHORT).show();
+                deleteFacilityEvents(result.getUserID());
                 loadUserDetails();
             }
 
@@ -131,6 +149,39 @@ public class AdminUserDetailActivity extends AppCompatActivity {
             public void onError(Exception e) {
                 Log.e(TAG, "failed to delete facility", e);
                 Toast.makeText(AdminUserDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // delete events which are held at this facility
+    private void deleteFacilityEvents(String userID) {
+        eventController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                ArrayList<Event> facilityEvents = eventController.getOrganizerEvents(userID);
+                if (facilityEvents.isEmpty()) {
+                    Log.d(TAG, "No events to delete for this facility");
+                    Toast.makeText(AdminUserDetailActivity.this, "Facility profile deleted successfully", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                for (Event e : facilityEvents) {
+                    eventController.deleteEvent(e, new DataCallback<Void>() {
+                        @Override
+                        public void onSuccess(Void result) {
+
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+                            Log.e(TAG, "Failed to delete an event");
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Failed to refresh event repository");
             }
         });
     }
