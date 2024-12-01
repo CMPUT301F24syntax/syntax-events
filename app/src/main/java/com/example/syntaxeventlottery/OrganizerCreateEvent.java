@@ -146,12 +146,6 @@ public class OrganizerCreateEvent extends AppCompatActivity {
             return; // return if dates are not parsed correctly
         }
 
-        // Check date order
-        if (startDate.after(endDate)) {
-            Toast.makeText(this, "Start date is after event ends", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         // Parse capacity and limit after validation
         int capacity = Integer.parseInt(capacityStr);
         Integer waitingListLimit = null;
