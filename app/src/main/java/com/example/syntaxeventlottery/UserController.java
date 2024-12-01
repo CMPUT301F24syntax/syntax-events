@@ -88,7 +88,7 @@ public class UserController {
 
     public void updateUser(User user, @Nullable Uri imageUri, DataCallback<User> callback) {
         if (!validateUser(user, callback)) {
-            return;
+            Log.d("UserController"," invalid user when updating");
         }
         userRepository.updateUserDetails(user, imageUri, callback);
     }

@@ -133,6 +133,9 @@ public class UserRepository {
             // generate default photo if there is not image uri
             if (user.getProfilePhotoUrl() == null || user.getProfilePhotoUrl().isEmpty()) {
                 uploadDefaultPhoto(user, data, callback);
+            } else {
+                // if only updating other information
+                uploadUserData(user, data, callback);
             }
         }
     }

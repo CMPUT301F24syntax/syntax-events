@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,8 +24,10 @@ public class OrganizerActivity extends AppCompatActivity {
 
     private Button createEventButton;
     private Button backButton;
+    private Button manageFacilityButton;
     private RecyclerView eventRecyclerView;
     private EventAdapter eventAdapter;
+    private TextView organizerEventDetailTextView;
     private String deviceID;
     private EventController eventController;
     private UserController userController;
@@ -38,7 +41,9 @@ public class OrganizerActivity extends AppCompatActivity {
         // Initialize UI components
         createEventButton = findViewById(R.id.createEventButton);
         backButton = findViewById(R.id.backButton);
+        manageFacilityButton = findViewById(R.id.manageFacilityButton);
         eventRecyclerView = findViewById(R.id.eventRecyclerView);
+        organizerEventDetailTextView = findViewById(R.id.organizerEventDetailTextView);
 
         // Get device ID
         deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -53,6 +58,11 @@ public class OrganizerActivity extends AppCompatActivity {
         userController = new UserController(new UserRepository());
 
         fetchUpdatedUserInfo();
+
+        manageFacilityButton.setOnClickListener(v -> {
+            Intent intent = new Intent(OrganizerActivity.this, ManageFacilityProfileActivity.class);
+            startActivity(intent);
+        });
 
         // Create event button listener
         createEventButton.setOnClickListener(v -> {
@@ -110,7 +120,13 @@ public class OrganizerActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Void result) {
                 ArrayList<Event> updatedEvents = eventController.getOrganizerEvents(userId);
+
+                if (updatedEvents.isEmpty()) {
+                    organizerEventDetailTextView.setText("You have not created any events.\n" +
+                            "Click \"Create Event\" to host an event!");
+                }
                 eventAdapter.updateEvents(updatedEvents);
+
             }
 
             @Override

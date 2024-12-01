@@ -53,6 +53,8 @@
         <activity android:name=".EditUserProfileActivity" android:exported="true" />
         <activity android:name=".EditEventActivity" />
         <activity android:name=".FacilityProfileActivity" android:exported="true" />
+        <activity android:name=".ManageFacilityProfileActivity" android:exported="true" />
+
         <activity android:name=".AdminActivity"></activity>
         <activity android:name=".AdminEventsActivity"></activity>
         <activity android:name=".AdminUsersActivity"></activity>

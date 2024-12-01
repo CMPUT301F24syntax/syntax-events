@@ -71,10 +71,11 @@ public class FacilityProfileActivity extends AppCompatActivity {
             return;
         }
 
-        Facility facility = new Facility(facilityName, facilityLocation, deviceID);
+        Facility facility = new Facility(facilityName, facilityLocation, currentUser.getUserID());
         Log.d(TAG, "current user: " + currentUser);
         if (currentUser != null) {
             currentUser.setFacility(facility);
+            Log.d(TAG, "facility details:" + currentUser.getFacility().getName() + " " + currentUser.getFacility().getLocation());
             userController.updateUser(currentUser, null, new DataCallback<User>() {
                 @Override
                 public void onSuccess(User result) {

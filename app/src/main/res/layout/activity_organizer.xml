@@ -12,7 +12,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical">
-
         <!-- Organizer Icon -->
         <ImageView
             android:id="@+id/organizerIcon"
@@ -40,7 +39,17 @@
             android:text="Back"
             android:backgroundTint="@android:color/black"
             android:textColor="@android:color/white" />
+
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/organizerEventDetailTextView"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="My Created Events" />
 
     <!-- RecyclerView for Event List -->
     <androidx.recyclerview.widget.RecyclerView
@@ -49,16 +58,38 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:scrollbars="vertical"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="16dp" >
+
+    </androidx.recyclerview.widget.RecyclerView>
 
     <!-- Create Event Button -->
-    <Button
-        android:id="@+id/createEventButton"
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Create Event"
-        android:backgroundTint="@android:color/black"
-        android:textColor="@android:color/white"
-        android:layout_marginTop="16dp" />
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:gravity="center_horizontal">
+
+        <Button
+            android:id="@+id/createEventButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:backgroundTint="@android:color/black"
+            android:text="Create Event"
+            android:layout_marginEnd="12dp"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/manageFacilityButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:backgroundTint="@android:color/black"
+            android:text="Manage Facility"
+            android:layout_marginStart="12dp"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
 
 </LinearLayout>
