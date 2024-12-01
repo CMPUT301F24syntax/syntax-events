@@ -127,7 +127,7 @@ public class CreateUserProfileActivity extends AppCompatActivity {
             @Override
             public void onError(Exception e) {
                 Log.e(TAG, "Error creating new user profile", e);
-                Toast.makeText(CreateUserProfileActivity.this, "Error creating profile: "+e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(CreateUserProfileActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
