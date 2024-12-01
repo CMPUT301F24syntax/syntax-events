@@ -79,7 +79,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                     .into(holder.eventPosterImageView);
         } else {
             Glide.with(context)
-                    .load(R.drawable.ic_default_poster)
+                    .load(R.drawable.ic_no_event_poster)
                     .into(holder.eventPosterImageView);
         }
 

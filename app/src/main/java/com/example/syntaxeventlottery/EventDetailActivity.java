@@ -122,7 +122,7 @@ public class EventDetailActivity extends AppCompatActivity {
             Log.d(TAG, "Loaded poster image. poster url: " + event.getPosterUrl());
         } else {
             // load default poster
-            Glide.with(this).load(R.drawable.ic_default_poster).into(posterImageView);
+            Glide.with(this).load(R.drawable.ic_no_event_poster).into(posterImageView);
         }
 
 

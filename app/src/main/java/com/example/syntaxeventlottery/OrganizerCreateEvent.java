@@ -8,8 +8,8 @@ import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.Toast;
@@ -20,6 +20,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.ContextCompat;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -39,7 +40,8 @@ public class OrganizerCreateEvent extends AppCompatActivity {
     private EditText waitingListLimitEditText;
     private Button createEventButton;
     private Button backButton;
-    private Button uploadButton;
+    private ImageButton uploadPosterButton;
+    private ImageButton resetPosterButton;
     private SwitchCompat waitingListLimitSwitch;
     private ImageView eventImageView;
     private Uri imageUri;
@@ -73,9 +75,11 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         waitingListLimitEditText = findViewById(R.id.waitingListLimitEditText);
         createEventButton = findViewById(R.id.createEventButton);
         backButton = findViewById(R.id.backButton);
-        uploadButton = findViewById(R.id.updatePosterButton);
+        uploadPosterButton = findViewById(R.id.updatePosterButton);
+        resetPosterButton = findViewById(R.id.resetPosterButton);
         eventImageView = findViewById(R.id.updatePosterView);
         locationRequiredSwitch = findViewById(R.id.locationRequiredSwitch);
+        eventImageView.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_no_event_poster));
 
         // Initialize controllers with repository
         eventController = new EventController(new EventRepository());
@@ -85,9 +89,15 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         backButton.setOnClickListener(v -> finish());
 
         // Image upload button listener
-        uploadButton.setOnClickListener(v -> {
+        uploadPosterButton.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             imagePickerLauncher.launch(intent);
+        });
+
+        // Reset poster button listener
+        resetPosterButton.setOnClickListener(v -> {
+            imageUri = null;
+            eventImageView.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_no_event_poster));
         });
 
         // waiting list switch listener
@@ -199,7 +209,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         eventEndDateEditText.setText("");
         capacityEditText.setText("");
         eventImageView.setImageURI(null);
-        uploadButton.setVisibility(View.VISIBLE);
+        uploadPosterButton.setVisibility(View.VISIBLE);
         imageUri = null;
     }
 

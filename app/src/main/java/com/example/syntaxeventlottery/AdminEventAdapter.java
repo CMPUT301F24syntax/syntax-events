@@ -33,7 +33,6 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
     private Context context;
     private List<Event> eventList;
     private EventController eventController;
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
 
     /**
      * Constructs a new {@code AdminEventAdapter}.
@@ -69,18 +68,28 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
 
         // Find and set views
         TextView eventName = convertView.findViewById(R.id.eventName);
-        TextView eventDescription = convertView.findViewById(R.id.eventDescription);
-        TextView eventStartDate = convertView.findViewById(R.id.eventStartDate);
+        TextView eventLocation = convertView.findViewById(R.id.eventLocation);
         TextView eventOrganizerId = convertView.findViewById(R.id.eventOrganizer);
+        TextView eventStartDate = convertView.findViewById(R.id.eventStartDate);
         ImageView posterImage = convertView.findViewById(R.id.eventPoster);
 
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd"); // Specify the desired format
+        String formattedDate = dateFormat.format(event.getStartDate());
         eventName.setText(event.getEventName());
-        eventDescription.setText(event.getDescription());
         eventOrganizerId.setText("Created by: "+event.getOrganizerId());
-        eventStartDate.setText("Start: " + dateFormat.format(event.getStartDate()));
+        eventLocation.setText("Facility: " +event.getFacilityName());
+        eventStartDate.setText("Starts: " + formattedDate);
 
         // Load the event poster image using Glide
-        Glide.with(context).load(event.getPosterUrl()).into(posterImage);
+        if (event.getPosterUrl() != null && !event.getPosterUrl().isEmpty()) {
+            Glide.with(context)
+                    .load(event.getPosterUrl())
+                    .into(posterImage);
+        } else {
+            Glide.with(context)
+                    .load(R.drawable.ic_no_event_poster)
+                    .into(posterImage);
+        }
 
         // Set click listener to fetch and show event details from the database
         convertView.setOnClickListener(v -> displayEventDetails(event.getEventID()));

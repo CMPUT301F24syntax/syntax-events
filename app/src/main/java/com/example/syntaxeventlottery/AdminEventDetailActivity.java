@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -34,7 +35,7 @@ public class AdminEventDetailActivity extends AppCompatActivity {
     private final String TAG = "AdminEventDetailActivity";
 
     private Button backButton, deletePosterButton, deleteQRCodeButton;
-    private TextView eventName, eventDescription, eventCapacity, eventStartDate, eventEndDate;
+    private TextView eventName, eventDescription, eventCapacity, eventStartDate, eventEndDate, eventDrawedStatus;
     private ImageView eventPosterImageView, eventqrCode;
     private EventController eventController;
     private String eventID;
@@ -57,6 +58,7 @@ public class AdminEventDetailActivity extends AppCompatActivity {
         eventCapacity = findViewById(R.id.eventCapacity);
         eventStartDate = findViewById(R.id.eventStartDate);
         eventEndDate = findViewById(R.id.eventEndDate);
+        eventDrawedStatus = findViewById(R.id.eventDrawedStatus);
         eventPosterImageView = findViewById(R.id.eventPoster);
         eventqrCode = findViewById(R.id.qrCode);
 
@@ -95,6 +97,12 @@ public class AdminEventDetailActivity extends AppCompatActivity {
                 eventCapacity.setText(String.valueOf(event.getCapacity()));
                 eventStartDate.setText(dateFormat.format(event.getStartDate()));
                 eventEndDate.setText(dateFormat.format(event.getEndDate()));
+
+                if (event.isDrawed()) {
+                    eventDrawedStatus.setText("Draw has not occurred");
+                } else {
+                    eventDrawedStatus.setText("Draw has occurred");
+                }
                 // Load images
                 // Load event poster image using Glide
                 if (event.getPosterUrl() != null && !event.getPosterUrl().isEmpty()) {
@@ -102,7 +110,10 @@ public class AdminEventDetailActivity extends AppCompatActivity {
                             .load(event.getPosterUrl())
                             .into(eventPosterImageView);
                 } else {
-                    eventPosterImageView.setImageResource(R.drawable.ic_default_poster); // Set default image if no URL
+                    eventPosterImageView.setImageResource(R.drawable.ic_no_event_poster); // Set default image if no URL
+                    deletePosterButton.setEnabled(false);
+                    deletePosterButton.setText("No poster to delete");
+                    deletePosterButton.setBackgroundColor(ContextCompat.getColor(AdminEventDetailActivity.this, R.color.grey));
                 }
 
                 // Load QRcode image using Glide
