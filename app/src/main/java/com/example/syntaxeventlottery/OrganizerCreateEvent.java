@@ -142,6 +142,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         Date endDate = getParsedDate(eventEndDateText);
 
         if (startDate == null || endDate == null) {
+            Toast.makeText(this, "Please follow the date format displayed", Toast.LENGTH_SHORT).show();
             return; // return if dates are not parsed correctly
         }
 
@@ -195,7 +196,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
             }
             @Override
             public void onError(Exception e) {
-                Toast.makeText(OrganizerCreateEvent.this, "Event creation Error2!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(OrganizerCreateEvent.this, "Event creation Error!", Toast.LENGTH_SHORT).show();
                 Log.e(TAG, e.toString());
                 finish();
             }
