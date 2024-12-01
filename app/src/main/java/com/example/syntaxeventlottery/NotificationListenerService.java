@@ -12,9 +12,7 @@ import android.provider.Settings;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -79,9 +77,7 @@ public class NotificationListenerService extends Service {
         );
 
         return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Listening for Notifications")
-                .setContentText("Your app is monitoring notifications.")
-                .setSmallIcon(R.mipmap.ic_launcher) // Ensure this icon exists
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentIntent(pendingIntent)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .build();

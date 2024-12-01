@@ -3,7 +3,6 @@ package com.example.syntaxeventlottery;
 import android.util.Log;
 
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;

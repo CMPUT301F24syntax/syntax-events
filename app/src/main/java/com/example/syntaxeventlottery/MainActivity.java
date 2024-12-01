@@ -148,11 +148,11 @@ public class MainActivity extends AppCompatActivity {
      * If the user does not have an existing profile, launch the activity to create one.
      */
     private void checkUserInDatabase() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Location permission not granted. Please enable it.", Toast.LENGTH_SHORT).show();
-            return;
-        }
+//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+//                != PackageManager.PERMISSION_GRANTED) {
+//            Toast.makeText(this, "Location permission not granted. Please enable it.", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
 
         userController.refreshRepository(new DataCallback<Void>() {
             @Override

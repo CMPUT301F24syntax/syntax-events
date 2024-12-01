@@ -300,7 +300,8 @@ public class EventDetailActivity extends AppCompatActivity {
             }
         } else {
             Toast.makeText(this, "Location permission is not granted.", Toast.LENGTH_SHORT).show();
-            Log.e(TAG, "Location permission not granted. Unable to proceed.");
+            Log.e(TAG, "Location permission not granted. Unable to proceed. Please turn on your location permission on your phone for this app.");
+            Log.e(TAG, "Please turn on your location permission on your phone for this app.");
         }
     }
 
@@ -316,6 +317,7 @@ public class EventDetailActivity extends AppCompatActivity {
             saveUserLocation(latitude, longitude);
 
             Toast.makeText(EventDetailActivity.this, "Real-time location retrieved: Lat=" + latitude + ", Lng=" + longitude, Toast.LENGTH_SHORT).show();
+            updateUI(event);
         }
 
         @Override

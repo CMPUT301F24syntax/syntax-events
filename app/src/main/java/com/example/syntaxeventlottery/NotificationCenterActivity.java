@@ -80,7 +80,7 @@ public class NotificationCenterActivity extends AppCompatActivity {
     private void loadNotifications() {
         db.collection("notifications")
                 .whereEqualTo("deviceId", deviceId)
-                .whereEqualTo("isRead", false)
+                .whereEqualTo("isRead", true)
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
                 .addOnCompleteListener(task -> {
