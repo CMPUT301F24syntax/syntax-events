@@ -2,8 +2,6 @@ package com.example.syntaxeventlottery;
 
 import com.google.firebase.firestore.ServerTimestamp;
 
-import org.checkerframework.checker.units.qual.A;
-
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -128,7 +126,7 @@ public class Event implements Serializable {
         return facilityLocation;
     }
 
-    public void setFacilityLocation() {
+    public void setFacilityLocation(String facilityLocation) {
         this.facilityLocation = facilityLocation;
     }
 
@@ -266,7 +264,7 @@ public class Event implements Serializable {
     }
 
     // GEOlocation
-    public boolean locationRequired() {
+    public boolean getLocationRequired() {
         return locationRequired;
     }
 

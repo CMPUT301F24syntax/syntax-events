@@ -29,7 +29,7 @@ public class UserProfileActivity extends AppCompatActivity {
     private Button backButton;
     private Button editButton;
     private ImageView profileImageView;
-    private TextView nameTextView, emailTextView, phoneTextView;
+    private TextView nameTextView, emailTextView, phoneTextView, facilityTextView;
 
 
 
@@ -65,6 +65,7 @@ public class UserProfileActivity extends AppCompatActivity {
         nameTextView = findViewById(R.id.nameTextView);
         emailTextView = findViewById(R.id.emailTextView);
         phoneTextView = findViewById(R.id.phoneTextView);
+        facilityTextView = findViewById(R.id.facilityTextView);
 
         loadUserProfile();
 
@@ -112,6 +113,12 @@ public class UserProfileActivity extends AppCompatActivity {
         nameTextView.setText(user.getUsername());
         emailTextView.setText(user.getEmail());
         phoneTextView.setText(user.getPhoneNumber());
+
+        if (user.getFacility() == null || user.getFacility().getName().isEmpty()) {
+            facilityTextView.setText("No Facility Profile");
+        } else {
+            facilityTextView.setText("Facility Name: "+user.getFacility().getName());
+        }
 
         Glide.with(this)
                 .load(user.getProfilePhotoUrl())

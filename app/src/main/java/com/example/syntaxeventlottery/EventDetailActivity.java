@@ -198,7 +198,7 @@ public class EventDetailActivity extends AppCompatActivity {
     private void setupButtonListeners() {
         // user joins waiting list
         joinWaitingListButton.setOnClickListener(v -> {
-            if (event.locationRequired()) {
+            if (event.getLocationRequired()) {
                 // Show an AlertDialog if geolocation is required
                 new AlertDialog.Builder(EventDetailActivity.this)
                         .setTitle("Geolocation Required")

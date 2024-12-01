@@ -119,6 +119,7 @@ public class AdminEventDetailActivity extends AppCompatActivity {
             public void onError(Exception e) {
                 Log.e(TAG, "Failed to update event repository", e);
                 Toast.makeText(AdminEventDetailActivity.this, "Failed to update event repository", Toast.LENGTH_SHORT).show();
+                finish();
             }
         });
     }
@@ -138,6 +139,7 @@ public class AdminEventDetailActivity extends AppCompatActivity {
 
             @Override
             public void onError(Exception e) {
+                Toast.makeText(AdminEventDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "Error updating event ", e);
                 return;
             }
@@ -159,6 +161,7 @@ public class AdminEventDetailActivity extends AppCompatActivity {
 
             @Override
             public void onError(Exception e) {
+                Toast.makeText(AdminEventDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "Error updating event ", e);
             }
         });

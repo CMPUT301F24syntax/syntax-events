@@ -20,7 +20,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 /**
  * The EditEventActivity class allows organizers to edit event details.
@@ -115,7 +114,7 @@ public class EditEventActivity extends AppCompatActivity {
         editStartDate.setText(startDateStr);
         editEndDate.setText(endDateStr);
         editCapacity.setText(String.valueOf(currentEvent.getCapacity()));
-        locationSwitch.setChecked(currentEvent.locationRequired());
+        locationSwitch.setChecked(currentEvent.getLocationRequired());
     }
 
     /**

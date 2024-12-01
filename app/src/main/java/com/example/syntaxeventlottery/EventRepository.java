@@ -216,7 +216,7 @@ public class EventRepository  {
         data.put("capacityFull", event.getCapacityFull());
         data.put("waitingListFull", event.getWaitingListFull());
         data.put("drawed", event.isDrawed());
-        data.put("locationRequired", event.locationRequired());
+        data.put("locationRequired", event.getLocationRequired());
         data.put("locationDetails", event.getLocationDetails());
         return data;
     }

@@ -127,6 +127,7 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
 
             @Override
             public void onError(Exception e) {
+                Toast.makeText(AdminEventAdapter.this.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "error deleting event", e);
             }
         });
