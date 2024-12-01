@@ -58,6 +58,12 @@ public class MainActivity extends AppCompatActivity {
         // Check and request notification permission
         checkAndRequestNotificationPermission();
 
+        // Start the foreground service
+        startNotificationListenerService();
+
+        // Check and request notification permission
+        checkAndRequestNotificationPermission();
+
         // Retrieve the device ID
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
@@ -86,6 +92,18 @@ public class MainActivity extends AppCompatActivity {
 
         // Check and request location permission
         checkAndRequestLocationPermission();
+    }
+
+    /**
+     * Starts the NotificationListenerService as a foreground service.
+     */
+    private void startNotificationListenerService() {
+        Intent serviceIntent = new Intent(this, NotificationListenerService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ContextCompat.startForegroundService(this, serviceIntent);
+        } else {
+            startService(serviceIntent);
+        }
     }
 
     /**

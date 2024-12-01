@@ -1,52 +1,45 @@
-// NotificationUtils.java
-
 package com.example.syntaxeventlottery;
 
+import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Build;
-import android.Manifest;
+import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-import android.util.Log;
-
-import com.google.firebase.firestore.FirebaseFirestore;
-
 public class NotificationUtils {
-    private static final String CHANNEL_ID = "event_lottery_channel";
-    private static final String CHANNEL_NAME = "Event Lottery Notifications";
-    private static final String CHANNEL_DESC = "Notifications for event lottery results";
+    private static final String CHANNEL_ID = "EventNotificationsChannel";
+    private static final String CHANNEL_NAME = "Event Notifications";
+    private static final String CHANNEL_DESCRIPTION = "Notifications for event updates";
     private static final String TAG = "NotificationUtils";
 
     /**
-     * Creates a notification channel. Required for Android 8.0 and above.
+     * Creates the notification channel (required for Android O and above).
      *
      * @param context The application context.
      */
     public static void createNotificationChannel(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Create the NotificationChannel
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    CHANNEL_NAME,
-                    NotificationManager.IMPORTANCE_DEFAULT
-            );
-            channel.setDescription(CHANNEL_DESC);
+            CharSequence name = CHANNEL_NAME;
+            String description = CHANNEL_DESCRIPTION;
+            int importance = NotificationManager.IMPORTANCE_HIGH; // High importance for immediate attention
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            channel.enableLights(true);
+            channel.setLightColor(Color.BLUE);
+            channel.enableVibration(true);
 
-            // Register the channel with the system
             NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
             if (notificationManager != null) {
                 notificationManager.createNotificationChannel(channel);
-                Log.d(TAG, "Notification channel created");
-            } else {
-                Log.e(TAG, "NotificationManager is null, channel not created");
             }
         }
     }
@@ -54,13 +47,14 @@ public class NotificationUtils {
     /**
      * Sends a system notification.
      *
-     * @param context         The application context.
-     * @param title           The notification title.
-     * @param message         The notification message.
-     * @param notificationId  Unique identifier for the notification.
-     * @param eventID         The event ID associated with the notification.
+     * @param context        The application context.
+     * @param title          The title of the notification.
+     * @param message        The message body of the notification.
+     * @param notificationId The unique ID for the notification.
+     * @param eventID        The event ID related to the notification.
      */
     public static void sendNotification(Context context, String title, String message, int notificationId, String eventID) {
+        // Intent to open EventDetailActivity when the notification is tapped
         Intent intent = new Intent(context, EventDetailActivity.class);
         intent.putExtra("eventID", eventID);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -72,10 +66,10 @@ public class NotificationUtils {
         );
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_news)
+                .setSmallIcon(R.mipmap.ic_launcher) // Ensure this icon exists
                 .setContentTitle(title)
                 .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_HIGH) // High priority for heads-up notifications
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true);
 
@@ -90,14 +84,5 @@ public class NotificationUtils {
         }
 
         notificationManager.notify(notificationId, builder.build());
-        Log.d(TAG, "Notification sent with ID: " + notificationId);
-    }
-
-    private void markNotificationAsRead(Notification notification) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("notifications").document(notification.getId())
-                .update("isRead", true)
-                .addOnSuccessListener(aVoid -> Log.d(TAG, "Notification marked as read"))
-                .addOnFailureListener(e -> Log.e(TAG, "Failed to mark notification as read", e));
     }
 }
