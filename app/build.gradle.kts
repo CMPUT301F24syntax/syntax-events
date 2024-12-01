@@ -70,6 +70,9 @@ dependencies {
     // Google Play Services
     implementation("com.google.android.gms:play-services-base:18.5.0")
 
+    // Google Map API
+    implementation("com.google.android.gms:play-services-maps:18.1.0")
+
     // AndroidX and Material dependencies
     implementation(libs.appcompat)
     implementation(libs.material)

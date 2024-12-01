@@ -169,9 +169,11 @@ public class UserRepository {
      */
     public void updateLocation(User user, ArrayList<Double> location, DataCallback<User> callback) {
         if (user == null || location == null || location.size() < 2) {
+            Log.d("Userrepo","updatelocation"+user);
             callback.onError(new Exception("Invalid user or location data"));
             return;
         }
+        Log.d("Userrepo","updatelocation11"+user);
 
         // Create a map to store the location data
         HashMap<String, Object> updateData = new HashMap<>();
@@ -200,6 +202,7 @@ public class UserRepository {
         data.put("profilePhotoUrl", user.getProfilePhotoUrl());
         data.put("username", user.getUsername());
         data.put("facility", user.getFacility());
+        data.put("location", user.getLocation());
         data.put("receiveNotifications", user.isReceiveNotifications());
         return data;
     }

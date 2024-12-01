@@ -1,27 +1,22 @@
 package com.example.syntaxeventlottery;
 
+import android.content.Intent;
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
-import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.ListenerRegistration;
 
 public class MainActivity extends AppCompatActivity {
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
@@ -33,7 +28,9 @@ public class MainActivity extends AppCompatActivity {
     private String deviceId;
     private UserController userController;
     private User currentUser;
+
     private ActivityResultLauncher<String> requestPermissionLauncher;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,21 +51,21 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
         );
-
-        // Check and request notification permission
-        checkAndRequestNotificationPermission();
+        
 
         // Retrieve the device ID
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
         // Initialize UserController
+        userController = new UserController(new UserRepository());
+
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (locationManager == null) {
             Log.e(TAG, "LocationManager is null");
             Toast.makeText(this, "Error: Unable to initialize LocationManager", Toast.LENGTH_LONG).show();
             return;
         }
-        userController = new UserController(new UserRepository(), locationManager);
+        
 
         // Initialize buttons
         adminButton = findViewById(R.id.adminButton);
@@ -84,49 +81,6 @@ public class MainActivity extends AppCompatActivity {
         // Set click listener for the User button
         userButton.setOnClickListener(v -> checkUserInDatabase());
 
-        // Check and request location permission
-        checkAndRequestLocationPermission();
-    }
-
-    /**
-     * Checks and requests notification permission for Android 13 and above.
-     */
-    private void checkAndRequestNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                    != PackageManager.PERMISSION_GRANTED) {
-                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
-            }
-        }
-    }
-
-    /**
-     * Checks and requests location permission.
-     */
-    private void checkAndRequestLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_PERMISSION_REQUEST_CODE);
-        }
-    }
-
-    /**
-     * Handles the result of permission requests.
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == REQUEST_NOTIFICATION_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG, "Notification permission granted.");
-            } else {
-                Toast.makeText(this, "Notification permission is required to receive notifications.", Toast.LENGTH_LONG).show();
-            }
-        }
     }
 
     /**
@@ -134,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
      * If the user does not have an existing profile, launch the activity to create one.
      */
     private void checkUserInDatabase() {
+        Log.d(TAG, "deviceId: " + deviceId);
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, "Location permission not granted. Please enable it.", Toast.LENGTH_SHORT).show();
@@ -144,24 +99,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Void result) {
                 currentUser = userController.getUserByDeviceID(deviceId);
-                Log.d(TAG, "Current user: " + currentUser);
+                Log.d(TAG, "current user " + currentUser);
                 if (currentUser == null) {
                     openCreateProfileActivity();
                 } else {
-                    userController.updateUserLocation(currentUser, MainActivity.this, new DataCallback<User>() {
-                        @Override
-                        public void onSuccess(User result) {
-                            Log.d(TAG, "Location updated successfully for user: " + result.getUserID());
-                            openUserHomeActivity(currentUser.getUserID());
-                        }
-
-                        @Override
-                        public void onError(Exception e) {
-                            Log.e(TAG, "Error updating location", e);
-                            Toast.makeText(MainActivity.this, "Error updating location: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            openUserHomeActivity(currentUser.getUserID());
-                        }
-                    });
+                    openUserHomeActivity(currentUser.getUserID());
                 }
             }
 
@@ -181,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
     private void openUserHomeActivity(String userId) {
         Toast.makeText(this, "Welcome back!", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(MainActivity.this, UserHomeActivity.class);
-        intent.putExtra("USER_ID", userId);
+        intent.putExtra("userId", userId);
         startActivity(intent);
     }
 
@@ -191,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
     private void openCreateProfileActivity() {
         Toast.makeText(this, "User Mode Selected", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(MainActivity.this, CreateUserProfileActivity.class);
-        intent.putExtra("DEVICE_ID", deviceId);
+        intent.putExtra("deviceId", deviceId);
         startActivity(intent);
     }
 

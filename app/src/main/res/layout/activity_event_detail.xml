@@ -178,6 +178,15 @@
                 tools:visibility="gone" />
 
             <Button
+                android:id="@+id/viewMapButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="0dp"
+                android:text="View Map"
+                android:visibility="visible"
+                tools:visibility="gone" />
+
+            <Button
                 android:id="@+id/drawParticipantsButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

@@ -43,6 +43,7 @@ public class EventRepository  {
                 .addOnSuccessListener(querySnapshot -> {
                     eventsDataList.clear();
                     for (QueryDocumentSnapshot doc : querySnapshot) {
+                        Log.d(TAG, "AAARaw event data: " + doc.getData()); // print raw data
                         Event event = doc.toObject(Event.class);
 
                         if (event.getParticipants() == null) {
@@ -59,14 +60,14 @@ public class EventRepository  {
                         }
 
                         eventsDataList.add(event);
+                        Log.d(TAG, "AAAMapped event: " + event.getLocationRequired()); // print data after mapping
                     }
-                    Log.d(TAG, "Local Events List updated");
                     callback.onSuccess(null);
                 })
                 .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error fetching events", e);
                     callback.onError(e);
                 });
+
     }
 
     public void addEventToRepo(Event event, @Nullable Uri imageUri, Bitmap qrCodeBitmap, DataCallback<Event> callback) {
@@ -216,7 +217,7 @@ public class EventRepository  {
         data.put("capacityFull", event.getCapacityFull());
         data.put("waitingListFull", event.getWaitingListFull());
         data.put("drawed", event.isDrawed());
-        data.put("locationRequired", event.getLocationRequired());
+        data.put("isLocationRequired", event.getLocationRequired());
         data.put("locationDetails", event.getLocationDetails());
         return data;
     }

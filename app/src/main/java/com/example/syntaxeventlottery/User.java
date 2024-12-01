@@ -142,6 +142,7 @@ public class User implements Serializable {
                 ", username='" + username + '\'' +
                 ", facility='" + facility + '\'' +
                 ", roles='" + roles +
+                ", location='" + location +
                 '}';
     }
 }
