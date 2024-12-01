@@ -19,13 +19,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.ListenerRegistration;
-
 public class MainActivity extends AppCompatActivity {
-    private static final int REQUEST_NOTIFICATION_PERMISSION = 101;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+    private static final int REQUEST_NOTIFICATION_PERMISSION = 101;
     private static final String TAG = "MainActivity";
 
     private Button adminButton;
@@ -33,7 +29,6 @@ public class MainActivity extends AppCompatActivity {
     private String deviceId;
     private UserController userController;
     private User currentUser;
-    private ListenerRegistration notificationListener;
     private ActivityResultLauncher<String> requestPermissionLauncher;
 
     @Override
@@ -55,6 +50,12 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
         );
+
+        // Check and request notification permission
+        checkAndRequestNotificationPermission();
+
+        // Start the foreground service
+        startNotificationListenerService();
 
         // Check and request notification permission
         checkAndRequestNotificationPermission();
@@ -86,7 +87,19 @@ public class MainActivity extends AppCompatActivity {
         userButton.setOnClickListener(v -> checkUserInDatabase());
 
         // Check and request location permission
-        checkAndRequestLocationPermission();
+        // checkAndRequestLocationPermission();
+    }
+
+    /**
+     * Starts the NotificationListenerService as a foreground service.
+     */
+    private void startNotificationListenerService() {
+        Intent serviceIntent = new Intent(this, NotificationListenerService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ContextCompat.startForegroundService(this, serviceIntent);
+        } else {
+            startService(serviceIntent);
+        }
     }
 
     /**
@@ -149,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
                 if (currentUser == null) {
                     openCreateProfileActivity();
                 } else {
-                    userController.updateUserLocation(currentUser, MainActivity.this, new DataCallback<User>() {
+                    userController.updateUserLocation_main(currentUser, MainActivity.this, new DataCallback<User>() {
                         @Override
                         public void onSuccess(User result) {
                             Log.d(TAG, "Location updated successfully for user: " + result.getUserID());
@@ -203,78 +216,5 @@ public class MainActivity extends AppCompatActivity {
      */
     private void handleDatabaseError(Exception e) {
         Toast.makeText(this, "Error checking device ID: " + e.getMessage(), Toast.LENGTH_LONG).show();
-    }
-
-    /**
-     * Sets up the notification listener when the activity starts.
-     */
-    @Override
-    protected void onStart() {
-        super.onStart();
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        // Set up a listener for new notifications specific to this device
-        notificationListener = db.collection("notifications")
-                .whereEqualTo("deviceId", deviceId)
-                .whereEqualTo("isRead", false)
-                .addSnapshotListener((snapshots, e) -> {
-                    if (e != null) {
-                        Log.w(TAG, "Listen failed.", e);
-                        return;
-                    }
-
-                    if (snapshots != null && !snapshots.isEmpty()) {
-                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                            if (dc.getType() == DocumentChange.Type.ADDED) {
-                                try {
-                                    Notification notification = dc.getDocument().toObject(Notification.class);
-                                    notification.setId(dc.getDocument().getId());
-
-                                    // Send system notification
-                                    NotificationUtils.sendNotification(
-                                            getApplicationContext(),
-                                            "Event Notification",
-                                            notification.getMessage(),
-                                            notification.generateNotificationId(),
-                                            notification.getEventId()
-                                    );
-
-                                    // Optionally mark the notification as read
-                                    markNotificationAsRead(notification);
-                                } catch (Exception ex) {
-                                    Log.e(TAG, "Failed to deserialize notification", ex);
-                                    // Handle the error, e.g., skip this notification
-                                }
-                            }
-                        }
-                    }
-                });
-    }
-
-    /**
-     * Removes the notification listener when the activity stops.
-     */
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (notificationListener != null) {
-            notificationListener.remove();
-            notificationListener = null;
-        }
-    }
-
-    /**
-     * Marks a notification as read in Firestore.
-     *
-     * @param notification The notification to mark as read.
-     */
-    private void markNotificationAsRead(Notification notification) {
-        if (notification == null || notification.getId() == null) return;
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("notifications").document(notification.getId())
-                .update("isRead", true)
-                .addOnSuccessListener(aVoid -> Log.d(TAG, "Notification marked as read"))
-                .addOnFailureListener(e -> Log.e(TAG, "Failed to mark notification as read", e));
     }
 }

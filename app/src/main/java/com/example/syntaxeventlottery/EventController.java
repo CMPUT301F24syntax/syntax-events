@@ -487,6 +487,70 @@ public class EventController {
         });
     }
 
+    public void getUserSelectedEvents(String userId, DataCallback<ArrayList<Event>> callback) {
+        refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                ArrayList<Event> events = getLocalEventsList();
+                ArrayList<Event> userSelectedEvents = new ArrayList<>();
+                for (Event event : events) {
+                    if (isUserInSelectedList(event, userId)) {
+                        userSelectedEvents.add(event);
+                    }
+                }
+                callback.onSuccess(userSelectedEvents);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                callback.onError(e);
+            }
+        });
+    }
+
+    public void getUserConfirmedEvents(String userId, DataCallback<ArrayList<Event>> callback) {
+        refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                ArrayList<Event> events = getLocalEventsList();
+                ArrayList<Event> userConfirmedEvents = new ArrayList<>();
+                for (Event event : events) {
+                    if (isUserInConfirmedList(event, userId)) {
+                        userConfirmedEvents.add(event);
+                    }
+                }
+                callback.onSuccess(userConfirmedEvents);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                callback.onError(e);
+            }
+        });
+    }
+
+    public void getUserCancelledEvents(String userId, DataCallback<ArrayList<Event>> callback) {
+        refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                ArrayList<Event> events = getLocalEventsList();
+                ArrayList<Event> userCancelledEvents = new ArrayList<>();
+                for (Event event : events) {
+                    if (isUserInCancelledList(event, userId)) {
+                        userCancelledEvents.add(event);
+                    }
+                }
+                callback.onSuccess(userCancelledEvents);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                callback.onError(e);
+            }
+        });
+    }
+
+
 
     //------------ event object helper methods -----------//
     /**

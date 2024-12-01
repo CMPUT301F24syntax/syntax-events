@@ -8,4 +8,19 @@
     <string name="email">Email</string>
     <string name="phone">Phone Number</string>
     <string name="save">Save</string>
+    <string name="app_title">Syntax Event Lottery</string>
+    <string name="syntax_event_lottery">Syntax Event Lottery</string>
+    <string name="waitlisted_events">Waitlisted Events</string>
+    <string name="selected_events">Selected Events</string>
+    <string name="enrolled_events">Enrolled Events</string>
+    <string name="qr_scan">QR Scan</string>
+    <string name="notifications">Notifications</string>
+    <string name="home">Home</string>
+    <string name="qr_scan_icon">QR Scan Icon</string>
+    <string name="notifications_button">Notifications Button</string>
+    <string name="home_button">Home Button</string>
+    <string name="organizer">Organizer</string>
+    <string name="organizer_button">Organizer Button</string>
+    <string name="profile_button">Profile Button</string>
+    <string name="profile">Profile</string>
 </resources>
