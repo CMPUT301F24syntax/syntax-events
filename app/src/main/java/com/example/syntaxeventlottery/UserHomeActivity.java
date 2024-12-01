@@ -69,17 +69,11 @@ public class UserHomeActivity extends AppCompatActivity {
         waitlistedEventsAdapter = new EventAdapter(new ArrayList<>(), this);
         waitlistedEventsRecyclerView.setAdapter(waitlistedEventsAdapter);
 
-        // Load Waitlisted Events
-        loadUserWaitlistedEvents();
-
         // Set up RecyclerView for Selected Events
         selectedEventsRecyclerView = findViewById(R.id.selectedEventsRecyclerView);
         selectedEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         selectedEventsAdapter = new EventAdapter(new ArrayList<>(), this);
         selectedEventsRecyclerView.setAdapter(selectedEventsAdapter);
-
-        // Load Selected Events
-        loadUserSelectedEvents();
 
         // Set up RecyclerView for Enrolled Events
         enrolledEventsRecyclerView = findViewById(R.id.enrolledEventsRecyclerView);
@@ -87,8 +81,8 @@ public class UserHomeActivity extends AppCompatActivity {
         enrolledEventsAdapter = new EventAdapter(new ArrayList<>(), this);
         enrolledEventsRecyclerView.setAdapter(enrolledEventsAdapter);
 
-        // Load Enrolled Events
-        loadUserEnrolledEvents();
+        //load all user events
+        loadUserEvents(deviceID);
 
         // Set Button Listeners
         organizerButton.setOnClickListener(v -> checkFacilityProfileAndLaunch());
@@ -114,82 +108,21 @@ public class UserHomeActivity extends AppCompatActivity {
     /**
      Loads waitlisted events for the current user.
      */
-    private void loadUserWaitlistedEvents() {
+    private void loadUserEvents(String deviceID) {
         eventController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                eventController.getUserWaitlistedEvents(deviceID, new DataCallback<ArrayList<Event>>() {
-                    @Override
-                    public void onSuccess(ArrayList<Event> result) {
-                        waitlistedEventsAdapter.updateEvents(result);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Log.e(TAG, "Error loading user waitlisted events", e);
-
-                    }
-                });
+                waitlistedEventsAdapter.updateEvents(eventController.getUserWaitlistedEvents(deviceID));
+                selectedEventsAdapter.updateEvents(eventController.getUserSelectedEvents(deviceID));
+                enrolledEventsAdapter.updateEvents(eventController.getUserEnrolledEvents(deviceID));
             }
-
             @Override
             public void onError(Exception e) {
                 Log.e(TAG, "Error refreshing events");
+                Toast.makeText(UserHomeActivity.this, "Failed to retrieve your events, try again later", Toast.LENGTH_SHORT).show();
             }
         });
     }
-
-    private void loadUserSelectedEvents() {
-        eventController.refreshRepository(new DataCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                eventController.getUserSelectedEvents(deviceID, new DataCallback<ArrayList<Event>>() {
-                    @Override
-                    public void onSuccess(ArrayList<Event> result) {
-                        selectedEventsAdapter.updateEvents(result);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Log.e(TAG, "Error loading user selected events", e);
-
-                    }
-                });
-            }
-
-            @Override
-            public void onError(Exception e) {
-                Log.e(TAG, "Error refreshing events");
-            }
-        });
-    }
-
-    private void loadUserEnrolledEvents() {
-        eventController.refreshRepository(new DataCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                eventController.getUserConfirmedEvents(deviceID, new DataCallback<ArrayList<Event>>() {
-                    @Override
-                    public void onSuccess(ArrayList<Event> result) {
-                        enrolledEventsAdapter.updateEvents(result);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Log.e(TAG, "Error loading user enrolled events", e);
-
-                    }
-                });
-            }
-
-            @Override
-            public void onError(Exception e) {
-                Log.e(TAG, "Error refreshing events");
-            }
-        });
-    }
-
-
 
     /**
      * Checks if the user has a facility profile and launches the appropriate activity.
@@ -222,6 +155,14 @@ public class UserHomeActivity extends AppCompatActivity {
             }
         });
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh the event data
+        loadUserEvents(deviceID);
+    }
+
 
     /**
      * Sets up the notification listener when the activity starts.

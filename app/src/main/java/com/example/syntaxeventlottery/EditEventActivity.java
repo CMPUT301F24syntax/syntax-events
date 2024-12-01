@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.Toast;
@@ -16,6 +17,9 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
+import com.bumptech.glide.Glide;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -36,7 +40,8 @@ public class EditEventActivity extends AppCompatActivity {
     private EditText editCapacity;
     private Button saveEventButton;
     private Button backButton;
-    private Button updatePosterButton;
+    private ImageButton updatePosterButton;
+    private ImageButton resetPosterButton;
     private ImageView updatePosterView;
     private Switch locationSwitch;
     private Uri imageUri;
@@ -68,6 +73,7 @@ public class EditEventActivity extends AppCompatActivity {
         saveEventButton = findViewById(R.id.saveEventButton);
         backButton = findViewById(R.id.backButton);
         updatePosterButton = findViewById(R.id.updatePosterButton);
+        resetPosterButton = findViewById(R.id.resetPosterButton);
         updatePosterView = findViewById(R.id.updatePosterView);
         locationSwitch = findViewById(R.id.locationSwitch);
 
@@ -92,6 +98,13 @@ public class EditEventActivity extends AppCompatActivity {
         // Set up button listeners
         backButton.setOnClickListener(v -> finish());
         saveEventButton.setOnClickListener(v -> saveEventDetails());
+
+        resetPosterButton.setOnClickListener(v -> {
+            imageUri = null;
+            updatePosterView.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_no_event_poster));
+            currentEvent.setPosterUrl(null);
+        });
+
         updatePosterButton.setOnClickListener(v -> {
             // listener for selecting new event poster
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -115,6 +128,16 @@ public class EditEventActivity extends AppCompatActivity {
         editEndDate.setText(endDateStr);
         editCapacity.setText(String.valueOf(currentEvent.getCapacity()));
         locationSwitch.setChecked(currentEvent.getLocationRequired());
+
+        if (currentEvent.getPosterUrl() != null || !currentEvent.getPosterUrl().isEmpty()) {
+            Glide.with(this)
+                    .load(currentEvent.getPosterUrl())
+                    .into(updatePosterView);
+        } else {
+            Glide.with(this)
+                    .load(R.drawable.ic_no_event_poster)
+                    .into(updatePosterView);
+        }
     }
 
     /**

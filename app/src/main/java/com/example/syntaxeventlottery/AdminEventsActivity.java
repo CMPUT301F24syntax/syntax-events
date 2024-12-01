@@ -49,6 +49,11 @@ public class AdminEventsActivity extends AppCompatActivity {
         loadEvents();
     }
 
+    protected void onResume() {
+        super.onResume();
+        loadEvents();
+    }
+
     private void loadEvents() {
         eventController.refreshRepository(new DataCallback<Void>() {
             @Override

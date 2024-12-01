@@ -39,34 +39,41 @@
             android:backgroundTint="#FF0000"
             android:padding="8dp"
             android:textSize="16sp"
-            android:layout_gravity="end"
+            android:layout_gravity="center"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp" />
 
         <!-- QR Code Image -->
-        <ImageView
-            android:id="@+id/qrCode"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:contentDescription="QR Code"
-            android:scaleType="centerInside"
-            android:layout_marginTop="8dp" />
 
         <!-- Delete QR Code Button -->
-        <Button
-            android:id="@+id/deleteQRCodeButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Delete QR Code"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="#FF0000"
-            android:padding="8dp"
-            android:textSize="16sp"
-            android:layout_gravity="end"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="16dp" />
 
         <!-- Event Name -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/qrCode"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:layout_marginTop="8dp"
+                android:contentDescription="QR Code"
+                android:scaleType="centerInside" />
+
+            <Button
+                android:id="@+id/deleteQRCodeButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="30dp"
+                android:backgroundTint="#FF0000"
+                android:padding="8dp"
+                android:text="Delete QR Code"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp" />
+        </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -75,7 +82,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Event Name:"
+                android:text="Event Name: "
                 android:textSize="16sp" />
             <TextView
                 android:id="@+id/eventName"
@@ -95,7 +102,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Event Description:"
+                android:text="Event Description: "
                 android:textSize="16sp" />
             <TextView
                 android:id="@+id/eventDescription"
@@ -115,7 +122,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Capacity:"
+                android:text="Capacity: "
                 android:textSize="16sp" />
             <TextView
                 android:id="@+id/eventCapacity"
@@ -135,7 +142,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Start Date:"
+                android:text="Start Date: "
                 android:textSize="16sp" />
             <TextView
                 android:id="@+id/eventStartDate"
@@ -161,60 +168,28 @@
                 android:id="@+id/eventEndDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="End Date"
+                android:text="End Date: "
                 android:textSize="16sp"
                 android:textStyle="bold"/>
         </LinearLayout>
 
-=======
-        <TextView
-            android:id="@+id/eventName"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Event Name"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginTop="16dp" />
-
-        <TextView
-            android:id="@+id/eventDescription"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Event Description"
-            android:textSize="16sp"
-            android:layout_marginTop="8dp" />
-
-        <TextView
-            android:id="@+id/eventFacility"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Facility"
-            android:textSize="16sp"
-            android:layout_marginTop="8dp" />
-
-        <TextView
-            android:id="@+id/eventCapacity"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Capacity"
-            android:textSize="16sp"
-            android:layout_marginTop="8dp" />
-
-        <TextView
-            android:id="@+id/eventStartDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Start Date"
-            android:textSize="16sp"
-            android:layout_marginTop="8dp" />
-
-        <TextView
-            android:id="@+id/eventEndDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="End Date"
-            android:textSize="16sp"
-            android:layout_marginTop="8dp" />
->>>>>>> 78923537e3a3e77870018af220bea98cf7eb1dd5
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Drawed Status: "
+                android:textSize="16sp" />
+            <TextView
+                android:id="@+id/eventDrawedStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Drawed Status"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>
