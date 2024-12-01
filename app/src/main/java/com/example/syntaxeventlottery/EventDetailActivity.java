@@ -51,12 +51,10 @@ public class EventDetailActivity extends AppCompatActivity {
     private Event event;
 
     //Location
-    // locaiton
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private boolean isLocationPermissionGranted = false;
     private UserController userController;
     private User currentUser;
-    private UserRepository userRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -427,28 +425,13 @@ public class EventDetailActivity extends AppCompatActivity {
     private void configureButtonVisibility() {
         boolean isOrganizer = event.getOrganizerId().equals(deviceID);
 
-        // Organizer buttons
-        editInfoButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
-        manageParticipantsButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
-        drawButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
-        notifyWaitingListButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
-        notifySelectedEntrantsButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
-        notifyCancelledEntrantsButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
-        viewMapButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
-
         // Determine which buttons to display
         if (!isOrganizer) {
+            hideAllOrganizerButtons();
             displayParticipantButtons();
-            showAllParticipantButtons();
         } else {
-            eventActionsTextView.setText("You are the organizer of this event!\n"
-                    +"Edit event details, perfom the event draw or manage entrants who have joined");
             hideAllParticipantButtons();
-        }
-
-        // Draw button state
-        if (isOrganizer && event.isDrawed()) {
-            drawButton.setText("Draw Replacement Participants");
+            displayOrganizerButtons();
         }
     }
 
@@ -674,66 +657,82 @@ public class EventDetailActivity extends AppCompatActivity {
         boolean isInCancelledList = eventController.isUserInCancelledList(event, deviceID);
 
         // if user is not associated with the event
-        if (!isInWaitingList && !isInSelectedList && !isInCancelledList) {
-            // if the waiting list is full
-            if (event.getWaitingListFull()) {
-                eventActionsTextView.setText("Event waiting list is currently full, come back later");
+        if (!(isInWaitingList || isInSelectedList || isInCancelledList)) {
+            // if the waiting list is full or draw has occurred
+            if (event.getWaitingListFull() || event.isDrawed()) {
+                if (event.isDrawed()) {
+                    eventActionsTextView.setText("Event draw has already occurred, check out another event!");
+                } else {
+                    eventActionsTextView.setText("Event waiting list is currently full, come back later");
+                }
+                joinWaitingListButton.setVisibility(View.GONE);
+            } else {
+                eventActionsTextView.setText("Join the waiting list for a chance to participate!");
+                joinWaitingListButton.setVisibility(View.VISIBLE);
             }
-            if (event.isDrawed()) {
-                eventActionsTextView.setText("Event draw has already occurred, check out another event!");
-            }
-
-            joinWaitingListButton.setVisibility(View.GONE);
             acceptInvitationButton.setVisibility(View.GONE);
             declineInvitationButton.setVisibility(View.GONE);
             leaveWaitingListButton.setVisibility(View.GONE);
             return;
         }
 
-        // Handle Waiting List buttons
-        if (isInWaitingList && !isInSelectedList) {
+        // if user is in the waiting list
+        if (isInWaitingList) {
             eventActionsTextView.setText("You are currently in the waiting list for this event!");
+            leaveWaitingListButton.setVisibility(View.VISIBLE);
             joinWaitingListButton.setVisibility(View.GONE);
             acceptInvitationButton.setVisibility(View.GONE);
             declineInvitationButton.setVisibility(View.GONE);
-            leaveWaitingListButton.setVisibility(View.VISIBLE);
-
-
-        } else {
-            eventActionsTextView.setText("Join the waiting list for a chance to be selected to participate!");
-            leaveWaitingListButton.setVisibility(View.GONE);
-            declineInvitationButton.setVisibility(View.GONE);
-            acceptInvitationButton.setVisibility(View.GONE);
-            joinWaitingListButton.setVisibility(View.VISIBLE);
+            return;
         }
 
-        // Handle Selected List buttons
-        if (isInSelectedList && !isInConfirmedList) {
-            eventActionsTextView.setText("You have been selected to participate!\n" +
-                    "Please accept or decline your invitation as soon as possible");
+        if (isInSelectedList) {
+            eventActionsTextView.setText("You have been selected to participate!\n" + "Please accept or decline your invitation as soon as possible");
             joinWaitingListButton.setVisibility(View.GONE);
             leaveWaitingListButton.setVisibility(View.GONE);
             declineInvitationButton.setVisibility(View.VISIBLE);
             acceptInvitationButton.setVisibility(View.VISIBLE);
+            return;
         }
 
-        // Handle Confirmed List buttons
-        if (isInConfirmedList) {
-            eventActionsTextView.setText("You are currently enrolled for this event");
+        if (isInConfirmedList || isInCancelledList) {
+            if (isInConfirmedList) {
+                eventActionsTextView.setText("You are currently enrolled for this event.\n" + "See you there!");
+            } else {
+                eventActionsTextView.setText("Either you have been removed by the creator of this event or you have previously declined your invitation");
+            }
             joinWaitingListButton.setVisibility(View.GONE);
             acceptInvitationButton.setVisibility(View.GONE);
             leaveWaitingListButton.setVisibility(View.GONE);
             declineInvitationButton.setVisibility(View.GONE);
+            return;
         }
+    }
 
-        // if user has been cancelled
-        if (isInCancelledList) {
-            eventActionsTextView.setText("Either you have been removed by the creator of this event or you have previously declined your invitation");
-            joinWaitingListButton.setVisibility(View.GONE);
-            acceptInvitationButton.setVisibility(View.GONE);
-            leaveWaitingListButton.setVisibility(View.GONE);
-            declineInvitationButton.setVisibility(View.GONE);
+    private void displayOrganizerButtons() {
+        eventActionsTextView.setText("You are the organizer of this event!\n" + "Edit event details, perfom the event draw or manage entrants who have joined");
+        // Organizer buttons
+        editInfoButton.setVisibility(View.VISIBLE);
+        manageParticipantsButton.setVisibility(View.VISIBLE);
+        drawButton.setVisibility(View.VISIBLE);
+        notifyWaitingListButton.setVisibility(View.VISIBLE);
+        notifySelectedEntrantsButton.setVisibility(View.VISIBLE);
+        notifyCancelledEntrantsButton.setVisibility(View.VISIBLE);
+        viewMapButton.setVisibility(View.VISIBLE);
+        // Draw button state
+        if (event.isDrawed()) {
+            drawButton.setText("Draw Replacement Participants");
         }
+    }
+
+    private void hideAllOrganizerButtons() {
+        editInfoButton.setVisibility(View.GONE);
+        manageParticipantsButton.setVisibility(View.GONE);
+        drawButton.setVisibility(View.GONE);
+        notifyWaitingListButton.setVisibility(View.GONE);
+        notifySelectedEntrantsButton.setVisibility(View.GONE);
+        notifyCancelledEntrantsButton.setVisibility(View.GONE);
+        viewMapButton.setVisibility(View.GONE);
     }
 
     private void hideAllParticipantButtons() {
@@ -742,12 +741,4 @@ public class EventDetailActivity extends AppCompatActivity {
         leaveWaitingListButton.setVisibility(View.GONE);
         declineInvitationButton.setVisibility(View.GONE);
     }
-
-    private void showAllParticipantButtons() {
-        joinWaitingListButton.setVisibility(View.VISIBLE);
-        acceptInvitationButton.setVisibility(View.VISIBLE);
-        leaveWaitingListButton.setVisibility(View.VISIBLE);
-        declineInvitationButton.setVisibility(View.VISIBLE);
-    }
-
 }
