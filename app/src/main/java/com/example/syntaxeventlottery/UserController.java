@@ -20,11 +20,13 @@ import android.Manifest;
 public class UserController {
 
     private UserRepository userRepository;
-    // private LocationManager locationManager;
+    private LocationManager locationManager;
+
 
     public UserController(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
+
     public UserController(UserRepository userRepository,LocationManager locationManager) {
         this.userRepository = userRepository;
     }
@@ -76,8 +78,6 @@ public class UserController {
         }
         // return null if no matching user found
         return null;
-
-
     }
 
     public void addUser(User user, @Nullable Uri imageUri, DataCallback<User> callback) {
@@ -89,7 +89,7 @@ public class UserController {
 
     public void updateUser(User user, @Nullable Uri imageUri, DataCallback<User> callback) {
         if (!validateUser(user, callback)) {
-            return;
+            Log.d("UserController"," invalid user when updating");
         }
         userRepository.updateUserDetails(user, imageUri, callback);
     }
@@ -114,43 +114,31 @@ public class UserController {
 
     public void deleteUserProfilePhoto(User user, DataCallback<User> callback) {
         if (!validateUser(user, callback)) {
+            callback.onError(new IllegalArgumentException("Invalid user"));
             return;
         }
-        userRepository.deleteProfilePhoto(user, callback);
+        user.setProfilePhotoUrl(null);
+        userRepository.updateUserDetails(user, null, callback);
     }
 
     public void deleteUser(User user, DataCallback<Void> callback) {
         userRepository.deleteUserfromRepo(user, callback);
     }
 
-    public void uploadUserProfileImage(User user, Uri imageUri, DataCallback<User> callback) {
+
+    public Facility getUserFacility(User user) {
         if (user == null) {
-            callback.onError(new IllegalArgumentException("User cannot be null"));
-            return;
+            return null;
         }
-        HashMap<String, Object> data = new HashMap<>();
-        data.put("userID", user.getUserID());
-        data.put("username", user.getUsername());
-        userRepository.uploadProfilePhoto(user, data, imageUri, callback);
+
+        User userToRetrieve = getUserByDeviceID(user.getUserID());
+        if (userToRetrieve != null) {
+            return userToRetrieve.getFacility();
+        }
+        return null;
+
     }
 
-    public void getUserFacility(Context context, DataCallback<User> callback) {
-        userRepository.getEntrantByDeviceId(context, new DataCallback<User>() {
-            @Override
-            public void onSuccess(User user) {
-                if (user != null) {
-                    String userId = user.getUserID();
-                    user.setUserID(userId);
-                }
-                callback.onSuccess(user);
-            }
-
-            @Override
-            public void onError(Exception e) {
-                callback.onError(e);
-            }
-        });
-    }
     public void updateUserLocation(User user, Context context, DataCallback<User> callback) {
         if (user == null) {
             Log.d("MainActivity","AAAAAAAAAAAA"+user);

@@ -1,6 +1,5 @@
 package com.example.syntaxeventlottery;
 
-import com.google.firebase.firestore.PropertyName;
 import com.google.firebase.firestore.ServerTimestamp;
 
 import java.io.Serializable;
@@ -43,9 +42,9 @@ public class Event implements Serializable {
     private ArrayList<String> participants; // those who have joined waiting list
     private ArrayList<String> selectedParticipants; // those who have been selected by lottery
     private ArrayList<String> confirmedParticipants; // those who have confirmed to take part of event
+    private ArrayList<String> cancelledParticipants; // those who have rejected their invitation or have been cancelled by the organizer
 
     // Geolocation new attributes
-    @PropertyName("isLocationRequired")
     private boolean isLocationRequired;
     private List<Map<String, String>> locationDetails;
 
@@ -85,6 +84,7 @@ public class Event implements Serializable {
         this.participants = new ArrayList<>();
         this.selectedParticipants = new ArrayList<>();
         this.confirmedParticipants = new ArrayList<>();
+        this.cancelledParticipants = new ArrayList<>();
         this.waitingListLimit = waitingListLimit;
         this.capacityFull = false;
         this.waitingListFull = false;
@@ -100,6 +100,18 @@ public class Event implements Serializable {
 
     public String getEventID() {
         return eventID;
+    }
+
+    public ArrayList<String> getCancelledParticipants() {
+        return cancelledParticipants;
+    }
+
+    public void setCancelledParticipants(ArrayList<String> cancelledParticipants) {
+        this.cancelledParticipants = cancelledParticipants;
+    }
+
+    public boolean isLocationRequired() {
+        return isLocationRequired;
     }
 
     public void setEventID(String eventID) {
@@ -126,7 +138,15 @@ public class Event implements Serializable {
         return facilityLocation;
     }
 
-    public void setFacilityLocation() {
+    public boolean isWaitingListFull() {
+        return waitingListFull;
+    }
+
+    public boolean isCapacityFull() {
+        return capacityFull;
+    }
+
+    public void setFacilityLocation(String facilityLocation) {
         this.facilityLocation = facilityLocation;
     }
 
@@ -256,14 +276,12 @@ public class Event implements Serializable {
     }
 
     // GEOlocation
-    @PropertyName("isLocationRequired")
     public boolean getLocationRequired() {
         return isLocationRequired;
     }
 
-    @PropertyName("isLocationRequired")
-    public void setLocationRequired(boolean locationRequired) {
-        isLocationRequired = locationRequired;
+    public void setLocationRequired(boolean isLocationRequired) {
+        isLocationRequired = isLocationRequired;
     }
 
     public List<Map<String, String>> getLocationDetails() {
@@ -298,7 +316,6 @@ public class Event implements Serializable {
                 ", qrCode='" + qrCode + '\'' +
                 ", participants=" + participants +
                 ", selectedParticipants=" + selectedParticipants +
-                ", isLocationRequired=" + isLocationRequired +
                 '}';
     }
 }

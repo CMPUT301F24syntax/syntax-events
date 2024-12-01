@@ -20,6 +20,8 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +36,8 @@ public class NotificationCenterActivity extends AppCompatActivity {
     private ArrayAdapter<String> adapter;
     private List<String> notificationMessages;
     private List<String> notificationIds;
-    private ImageButton backButton; // Back Button
+    private ImageButton backButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,8 +65,9 @@ public class NotificationCenterActivity extends AppCompatActivity {
         // Set item click listener to mark as read when clicked
         notificationListView.setOnItemClickListener((parent, view, position, id) -> {
             String notificationId = notificationIds.get(position);
-            markNotificationAsRead(notificationId);
+            String message = notificationMessages.get(position);
             Toast.makeText(NotificationCenterActivity.this, "Notification marked as read", Toast.LENGTH_SHORT).show();
+            markNotificationAsRead(notificationId);
         });
 
         // Set click listener for Back Button

@@ -86,15 +86,6 @@
         android:layout_marginTop="8dp" />
 
     <!-- Facility Edit Text -->
-    <EditText
-        android:id="@+id/editFacility"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Facility"
-        android:inputType="text"
-        android:padding="12dp"
-        android:layout_below="@id/editPhone"
-        android:layout_marginTop="8dp" />
 
     <!-- Save Button -->
     <Button
@@ -104,7 +95,15 @@
         android:text="@string/save"
         android:textColor="@android:color/white"
         android:backgroundTint="@android:color/black"
-        android:layout_below="@id/editFacility"
-        android:layout_marginTop="16dp" />
+        android:layout_below="@id/editPhone"
+        android:layout_marginTop="30dp" />
+
+    <!-- Add this switch to your layout -->
+    <Switch
+        android:id="@+id/notificationSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Receive Notifications"
+        android:checked="true"/>
 
 </RelativeLayout>

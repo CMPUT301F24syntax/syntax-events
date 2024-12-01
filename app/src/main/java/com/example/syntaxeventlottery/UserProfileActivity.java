@@ -29,12 +29,12 @@ public class UserProfileActivity extends AppCompatActivity {
     private Button backButton;
     private Button editButton;
     private ImageView profileImageView;
-    private TextView nameTextView, emailTextView, phoneTextView;
+    private TextView nameTextView, emailTextView, phoneTextView, facilityTextView;
 
 
 
     private User currentUser;
-    private UserController userController;
+    public UserController userController;
     private String deviceID;
     private static final String TAG = "UserProfileActivity";
     private static final int REQUEST_CODE_EDIT_PROFILE = 2001;
@@ -65,6 +65,7 @@ public class UserProfileActivity extends AppCompatActivity {
         nameTextView = findViewById(R.id.nameTextView);
         emailTextView = findViewById(R.id.emailTextView);
         phoneTextView = findViewById(R.id.phoneTextView);
+        facilityTextView = findViewById(R.id.facilityTextView);
 
         loadUserProfile();
 
@@ -92,7 +93,7 @@ public class UserProfileActivity extends AppCompatActivity {
         }
     }
 
-    private void loadUserProfile() {
+    public void loadUserProfile() {
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
@@ -108,10 +109,16 @@ public class UserProfileActivity extends AppCompatActivity {
         });
     }
 
-    private void displayUserDetails(User user) {
+    public void displayUserDetails(User user) {
         nameTextView.setText(user.getUsername());
         emailTextView.setText(user.getEmail());
         phoneTextView.setText(user.getPhoneNumber());
+
+        if (user.getFacility() == null || user.getFacility().getName().isEmpty()) {
+            facilityTextView.setText("No Facility Profile");
+        } else {
+            facilityTextView.setText("Facility Name: "+user.getFacility().getName());
+        }
 
         Glide.with(this)
                 .load(user.getProfilePhotoUrl())

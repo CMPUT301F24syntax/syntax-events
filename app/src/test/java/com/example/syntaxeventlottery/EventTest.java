@@ -6,6 +6,9 @@ import org.junit.Test;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -16,7 +19,6 @@ public class EventTest {
 
     @Before
     public void setUp() {
-
         // Test creation of a new event with test values
         event = new Event(
                 "Sample Event",
@@ -25,7 +27,11 @@ public class EventTest {
                 "This is a test event",
                 50,
                 new Date(),
-                new Date(System.currentTimeMillis() + 3600 * 1000), "Organizer123", 10);
+                new Date(System.currentTimeMillis() + 3600 * 1000),
+                "Organizer123",
+                10,
+                true
+        );
     }
 
     @Test
@@ -147,5 +153,64 @@ public class EventTest {
         // Assert they were set successfully
         assertEquals("https://example.com/poster.jpg", event.getPosterUrl());
         assertEquals("QRCode123", event.getQrCode());
+    }
+
+    @Test
+    public void testCancelledParticipantsManagement() {
+
+        // Create test array for cancelled participants
+        ArrayList<String> cancelledParticipants = new ArrayList<>();
+
+        // Add two participants to the list
+        cancelledParticipants.add("CancelledParticipant1");
+        cancelledParticipants.add("CancelledParticipant2");
+
+        // Test setting cancelled participants
+        event.setCancelledParticipants(cancelledParticipants);
+
+        // Test that cancelled participants were added to the list
+        assertEquals(2, event.getCancelledParticipants().size());
+        assertEquals("CancelledParticipant1", event.getCancelledParticipants().get(0));
+    }
+
+    @Test
+    public void testLocationDetails() {
+
+        // Create an empty list to store maps, where each map holds event ID and its location
+        List<Map<String, String>> locationDetails = new ArrayList<>();
+
+        // Create a map to store an event ID and its corresponding location
+        Map<String, String> location = new HashMap<>();
+
+        // Add an event ID and location to the map
+        location.put("Event1", "Location1");
+        locationDetails.add(location);
+
+        // Set the list of location details to the event
+        event.setLocationDetails(locationDetails);
+
+        // Test that the list has 1 item
+        assertEquals(1, event.getLocationDetails().size());
+        assertEquals("Location1", event.getLocationDetails().get(0).get("Event1"));
+
+        // Add another event ID and location to the map
+        event.addLocationDetail("Event2", "Location2");
+
+        // Test that the list has 2 items
+        assertEquals(2, event.getLocationDetails().size());
+        assertEquals("Location2", event.getLocationDetails().get(1).get("Event2"));
+    }
+
+    @Test
+    public void testIsLocationRequired() {
+
+        // Verify that the event initially requires a location
+        assertTrue(event.getLocationRequired());
+
+        // Set now to false
+        event.setLocationRequired(false);
+
+        // Verify the event location required is set to false
+        assertFalse(event.getLocationRequired());
     }
 }

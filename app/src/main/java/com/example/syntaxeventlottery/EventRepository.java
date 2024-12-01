@@ -45,6 +45,20 @@ public class EventRepository  {
                     for (QueryDocumentSnapshot doc : querySnapshot) {
                         Log.d(TAG, "AAARaw event data: " + doc.getData()); // print raw data
                         Event event = doc.toObject(Event.class);
+
+                        if (event.getParticipants() == null) {
+                            event.setParticipants(new ArrayList<>());
+                        }
+                        if (event.getSelectedParticipants() == null) {
+                            event.setSelectedParticipants(new ArrayList<>());
+                        }
+                        if (event.getConfirmedParticipants() == null) {
+                            event.setConfirmedParticipants(new ArrayList<>());
+                        }
+                        if (event.getCancelledParticipants() == null) {
+                            event.setCancelledParticipants(new ArrayList<>());
+                        }
+
                         eventsDataList.add(event);
                         Log.d(TAG, "AAAMapped event: " + event.getLocationRequired()); // print data after mapping
                     }
@@ -199,6 +213,7 @@ public class EventRepository  {
         data.put("selectedParticipants", event.getSelectedParticipants());
         data.put("confirmedParticipants", event.getConfirmedParticipants());
         data.put("waitingListLimit", event.getWaitingListLimit());
+        data.put("cancelledParticipants", event.getCancelledParticipants());
         data.put("capacityFull", event.getCapacityFull());
         data.put("waitingListFull", event.getWaitingListFull());
         data.put("drawed", event.isDrawed());

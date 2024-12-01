@@ -45,8 +45,8 @@
         android:id="@+id/waitingListRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_below="@id/listDetailsTextView"
         android:layout_above="@id/buttonContainer"
+        android:layout_below="@id/listDetailsTextView"
         android:layout_marginBottom="16dp" />
 
     <!-- Container for Buttons -->
@@ -54,17 +54,20 @@
         android:id="@+id/buttonContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_above="@id/buttonContainer2"
+        android:gravity="center"
         android:orientation="horizontal"
-        android:gravity="center">
+        android:padding="8dp">
 
         <Button
             android:id="@+id/waitingListButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Waiting"
             android:backgroundTint="@android:color/holo_blue_light"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="Waiting"
             android:textColor="@android:color/white" />
 
         <Button
@@ -72,21 +75,44 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Selected"
-            android:backgroundTint="@android:color/holo_green_light"
-            android:textColor="@android:color/white"
             android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp" />
+            android:layout_marginEnd="8dp"
+            android:backgroundTint="@android:color/holo_green_light"
+            android:text="Selected"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/buttonContainer2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="8dp">
 
         <Button
             android:id="@+id/confirmedParticipantsButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Confirmed"
             android:backgroundTint="@android:color/holo_orange_light"
+            android:text="Confirmed"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/cancelledParticipantsButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@android:color/holo_red_light"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:text="Cancelled"
             android:textColor="@android:color/white" />
     </LinearLayout>
 </RelativeLayout>
-
 

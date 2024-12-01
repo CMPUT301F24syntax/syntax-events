@@ -49,7 +49,7 @@
 
         <!-- Username -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginBottom="8dp">
@@ -69,7 +69,7 @@
 
         <!-- User ID -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginBottom="8dp">
@@ -89,7 +89,7 @@
 
         <!-- Email -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginBottom="8dp">
@@ -109,7 +109,7 @@
 
         <!-- Phone Number -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginBottom="8dp">
@@ -129,34 +129,53 @@
 
         <!-- Facility with Delete Button -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginBottom="8dp">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Facility: "
+                android:text="Facility Name: "
                 android:textSize="16sp"
                 android:textStyle="bold" />
             <TextView
-                android:id="@+id/detailUserFacility"
+                android:id="@+id/detailUserFacilityName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Facility"
+                android:text="Facility Name"
                 android:textSize="16sp"
                 android:layout_marginEnd="8dp" />
-            <!-- Delete Facility Button -->
-            <Button
-                android:id="@+id/deleteFacilityButton"
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Delete Facility"
-                android:textColor="#FFFFFF"
-                android:backgroundTint="#FF0000"
-                android:padding="4dp"
-                android:textSize="14sp" />
+                android:text="Facility Location: "
+                android:textSize="16sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/detailUserFacilityLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Facility Location"
+                android:textSize="16sp"
+                android:layout_marginEnd="8dp" />
         </LinearLayout>
+        <Button
+            android:id="@+id/deleteFacilityButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Delete Facility"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#FF0000"
+            android:padding="4dp"
+            android:textSize="14sp"
+            android:layout_marginTop="30dp"/>
 
     </LinearLayout>
 </RelativeLayout>

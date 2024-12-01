@@ -35,7 +35,7 @@ public class CreateUserProfileActivity extends AppCompatActivity {
     private UserController userController;
 
     private String deviceId;
-    private Uri selectedImageUri = null;
+    private Uri selectedImageUri;
 
     // Image picker launcher
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
@@ -73,7 +73,7 @@ public class CreateUserProfileActivity extends AppCompatActivity {
      * Initialize UI components.
      */
     private void initializeUI() {
-        editUsername = findViewById(R.id.facilityNameEditText);
+        editUsername = findViewById(R.id.userNameEditText);
         editEmail = findViewById(R.id.edit_text_email);
         editPhone = findViewById(R.id.edit_text_phone);
         btnSave = findViewById(R.id.button_save);
@@ -108,6 +108,12 @@ public class CreateUserProfileActivity extends AppCompatActivity {
             return;
         }
 
+        // only allow characters
+        if (!username.matches("[a-zA-Z]+")) {
+            Toast.makeText(this, "Username contain only alphabet characters.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Entrant entrant = new Entrant(deviceId, email, phone, null, username, new HashSet<String>());
 
         userController.addUser(entrant, selectedImageUri, new DataCallback<User>() {
@@ -121,7 +127,7 @@ public class CreateUserProfileActivity extends AppCompatActivity {
             @Override
             public void onError(Exception e) {
                 Log.e(TAG, "Error creating new user profile", e);
-                Toast.makeText(CreateUserProfileActivity.this, "Error creating profile, try again", Toast.LENGTH_SHORT).show();
+                Toast.makeText(CreateUserProfileActivity.this, "Error creating profile: "+e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -135,4 +141,5 @@ public class CreateUserProfileActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
+
 }

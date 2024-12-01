@@ -13,12 +13,14 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -32,6 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.util.List;
+
 /**
  * Activity to display event details and manage event actions.
  */
@@ -41,9 +45,14 @@ public class EventDetailActivity extends AppCompatActivity {
     // UI Components
     private ImageView posterImageView, qrCodeImageView;
     private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView, eventEndDateTextView, eventCapacityTextView, eventFacilityLocationTextView, eventFacilityNameTextView, eventDrawedStatusTextView;
-    private Button joinWaitingListButton, acceptInvitationButton, leaveEventButton;
-    private Button manageParticipantsButton, editInfoButton, drawButton, viewMapButton;
+
+    private TextView eventActionsTextView;
+    private Button joinWaitingListButton, acceptInvitationButton, declineInvitationButton, leaveWaitingListButton;
+    private Button manageParticipantsButton, editInfoButton, drawButton, leaveEventButton, viewMapButton;
     private ImageButton backButton;
+    private Button notifyWaitingListButton;
+    private Button notifySelectedEntrantsButton;
+    private Button notifyCancelledEntrantsButton;
 
     // Controller and Data
     private EventController eventController;
@@ -409,6 +418,7 @@ public class EventDetailActivity extends AppCompatActivity {
         eventCapacityTextView.setText("Capacity: " + String.valueOf(event.getCapacity()));
         eventDrawedStatusTextView.setText("Drawed: "+event.isDrawed());
 
+
         if (event.getPosterUrl() != null && !event.getPosterUrl().isEmpty()) {
             Glide.with(this).load(event.getPosterUrl()).into(posterImageView);
             Log.d(TAG, "Loaded poster image. poster url: " + event.getPosterUrl());
@@ -439,14 +449,22 @@ public class EventDetailActivity extends AppCompatActivity {
         eventFacilityLocationTextView = findViewById(R.id.eventFLocationTextView);
         eventFacilityNameTextView = findViewById(R.id.eventFNameTextView);
         eventDrawedStatusTextView = findViewById(R.id.eventDrawedTextView);
+        eventActionsTextView = findViewById(R.id.eventActionsTextView);
         joinWaitingListButton = findViewById(R.id.joinEventButton);
-        leaveEventButton = findViewById(R.id.leaveEventButton);
+        leaveWaitingListButton = findViewById(R.id.leaveEventButton);
         acceptInvitationButton = findViewById(R.id.acceptButton);
+        declineInvitationButton = findViewById(R.id.declineInvitationButton);
 
         manageParticipantsButton = findViewById(R.id.manageParticipantsButton);
         editInfoButton = findViewById(R.id.editInfoButton);
         drawButton = findViewById(R.id.drawParticipantsButton);
         viewMapButton = findViewById(R.id.viewMapButton);
+
+        // notification part
+        notifyWaitingListButton = findViewById(R.id.notifyWaitingListButton);
+        notifySelectedEntrantsButton = findViewById(R.id.notifySelectedEntrantsButton);
+        notifyCancelledEntrantsButton = findViewById(R.id.notifyCancelledEntrantsButton);
+
 
         configureButtonVisibility();
         setupButtonListeners();
@@ -460,36 +478,130 @@ public class EventDetailActivity extends AppCompatActivity {
         manageParticipantsButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
         drawButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
         viewMapButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
+        notifyWaitingListButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
+        notifySelectedEntrantsButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
+        notifyCancelledEntrantsButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
 
-        // Determin which buttons to display
+
+
+        // Determine which buttons to display
         if (!isOrganizer) {
             displayParticipantButtons();
+            showAllParticipantButtons();
         } else {
+            eventActionsTextView.setText("You are the organizer of this event!\n"
+                    +"Edit event details, perfom the event draw or manage entrants who have joined");
             hideAllParticipantButtons();
         }
 
         // Draw button state
         if (isOrganizer && event.isDrawed()) {
-            drawButton.setEnabled(false);
-            drawButton.setText("Event Already Drawn");
+            drawButton.setText("Draw Replacement Participants");
         }
     }
 
     private void setupButtonListeners() {
         // user joins waiting list
-        joinWaitingListButton.setOnClickListener(v -> eventController.addUserToWaitingList(event, deviceID, new DataCallback<Event>() {
-            @Override
-            public void onSuccess(Event result) {
-                Toast.makeText(EventDetailActivity.this, "You have joined the waiting list", Toast.LENGTH_SHORT).show();
-                // refresh event data
-                loadEvent(deviceID);
-            }
+        joinWaitingListButton.setOnClickListener(v -> {
+            if (event.getLocationRequired()) {
+                // Show an AlertDialog if geolocation is required
+                new AlertDialog.Builder(EventDetailActivity.this)
+                        .setTitle("Geolocation Required")
+                        .setMessage("This event requires your geolocation to join the waiting list. Do you want to proceed?")
+                        .setPositiveButton("Yes", (dialog, which) -> {
+                            eventController.addUserToWaitingList(event, deviceID, new DataCallback<Event>() {
+                                @Override
+                                public void onSuccess(Event result) {
+                                    Toast.makeText(EventDetailActivity.this, "You have joined the waiting list", Toast.LENGTH_SHORT).show();
+                                    // Refresh event data
+                                    loadEvent(deviceID);
+                                }
 
-            @Override
-            public void onError(Exception e) {
-                Toast.makeText(EventDetailActivity.this, "Error joining the waiting list", Toast.LENGTH_SHORT).show();
+                                @Override
+                                public void onError(Exception e) {
+                                    Toast.makeText(EventDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        })
+                        .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
+                        .show();
+            } else {
+                // Proceed to join the waiting list without showing a dialog
+                eventController.addUserToWaitingList(event, deviceID, new DataCallback<Event>() {
+                    @Override
+                    public void onSuccess(Event result) {
+                        Toast.makeText(EventDetailActivity.this, "You have joined the waiting list", Toast.LENGTH_SHORT).show();
+                        // Refresh event data
+                        loadEvent(deviceID);
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Toast.makeText(EventDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
-        }));
+        });
+
+
+        // user leaves the waiting list, remove user from all event data
+        leaveWaitingListButton.setOnClickListener(v -> {
+            // Create and show a confirmation dialog
+            new AlertDialog.Builder(EventDetailActivity.this)
+                    .setTitle("Leave Waiting List")
+                    .setMessage("Are you sure you want to leave the waiting list? If you leave, you will need to rejoin to be considered for the lottery and have a chance to participate in the event.")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        // User confirmed; remove all user information from the event
+                        eventController.removeUserFromEvent(event, deviceID, new DataCallback<Event>() {
+                            @Override
+                            public void onSuccess(Event result) {
+                                Toast.makeText(EventDetailActivity.this, "You have left waiting list for this event", Toast.LENGTH_SHORT).show();
+                                loadEvent(deviceID);
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+                                Log.e(TAG, "Error leaving the Event", e);
+                                Toast.makeText(EventDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    })
+                    .setNegativeButton("No", (dialog, which) -> {
+                        // User canceled; dismiss the dialog
+                        dialog.dismiss();
+                    })
+                    .show();
+        });
+
+        // user declines their invitation
+        declineInvitationButton.setOnClickListener(v -> {
+            // Create and show a confirmation dialog
+            new AlertDialog.Builder(EventDetailActivity.this)
+                    .setTitle("Decline Invitation")
+                    .setMessage("Are you sure you decline your invitation? You will not be allowed to rejoin the waiting list for this event")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        // User confirmed; remove all user information from the event
+                        eventController.setUserCancelled(event, deviceID, new DataCallback<Event>() {
+                            @Override
+                            public void onSuccess(Event result) {
+                                Toast.makeText(EventDetailActivity.this, "You have rejected your invitation", Toast.LENGTH_SHORT).show();
+                                loadEvent(deviceID);
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+                                Log.e(TAG, "Error leaving the Event", e);
+                                Toast.makeText(EventDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    })
+                    .setNegativeButton("No", (dialog, which) -> {
+                        // User canceled; dismiss the dialog
+                        dialog.dismiss();
+                    })
+                    .show();
+        });
+
 
         // user accepts invitation
         acceptInvitationButton.setOnClickListener(v -> eventController.addUserToConfirmedList(event, deviceID, new DataCallback<Event>() {
@@ -502,7 +614,7 @@ public class EventDetailActivity extends AppCompatActivity {
             @Override
             public void onError(Exception e) {
                 Log.e(TAG, "Error adding user to confirmed list", e);
-                Toast.makeText(EventDetailActivity.this, "Error accepting invitation", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EventDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }));
 
@@ -521,26 +633,63 @@ public class EventDetailActivity extends AppCompatActivity {
             }
         }));
 
+
         // perform event draw
+        // Inside the drawButton.setOnClickListener
+
+
+        eventController.performDraw(event, EventDetailActivity.this ,new DataCallback<Event>() {
+            @Override
+            public void onSuccess(Event result) {
+                Log.d(TAG, "Event draw performed: updated event info: "+  result);
+                Toast.makeText(EventDetailActivity.this, "Draw perfomed successfully", Toast.LENGTH_SHORT).show();
+                loadEvent(deviceID);
+            }
+            @Override
+            public void onError(Exception e) {
+                Log.d(TAG, "Event draw error");
+                Toast.makeText(EventDetailActivity.this, "Event draw error", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         drawButton.setOnClickListener(v -> {
-            if (event.isDrawed()) {
-                Toast.makeText(this, "Event draw has already occured", Toast.LENGTH_SHORT).show();
-                return;
+            if (!event.isDrawed()) {
+                // perform initial event draw
+                eventController.performDraw(event, EventDetailActivity.this, new DataCallback<Event>() {
+                    @Override
+                    public void onSuccess(Event result) {
+                        Log.d(TAG, "Event draw performed: updated event info: " + result);
+                        Toast.makeText(EventDetailActivity.this, "Draw performed successfully", Toast.LENGTH_SHORT).show();
+                        loadEvent(deviceID);
+                        checkForNewNotifications();
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.d(TAG, "Event draw error");
+                        Toast.makeText(EventDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                // allow redraw for users still in the waiting list
+                eventController.performRedraw(event, EventDetailActivity.this, new DataCallback<Event>() {
+                    @Override
+                    public void onSuccess(Event result) {
+                        Log.d(TAG, "Event redraw performed: updated event info: "+  result);
+                        Toast.makeText(EventDetailActivity.this, "Redraw perfomed successfully", Toast.LENGTH_SHORT).show();
+                        loadEvent(deviceID);
+                        checkForNewNotifications();
+                    }
+                    // Inside the drawButton.setOnClickListener
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e(TAG, "Event draw error", e);
+                        Toast.makeText(EventDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
 
-            eventController.performDraw(event, new DataCallback<Event>() {
-                @Override
-                public void onSuccess(Event result) {
-                    Log.d(TAG, "Event draw performed: updated event info: "+  result);
-                    Toast.makeText(EventDetailActivity.this, "Draw perfomed successfully", Toast.LENGTH_SHORT).show();
-                    loadEvent(deviceID);
-                }
-                @Override
-                public void onError(Exception e) {
-                    Log.d(TAG, "Event draw error");
-                    Toast.makeText(EventDetailActivity.this, "Event draw error", Toast.LENGTH_SHORT).show();
-                }
-            });
         });
 
         editInfoButton.setOnClickListener(v -> {
@@ -567,6 +716,61 @@ public class EventDetailActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        notifyWaitingListButton.setOnClickListener(v -> sendNotificationToGroup("waitingList"));
+        notifySelectedEntrantsButton.setOnClickListener(v -> sendNotificationToGroup("selectedParticipants"));
+        notifyCancelledEntrantsButton.setOnClickListener(v -> sendNotificationToGroup("cancelledParticipants"));
+    }
+
+    private void sendNotificationToGroup(String group) {
+        final EditText input = new EditText(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle("Send Notification")
+                .setMessage("Enter the notification message:")
+                .setView(input)
+                .setPositiveButton("Send", (dialog, which) -> {
+                    String customMessage = input.getText().toString();
+                    sendNotifications(group, customMessage);
+                })
+                .setNegativeButton("Cancel", null);
+        builder.show();
+    }
+
+    private void sendNotifications(String group, String message) {
+        eventController.sendNotificationsToGroup(event, group, message, this, new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                Toast.makeText(EventDetailActivity.this, "Notifications sent.", Toast.LENGTH_SHORT).show();
+                checkForNewNotifications();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(EventDetailActivity.this, "Failed to send notifications.", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Error sending notifications", e);
+            }
+        });
+    }
+
+    private void checkForNewNotifications() {
+        NotificationController notificationController = new NotificationController();
+        notificationController.fetchUnreadNotificationsForUser(deviceID, new DataCallback<List<Notification>>() {
+            @Override
+            public void onSuccess(List<Notification> notifications) {
+                for (Notification notification : notifications) {
+                    // Display the notification
+                    NotificationUtils.sendNotification(EventDetailActivity.this, "Event Notification", notification.getMessage(), notification.generateNotificationId(), notification.getEventId());
+
+                    // Mark the notification as read in the database
+                    notificationController.markNotificationAsRead(notification);
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error fetching notifications", e);
+            }
+        });
+
     }
 
     //------------ helper methods for displaying UI --------------//
@@ -574,37 +778,83 @@ public class EventDetailActivity extends AppCompatActivity {
         boolean isInWaitingList = eventController.isUserInWaitingList(event, deviceID);
         boolean isInSelectedList = eventController.isUserInSelectedList(event, deviceID);
         boolean isInConfirmedList = eventController.isUserInConfirmedList(event, deviceID);
+        boolean isInCancelledList = eventController.isUserInCancelledList(event, deviceID);
+
+        // if user is not associated with the event
+        if (!isInWaitingList && !isInSelectedList && !isInCancelledList) {
+            // if the waiting list is full
+            if (event.getWaitingListFull()) {
+                eventActionsTextView.setText("Event waiting list is currently full, come back later");
+            }
+            if (event.isDrawed()) {
+                eventActionsTextView.setText("Event draw has already occurred, check out another event!");
+            }
+
+            joinWaitingListButton.setVisibility(View.GONE);
+            acceptInvitationButton.setVisibility(View.GONE);
+            declineInvitationButton.setVisibility(View.GONE);
+            leaveWaitingListButton.setVisibility(View.GONE);
+            return;
+        }
 
         // Handle Waiting List buttons
         if (isInWaitingList && !isInSelectedList) {
+            eventActionsTextView.setText("You are currently in the waiting list for this event!");
             joinWaitingListButton.setVisibility(View.GONE);
-            leaveEventButton.setVisibility(View.VISIBLE);
-            leaveEventButton.setText("Leave Waiting List");
+            acceptInvitationButton.setVisibility(View.GONE);
+            declineInvitationButton.setVisibility(View.GONE);
+            leaveWaitingListButton.setVisibility(View.VISIBLE);
+
+
         } else {
-            leaveEventButton.setVisibility(View.GONE);
+            eventActionsTextView.setText("Join the waiting list for a chance to be selected to participate!");
+            leaveWaitingListButton.setVisibility(View.GONE);
+            declineInvitationButton.setVisibility(View.GONE);
+            acceptInvitationButton.setVisibility(View.GONE);
             joinWaitingListButton.setVisibility(View.VISIBLE);
         }
 
         // Handle Selected List buttons
         if (isInSelectedList && !isInConfirmedList) {
+            eventActionsTextView.setText("You have been selected to participate!\n" +
+                    "Please accept or decline your invitation as soon as possible");
             joinWaitingListButton.setVisibility(View.GONE);
-            leaveEventButton.setVisibility(View.VISIBLE);
-            leaveEventButton.setText("Decline Invitation");
+            leaveWaitingListButton.setVisibility(View.GONE);
+            declineInvitationButton.setVisibility(View.VISIBLE);
             acceptInvitationButton.setVisibility(View.VISIBLE);
         }
 
         // Handle Confirmed List buttons
         if (isInConfirmedList) {
+            eventActionsTextView.setText("You are currently enrolled for this event");
             joinWaitingListButton.setVisibility(View.GONE);
             acceptInvitationButton.setVisibility(View.GONE);
-            leaveEventButton.setVisibility(View.VISIBLE);
-            leaveEventButton.setText("Leave Event");
+            leaveWaitingListButton.setVisibility(View.GONE);
+            declineInvitationButton.setVisibility(View.GONE);
+        }
+
+        // if user has been cancelled
+        if (isInCancelledList) {
+            eventActionsTextView.setText("Either you have been removed by the creator of this event or you have previously declined your invitation");
+            joinWaitingListButton.setVisibility(View.GONE);
+            acceptInvitationButton.setVisibility(View.GONE);
+            leaveWaitingListButton.setVisibility(View.GONE);
+            declineInvitationButton.setVisibility(View.GONE);
         }
     }
 
     private void hideAllParticipantButtons() {
         joinWaitingListButton.setVisibility(View.GONE);
         acceptInvitationButton.setVisibility(View.GONE);
-        leaveEventButton.setVisibility(View.GONE);
+        leaveWaitingListButton.setVisibility(View.GONE);
+        declineInvitationButton.setVisibility(View.GONE);
     }
+
+    private void showAllParticipantButtons() {
+        joinWaitingListButton.setVisibility(View.VISIBLE);
+        acceptInvitationButton.setVisibility(View.VISIBLE);
+        leaveWaitingListButton.setVisibility(View.VISIBLE);
+        declineInvitationButton.setVisibility(View.VISIBLE);
+    }
+
 }

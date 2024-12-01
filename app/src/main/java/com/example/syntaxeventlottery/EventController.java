@@ -1,18 +1,23 @@
 package com.example.syntaxeventlottery;
 
+import static android.content.ContentValues.TAG;
+
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.util.Log;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -71,7 +76,7 @@ public class EventController {
 
     public ArrayList<Event> getOrganizerEvents(String organizerID) {
         if (organizerID == null || organizerID.isEmpty()) {
-            return null; 
+            return null;
         }
         // get all events where the passed id is the event's organizer
         ArrayList<Event> organizerEvents = new ArrayList<>();
@@ -82,13 +87,41 @@ public class EventController {
         }
         return organizerEvents;
     }
-    
+
+
+    //------------- Event participant lists methods --------------//
     /**
-     * User methods
+     * Adds a user to an event's waiting list
      */
+    public void addUserToWaitingList(Event event, String userID, DataCallback<Event> callback) {
+        // Validate inputs
+        if (event == null || userID == null || userID.isEmpty()) {
+            callback.onError(new IllegalArgumentException("Failed to retrieve event data, try again later"));
+            return;
+        }
+
+        ArrayList<String> participants = event.getParticipants();
+        if (participants.contains(userID)) {
+            callback.onError(new IllegalArgumentException("Failed to join waiting list: You are already a participant"));
+            return;
+        }
+
+        // Check if a waiting list limit was set
+        // If true check that waiting list is not full
+        if (event.getWaitingListLimit() != null && participants.size() >= event.getWaitingListLimit()) {
+            callback.onError(new IllegalArgumentException("Failed to join waiting list: No spots available"));
+            return;
+        }
+
+        // Update participants list and save
+        participants.add(userID);
+        event.setParticipants(participants);
+        updateEvent(event, null, null, callback);
+    }
 
     /**
-     * Removes a user from a all event lists
+     * Removes a user from a associated event data
+     * This is called when a user leaves the waiting list
      */
     public void removeUserFromEvent(Event event, String userID, DataCallback<Event> callback) {
         // Validate inputs
@@ -131,58 +164,251 @@ public class EventController {
         updateEvent(event, null, null, callback);
     }
 
-    // adds user id to participants list
-    // and updates repository
-    /**
-     * Adds a user to an event's waiting list
-     */
-    public void addUserToWaitingList(Event event, String userID, DataCallback<Event> callback) {
+    // sets the specified user as a cancelled entrant in the event object
+    public void setUserCancelled(Event event, String userID, DataCallback<Event> callback) {
         // Validate inputs
         if (event == null || userID == null || userID.isEmpty()) {
             callback.onError(new IllegalArgumentException("Invalid event or user ID"));
             return;
         }
 
-        ArrayList<String> participants = event.getParticipants();
-        if (participants.contains(userID)) {
-            callback.onError(new IllegalArgumentException("User is already a participant"));
-            return;
+        // return if user has already been cancelled
+        if (event.getCancelledParticipants().contains(userID)) {
+            callback.onError(new IllegalArgumentException("This user has already been set to cancelled"));
         }
 
-        // Check waiting list limit
-        if (event.getWaitingListLimit() != null &&
-                participants.size() >= event.getWaitingListLimit()) {
-            callback.onError(new IllegalArgumentException("Waiting list capacity is reached"));
-            return;
+        if (event.getParticipants().contains(userID)) {
+            ArrayList<String> participants = event.getParticipants();
+            participants.remove(userID);
+            event.setParticipants(participants);
         }
 
-        // Update participants list and save
-        participants.add(userID);
-        event.setParticipants(participants);
+        if (event.getSelectedParticipants().contains(userID)) {
+            ArrayList<String> selectedParticipants = event.getSelectedParticipants();
+            selectedParticipants.remove(userID);
+            event.setSelectedParticipants(selectedParticipants);
+        }
+
+        if (event.getConfirmedParticipants().contains(userID)) {
+            ArrayList<String> confirmedParticipants = event.getConfirmedParticipants();
+            confirmedParticipants.remove(userID);
+            event.setSelectedParticipants(confirmedParticipants);
+        }
+
+        // update event and repository data
+        ArrayList<String> cancelledParticipants = event.getCancelledParticipants();
+        cancelledParticipants.add(userID);
+        event.setCancelledParticipants(cancelledParticipants);
         updateEvent(event, null, null, callback);
     }
 
+    // called when a user accepts their invitation to the event
     public void addUserToConfirmedList(Event event, String userID, DataCallback<Event> callback) {
-        // Validate inputs
+        // Validate parameters
         if (event == null || userID == null || userID.isEmpty()) {
             callback.onError(new IllegalArgumentException("Invalid event or user ID"));
             return;
         }
 
+        // check that user is in the selected list
+        // if true, remove them from selected list and add them to the confirmed list
+        ArrayList<String> selectedParticipants = event.getSelectedParticipants();
+
+        if (!selectedParticipants.contains(userID)) {
+            callback.onError(new IllegalArgumentException("Failed to enroll: You were not selected by the draw"));
+            return;
+        }
+
+        // check that user was not already confirmed for the event
         ArrayList<String> confirmedParticipants = event.getConfirmedParticipants();
 
-        if (!event.getParticipants().contains(userID) || !event.getSelectedParticipants().contains(userID)) {
-            callback.onError(new IllegalArgumentException("User was never in waiting list or selected list"));
-            return;
-        }
         if (event.getConfirmedParticipants().contains(userID)) {
-            callback.onError(new IllegalArgumentException("User has already been confirmed"));
+            callback.onError(new IllegalArgumentException("Failed to enroll: You have already been confirmed"));
             return;
         }
-        confirmedParticipants.add(userID);
-        event.setConfirmedParticipants(confirmedParticipants);
-        updateEvent(event, null, null, callback);
 
+        // update the lists
+        selectedParticipants.remove(userID);
+        confirmedParticipants.add(userID);
+        event.setSelectedParticipants(selectedParticipants);
+        event.setConfirmedParticipants(confirmedParticipants);
+
+        // update the repository
+        updateEvent(event, null, null, callback);
+    }
+
+    // lottery implementation
+    // perform a draw on the waiting list
+    // if chosen, remove them from the waiting list and add them to the selected list
+    public void performDraw(Event event, Context context, DataCallback<Event> callback) {
+        if (event.isDrawed()) {
+            callback.onError(new IllegalArgumentException("Event draw has already been performed"));
+            return;
+        }
+
+        ArrayList<String> selectedList = new ArrayList<>();
+        ArrayList<String> participants = event.getParticipants();
+        ArrayList<String> updatedWaitingList = new ArrayList<>(participants);
+        int capacity = event.getCapacity();
+
+        if (participants.size() <= capacity) {
+            // add all users to the waiting list, if the waiting list is less than capacity
+            selectedList.addAll(participants);
+            updatedWaitingList.clear();
+        } else {
+            // perform the draw
+            Collections.shuffle(participants);
+            List<String> chosenParticipants = participants.subList(0, capacity);
+            selectedList.addAll(chosenParticipants);
+            // remove selected list from the participants
+            updatedWaitingList.removeAll(chosenParticipants);
+        }
+
+        // Update the event's selected participants and waiting list
+        event.setSelectedParticipants(selectedList);
+        event.setParticipants(updatedWaitingList);
+        event.setDrawed(true);
+
+        // Send notifications to participants
+        sendLotteryResultNotifications(event, new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error queuing notifications", e);
+            }
+        });
+
+        // Save the event with the updated information
+        updateEvent(event, null, null, callback);
+    }
+
+    // This method redraws from the event's waiting list in the case of cancelled participants
+    public void performRedraw(Event event, Context context, DataCallback<Event> callback) {
+        // Check that the initial draw has occurred
+        if (!event.isDrawed()) {
+            callback.onError(new IllegalArgumentException("Cannot redraw since the initial draw has not occurred"));
+            return;
+        }
+
+        if (event.getParticipants().isEmpty()) {
+            callback.onError(new IllegalArgumentException("Cannot redraw: No users in the waiting list"));
+            return;
+        }
+
+        ArrayList<String> participants = event.getParticipants(); // Waiting list
+        ArrayList<String> selectedList = new ArrayList<>(event.getSelectedParticipants()); // Clone the selected list
+        int confirmedCount = event.getConfirmedParticipants().size();
+        int capacity = event.getCapacity();
+
+        // Calculate remaining spots in the selected list
+        int remainingSpots = capacity - (selectedList.size() + confirmedCount);
+
+        if (remainingSpots <= 0) {
+            callback.onError(new IllegalArgumentException("Cannot redraw: No spots available"));
+            return;
+        }
+
+        // If there is less participants than remaining spots, add all of them
+        if (participants.size() <= remainingSpots) {
+            selectedList.addAll(participants);
+            participants.clear();
+        } else {
+            // Shuffle the waiting list to randomize the selection
+            Collections.shuffle(participants);
+            // Select a random subset of participants for the remaining spots
+            List<String> newSelections = participants.subList(0, remainingSpots);
+            selectedList.addAll(newSelections);
+            // Remove the newly selected participants from the waiting list
+            participants.removeAll(newSelections);
+        }
+
+        // Update the event with the new selected and waiting list
+        event.setSelectedParticipants(selectedList);
+        event.setParticipants(participants);
+
+        // Send notifications to participants
+        sendLotteryResultNotifications(event, new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error queuing notifications", e);
+            }
+        });
+
+        // Save the updated event
+        updateEvent(event, null, null, callback);
+    }
+
+    /**
+     * Sends lottery result notifications by adding them to the database.
+     */
+    public void sendLotteryResultNotifications(Event event, DataCallback<Void> callback) {
+        UserController userController = new UserController(new UserRepository());
+        userController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                // Prepare lists
+                final List<String> selectedUsers = new ArrayList<>(event.getSelectedParticipants());
+                final List<String> notSelectedUsers = new ArrayList<>(event.getParticipants());
+
+                final String selectedMessage = "You've been selected for the event: " + event.getEventName();
+                final String notSelectedMessage = "You were not selected for the event: " + event.getEventName();
+                final String eventId = event.getEventID();
+
+                // Add notifications for selected users
+                addNotificationsToDatabase(selectedUsers, selectedMessage, eventId, new DataCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        Log.d(TAG, "Notifications for selected users added successfully.");
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e(TAG, "Error adding notifications for selected users.", e);
+                    }
+                });
+
+                // Add notifications for not selected users
+                addNotificationsToDatabase(notSelectedUsers, notSelectedMessage, eventId, new DataCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        Log.d(TAG, "Notifications for not selected users added successfully.");
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e(TAG, "Error adding notifications for not selected users.", e);
+                    }
+                });
+
+                // Notify the original callback that the process is complete
+                callback.onSuccess(null);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error refreshing user repository while sending notifications.", e);
+                callback.onError(e);
+            }
+        });
+    }
+
+    /**
+     * Adds notifications to the database for a list of users.
+     */
+    public void addNotificationsToDatabase(List<String> userIds, String message, String eventId, DataCallback<Void> callback) {
+        NotificationRepository notificationRepository = new NotificationRepository();
+        notificationRepository.addNotifications(userIds, message, eventId, callback);
+    }
+
+    private int generateNotificationId() {
+        return (int) System.currentTimeMillis();
     }
 
     /**
@@ -194,6 +420,10 @@ public class EventController {
         return !event.getParticipants().isEmpty() && event.getParticipants().contains(userID);
     }
 
+    public ArrayList<String> getEventWaitingList(Event event) {
+        return event.getParticipants();
+    }
+
     /**
      * Check if user is in the selected list
      * @param event
@@ -202,6 +432,11 @@ public class EventController {
     public boolean isUserInSelectedList(Event event, String userID) {
         return !event.getParticipants().isEmpty() && event.getSelectedParticipants().contains(userID);
     }
+
+    public ArrayList<String> getEventSelectedList(Event event) {
+        return event.getSelectedParticipants();
+    }
+
 
     /**
      * Check if user is in the selected list
@@ -212,31 +447,16 @@ public class EventController {
         return !event.getParticipants().isEmpty() && event.getConfirmedParticipants().contains(userID);
     }
 
-    // lottery implementation
-    public void performDraw(Event event, DataCallback<Event> callback) {
-        if (event.isDrawed()) {
-            callback.onError(new IllegalArgumentException("Event draw has already been performed"));
-            return;
-        }
+    public ArrayList<String> getEventConfirmedList(Event event) {
+        return event.getConfirmedParticipants();
+    }
 
-        ArrayList<String> selectedList = new ArrayList<>();
-        List<String> waitList = event.getParticipants(); // Assuming this returns a list of participants
-        int capacity = event.getCapacity();
+    public boolean isUserInCancelledList(Event event, String userID) {
+        return !event.getParticipants().isEmpty() && event.getCancelledParticipants().contains(userID);
+    }
 
-        // If the number of participants is less than or equal to capacity, add all participants
-        if (waitList.size() <= capacity) {
-            selectedList.addAll(waitList);
-        } else {
-            // Select a random subset of participants equal to the event capacity
-            Collections.shuffle(waitList); // Randomize the order
-            selectedList.addAll(waitList.subList(0, capacity)); // Take the first `capacity` participants
-        }
-
-        // Update the event's selected participants
-        event.setSelectedParticipants(selectedList);
-        event.setDrawed(true);
-
-        updateEvent(event, null, null, callback);
+    public ArrayList<String> getEventCancelledList(Event event) {
+        return event.getCancelledParticipants();
     }
 
     public void acceptInvitation(Event event, String userID) {
@@ -323,5 +543,69 @@ public class EventController {
             return null;
         }
     }
+
+    public void sendNotificationsToGroup(Event event, String group, String message, EventDetailActivity eventDetailActivity, DataCallback<Void> callback) {
+        if (message == null || message.isEmpty()) {
+            message = getDefaultMessage(group, event.getEventName());
+        }
+
+        UserController userController = new UserController(new UserRepository());
+        String finalMessage = message;
+        userController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                List<String> userIds;
+
+                switch (group) {
+                    case "waitingList":
+                        userIds = event.getParticipants();
+                        break;
+                    case "selectedParticipants":
+                        userIds = event.getSelectedParticipants();
+                        break;
+                    case "cancelledParticipants":
+                        userIds = event.getCancelledParticipants();
+                        break;
+                    default:
+                        callback.onError(new Exception("Invalid group specified"));
+                        return;
+                }
+
+                addNotificationsToDatabase(userIds, finalMessage, event.getEventID(), new DataCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        callback.onSuccess(null);
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e(TAG, "Error adding notifications to database", e);
+                        callback.onError(e);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error sending notifications to group", e);
+                callback.onError(e);
+            }
+        });
+    }
+
+
+    private String getDefaultMessage(String group, String eventName) {
+        switch (group) {
+            case "waitingList":
+                return "You are on the waiting list for " + eventName + ". Stay tuned for updates!";
+            case "selectedParticipants":
+                return "You have been selected for " + eventName + "! Please confirm your participation.";
+            case "cancelledParticipants":
+                return "Your participation in " + eventName + " has been cancelled.";
+            default:
+                return "Notification regarding " + eventName;
+        }
+    }
+
 
 }
