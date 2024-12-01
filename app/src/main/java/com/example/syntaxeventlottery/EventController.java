@@ -15,9 +15,7 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -430,13 +428,12 @@ public class EventController {
      * @param userID
      */
     public boolean isUserInSelectedList(Event event, String userID) {
-        return !event.getParticipants().isEmpty() && event.getSelectedParticipants().contains(userID);
+        return !event.getSelectedParticipants().isEmpty() && event.getSelectedParticipants().contains(userID);
     }
 
     public ArrayList<String> getEventSelectedList(Event event) {
         return event.getSelectedParticipants();
     }
-
 
     /**
      * Check if user is in the selected list
@@ -444,7 +441,7 @@ public class EventController {
      * @param userID
      */
     public boolean isUserInConfirmedList(Event event, String userID) {
-        return !event.getParticipants().isEmpty() && event.getConfirmedParticipants().contains(userID);
+        return !event.getConfirmedParticipants().isEmpty() && event.getConfirmedParticipants().contains(userID);
     }
 
     public ArrayList<String> getEventConfirmedList(Event event) {
@@ -452,102 +449,56 @@ public class EventController {
     }
 
     public boolean isUserInCancelledList(Event event, String userID) {
-        return !event.getParticipants().isEmpty() && event.getCancelledParticipants().contains(userID);
+        return !event.getCancelledParticipants().isEmpty() && event.getCancelledParticipants().contains(userID);
     }
 
     public ArrayList<String> getEventCancelledList(Event event) {
         return event.getCancelledParticipants();
     }
 
-    public void acceptInvitation(Event event, String userID) {
-        if (event.getParticipants().contains(userID) && !event.getSelectedParticipants().contains(userID)) {
-            ArrayList<String> currentSelectedParticipants = event.getSelectedParticipants();
-            currentSelectedParticipants.add(userID);
-            event.setSelectedParticipants(currentSelectedParticipants);
+    public ArrayList<Event> getUserWaitlistedEvents(String userId) {
+        ArrayList<Event> events = getLocalEventsList();
+        ArrayList<Event> userWaitlistedEvents = new ArrayList<>();
+        for (Event event : events) {
+            if (event.getParticipants().contains(userId)) {
+                userWaitlistedEvents.add(event);
+            }
         }
-    }
-    public void getUserWaitlistedEvents(String userId, DataCallback<ArrayList<Event>> callback) {
-        refreshRepository(new DataCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                ArrayList<Event> events = getLocalEventsList();
-                ArrayList<Event> userWaitlistedEvents = new ArrayList<>();
-                for (Event event : events) {
-                    if (event.getParticipants().contains(userId)) {
-                        userWaitlistedEvents.add(event);
-                    }
-                }
-                callback.onSuccess(userWaitlistedEvents);
-            }
-
-            @Override
-            public void onError(Exception e) {
-                callback.onError(e);
-            }
-        });
+        return userWaitlistedEvents;
     }
 
-    public void getUserSelectedEvents(String userId, DataCallback<ArrayList<Event>> callback) {
-        refreshRepository(new DataCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                ArrayList<Event> events = getLocalEventsList();
-                ArrayList<Event> userSelectedEvents = new ArrayList<>();
-                for (Event event : events) {
-                    if (isUserInSelectedList(event, userId)) {
-                        userSelectedEvents.add(event);
-                    }
-                }
-                callback.onSuccess(userSelectedEvents);
+    public ArrayList<Event> getUserSelectedEvents(String userId) {
+        ArrayList<Event> events = getLocalEventsList();
+        ArrayList<Event> userSelectedListEvents = new ArrayList<>();
+        for (Event event : events) {
+            if (event.getSelectedParticipants().contains(userId)) {
+                userSelectedListEvents.add(event);
             }
-
-            @Override
-            public void onError(Exception e) {
-                callback.onError(e);
-            }
-        });
+        }
+        return userSelectedListEvents;
     }
 
-    public void getUserConfirmedEvents(String userId, DataCallback<ArrayList<Event>> callback) {
-        refreshRepository(new DataCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                ArrayList<Event> events = getLocalEventsList();
-                ArrayList<Event> userConfirmedEvents = new ArrayList<>();
-                for (Event event : events) {
-                    if (isUserInConfirmedList(event, userId)) {
-                        userConfirmedEvents.add(event);
-                    }
-                }
-                callback.onSuccess(userConfirmedEvents);
+    public ArrayList<Event> getUserEnrolledEvents(String userId) {
+        ArrayList<Event> events = getLocalEventsList();
+        ArrayList<Event> userEnrolledListEvents = new ArrayList<>();
+        for (Event event : events) {
+            if (event.getConfirmedParticipants().contains(userId)) {
+                userEnrolledListEvents.add(event);
             }
-
-            @Override
-            public void onError(Exception e) {
-                callback.onError(e);
-            }
-        });
+        }
+        return userEnrolledListEvents;
     }
 
-    public void getUserCancelledEvents(String userId, DataCallback<ArrayList<Event>> callback) {
-        refreshRepository(new DataCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                ArrayList<Event> events = getLocalEventsList();
-                ArrayList<Event> userCancelledEvents = new ArrayList<>();
-                for (Event event : events) {
-                    if (isUserInCancelledList(event, userId)) {
-                        userCancelledEvents.add(event);
-                    }
-                }
-                callback.onSuccess(userCancelledEvents);
-            }
 
-            @Override
-            public void onError(Exception e) {
-                callback.onError(e);
+    public ArrayList<Event> getUserCancelledEvents(String userId) {
+        ArrayList<Event> events = getLocalEventsList();
+        ArrayList<Event> userCancelledListEvents = new ArrayList<>();
+        for (Event event : events) {
+            if (event.getCancelledParticipants().contains(userId)) {
+                userCancelledListEvents.add(event);
             }
-        });
+        }
+        return userCancelledListEvents;
     }
 
 

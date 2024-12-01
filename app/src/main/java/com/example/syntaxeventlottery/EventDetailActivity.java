@@ -656,8 +656,13 @@ public class EventDetailActivity extends AppCompatActivity {
         boolean isInConfirmedList = eventController.isUserInConfirmedList(event, deviceID);
         boolean isInCancelledList = eventController.isUserInCancelledList(event, deviceID);
 
+        joinWaitingListButton.setVisibility(View.GONE);
+        leaveWaitingListButton.setVisibility(View.GONE);
+        acceptInvitationButton.setVisibility(View.GONE);
+        declineInvitationButton.setVisibility(View.GONE);
+
         // if user is not associated with the event
-        if (!(isInWaitingList || isInSelectedList || isInCancelledList)) {
+        if (!(isInWaitingList || isInSelectedList || isInConfirmedList || isInCancelledList)) {
             // if the waiting list is full or draw has occurred
             if (event.getWaitingListFull() || event.isDrawed()) {
                 if (event.isDrawed()) {
@@ -670,9 +675,6 @@ public class EventDetailActivity extends AppCompatActivity {
                 eventActionsTextView.setText("Join the waiting list for a chance to participate!");
                 joinWaitingListButton.setVisibility(View.VISIBLE);
             }
-            acceptInvitationButton.setVisibility(View.GONE);
-            declineInvitationButton.setVisibility(View.GONE);
-            leaveWaitingListButton.setVisibility(View.GONE);
             return;
         }
 
@@ -680,16 +682,11 @@ public class EventDetailActivity extends AppCompatActivity {
         if (isInWaitingList) {
             eventActionsTextView.setText("You are currently in the waiting list for this event!");
             leaveWaitingListButton.setVisibility(View.VISIBLE);
-            joinWaitingListButton.setVisibility(View.GONE);
-            acceptInvitationButton.setVisibility(View.GONE);
-            declineInvitationButton.setVisibility(View.GONE);
             return;
         }
 
         if (isInSelectedList) {
             eventActionsTextView.setText("You have been selected to participate!\n" + "Please accept or decline your invitation as soon as possible");
-            joinWaitingListButton.setVisibility(View.GONE);
-            leaveWaitingListButton.setVisibility(View.GONE);
             declineInvitationButton.setVisibility(View.VISIBLE);
             acceptInvitationButton.setVisibility(View.VISIBLE);
             return;
@@ -701,10 +698,6 @@ public class EventDetailActivity extends AppCompatActivity {
             } else {
                 eventActionsTextView.setText("Either you have been removed by the creator of this event or you have previously declined your invitation");
             }
-            joinWaitingListButton.setVisibility(View.GONE);
-            acceptInvitationButton.setVisibility(View.GONE);
-            leaveWaitingListButton.setVisibility(View.GONE);
-            declineInvitationButton.setVisibility(View.GONE);
             return;
         }
     }
