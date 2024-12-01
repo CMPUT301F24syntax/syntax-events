@@ -16,10 +16,8 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-
-
-
-
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
 
     <application
         android:allowBackup="true"
@@ -32,7 +30,6 @@
         android:theme="@style/Theme.SyntaxEventLottery"
         android:name=".App"
         tools:targetApi="31">
-
 
         <!-- MainActivity Declaration -->
         <activity
@@ -62,27 +59,28 @@
         <activity android:name=".AdminEventDetailActivity"></activity>
         <activity android:name=".QRScanActivity"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            <!-- Removed duplicate MAIN and LAUNCHER intent filters -->
         </activity>
-
-
-
 
         <activity android:name=".EventParticipantsListActivity" />
 
         <activity android:name=".NotificationCenterActivity"></activity>
 
-        <!-- New Activity Declaration: UserProfileActivity -->
+        <!-- New Activity Declaration: CreateUserProfileActivity -->
         <activity
             android:name=".CreateUserProfileActivity"
             android:exported="true"
             android:label="User Profile" />
 
+        <!-- Notification Foreground Service Declaration -->
+        <service
+            android:name=".NotificationListenerService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="remoteMessaging"
+            tools:ignore="ForegroundServicePermission" />
+
 
     </application>
 
 </manifest>
-
