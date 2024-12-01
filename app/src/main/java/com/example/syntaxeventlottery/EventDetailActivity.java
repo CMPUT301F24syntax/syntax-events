@@ -108,6 +108,7 @@ public class EventDetailActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Void result) {
                 event = eventController.getEventById(eventID);
+
                 if (event == null) {
                     Log.e(TAG, "Event not found in the repository.");
                     Toast.makeText(EventDetailActivity.this, "Failed to find the event.", Toast.LENGTH_SHORT).show();
@@ -115,11 +116,24 @@ public class EventDetailActivity extends AppCompatActivity {
                     return;
                 }
 
-                // Check if the event requires location permissions
-                if (event.getLocationRequired()) {
-                    showLocationWarningDialog(deviceID);
-                } else {
+                // Log the fetched event and its location requirement
+                Log.d(TAG, "Fetched event: " + event);
+                Log.d(TAG, "Event location requirement: " + event.getLocationRequired());
+
+                // Check if the current user is the organizer
+                boolean isOrganizer = event.getOrganizerId().equals(deviceID);
+                Log.d(TAG, "Is Organizer? " + isOrganizer);
+
+                if (isOrganizer) {
+                    // If the current user is the organizer, proceed to update the UI
                     updateUI(event);
+                } else {
+                    // If the current user is an entrant, handle location requirement
+                    if (event.getLocationRequired()) {
+                        showLocationWarningDialog(deviceID);
+                    } else {
+                        updateUI(event);
+                    }
                 }
             }
 
@@ -131,6 +145,37 @@ public class EventDetailActivity extends AppCompatActivity {
             }
         });
     }
+
+//    private void loadEvent(String deviceID) {
+//        // Refresh the event repository and load the details of the specified event
+//        eventController.refreshRepository(new DataCallback<Void>() {
+//            @Override
+//            public void onSuccess(Void result) {
+//                event = eventController.getEventById(eventID);
+//                if (event == null) {
+//                    Log.e(TAG, "Event not found in the repository.");
+//                    Toast.makeText(EventDetailActivity.this, "Failed to find the event.", Toast.LENGTH_SHORT).show();
+//                    finish();
+//                    return;
+//                }
+//
+//                // Check if the event requires location permissions
+//                if (event.getLocationRequired()) {
+//                    showLocationWarningDialog(deviceID);
+//                } else {
+//                    updateUI(event);
+//                }
+//            }
+//
+//            @Override
+//            public void onError(Exception e) {
+//                Log.e(TAG, "Error refreshing the event repository: ", e);
+//                Toast.makeText(EventDetailActivity.this, "Failed to get updated data.", Toast.LENGTH_SHORT).show();
+//                finish();
+//            }
+//        });
+//    }
+
 
     private void showLocationWarningDialog(String deviceID) {
         new AlertDialog.Builder(this)
@@ -414,6 +459,7 @@ public class EventDetailActivity extends AppCompatActivity {
         editInfoButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
         manageParticipantsButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
         drawButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
+        viewMapButton.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
 
         // Determin which buttons to display
         if (!isOrganizer) {
