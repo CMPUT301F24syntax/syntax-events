@@ -19,10 +19,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.ListenerRegistration;
-
 public class MainActivity extends AppCompatActivity {
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private static final int REQUEST_NOTIFICATION_PERMISSION = 101;
@@ -166,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
                 if (currentUser == null) {
                     openCreateProfileActivity();
                 } else {
-                    userController.updateUserLocation(currentUser, MainActivity.this, new DataCallback<User>() {
+                    userController.updateUserLocation_main(currentUser, MainActivity.this, new DataCallback<User>() {
                         @Override
                         public void onSuccess(User result) {
                             Log.d(TAG, "Location updated successfully for user: " + result.getUserID());
