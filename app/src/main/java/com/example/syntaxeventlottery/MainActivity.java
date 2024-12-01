@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
         userButton.setOnClickListener(v -> checkUserInDatabase());
 
         // Check and request location permission
-        checkAndRequestLocationPermission();
+        // checkAndRequestLocationPermission();
     }
 
     /**
