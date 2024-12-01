@@ -42,7 +42,7 @@ public class EventDetailActivity extends AppCompatActivity {
     private ImageView posterImageView, qrCodeImageView;
     private TextView eventNameTextView, eventDescriptionTextView, eventStartDateTextView, eventEndDateTextView, eventCapacityTextView, eventFacilityLocationTextView, eventFacilityNameTextView, eventDrawedStatusTextView;
     private Button joinWaitingListButton, acceptInvitationButton, leaveEventButton;
-    private Button manageParticipantsButton, editInfoButton, drawButton;
+    private Button manageParticipantsButton, editInfoButton, drawButton, viewMapButton;
     private ImageButton backButton;
 
     // Controller and Data
@@ -401,6 +401,7 @@ public class EventDetailActivity extends AppCompatActivity {
         manageParticipantsButton = findViewById(R.id.manageParticipantsButton);
         editInfoButton = findViewById(R.id.editInfoButton);
         drawButton = findViewById(R.id.drawParticipantsButton);
+        viewMapButton = findViewById(R.id.viewMapButton);
 
         configureButtonVisibility();
         setupButtonListeners();
@@ -512,6 +513,14 @@ public class EventDetailActivity extends AppCompatActivity {
                 Log.d(TAG, "User is not authorized to view the waiting list.");
             }
         });
+
+        viewMapButton.setOnClickListener(v -> {
+            Intent intent = new Intent(EventDetailActivity.this, MapActivity.class);
+            // send current eventID
+            intent.putExtra("eventID", eventID);
+            startActivity(intent);
+        });
+
     }
 
     //------------ helper methods for displaying UI --------------//
