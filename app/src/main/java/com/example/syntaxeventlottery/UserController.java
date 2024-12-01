@@ -7,13 +7,12 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+
 import android.Manifest;
 
 public class UserController {
@@ -118,7 +117,7 @@ public class UserController {
         return null;
     }
 
-    public void updateUserLocation(User user, Context context, DataCallback<User> callback) {
+    public void updateUserLocation_main(User user, Context context, DataCallback<User> callback) {
         if (user == null) {
             callback.onError(new IllegalArgumentException("User object is null"));
             return;
@@ -171,4 +170,21 @@ public class UserController {
             }
         });
     }
+
+    // For location
+    public void updateUserLocation_eventdetail(User user, double latitude, double longitude, DataCallback<User> callback) {
+        if (user == null) {
+            callback.onError(new IllegalArgumentException("User cannot be null"));
+            return;
+        }
+
+        // update user location info
+        ArrayList<Double> location = new ArrayList<>();
+        location.add(latitude);
+        location.add(longitude);
+        user.setLocation(location);
+
+        userRepository.updateUserDetails(user, null, callback); // only update the location info
+    }
+
 }

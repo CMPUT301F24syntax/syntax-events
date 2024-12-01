@@ -80,6 +80,10 @@
             android:foregroundServiceType="remoteMessaging"
             tools:ignore="ForegroundServicePermission" />
 
+        <!-- add Google Maps API Key -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDaFSYuJJ5stNdXEBxc2mpkq6aQoX0GR2o" />
 
     </application>
 

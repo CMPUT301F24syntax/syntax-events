@@ -76,6 +76,9 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
 
+    // Google Map API
+    implementation("com.google.android.gms:play-services-maps:18.1.0")
+
     // Testing dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
