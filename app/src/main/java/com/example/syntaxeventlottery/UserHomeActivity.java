@@ -18,25 +18,24 @@ import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
+
 
 public class UserHomeActivity extends AppCompatActivity {
 
     // UI Components
-    private TextView dateTextView;
-    private RecyclerView waitlistEventsRecyclerView;
+    private RecyclerView waitlistedEventsRecyclerView, selectedEventsRecyclerView, enrolledEventsRecyclerView;
     private ImageButton organizerButton, newsButton, profileButton, scanButton;
+
 
     // Controllers
     private EventController eventController;
     private UserController userController;
 
     // Adapter and Data
-    private EventAdapter eventAdapter;
+    private EventAdapter waitlistedEventsAdapter;
+    private EventAdapter selectedEventsAdapter;
+    private EventAdapter enrolledEventsAdapter;
     private String deviceID;
     private User currentUser;
     private final String TAG = "UserHomeActivity";
@@ -52,11 +51,10 @@ public class UserHomeActivity extends AppCompatActivity {
         setContentView(R.layout.user_home_page);
 
         // Initialize UI Components
-        dateTextView = findViewById(R.id.dateTextView);
         organizerButton = findViewById(R.id.organizerButton);
         profileButton = findViewById(R.id.profileButton);
         newsButton = findViewById(R.id.newsButton);
-        scanButton = findViewById(R.id.qrScanButton2);
+        scanButton = findViewById(R.id.qrScanButton);
 
         // Initialize Controllers
         eventController = new EventController(new EventRepository());
@@ -66,13 +64,31 @@ public class UserHomeActivity extends AppCompatActivity {
         deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
         // Set up RecyclerView for Waitlisted Events
-        waitlistEventsRecyclerView = findViewById(R.id.futureEventsRecyclerView);
-        waitlistEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        eventAdapter = new EventAdapter(new ArrayList<>(), this);
-        waitlistEventsRecyclerView.setAdapter(eventAdapter);
+        waitlistedEventsRecyclerView = findViewById(R.id.waitlistedEventsRecyclerView);
+        waitlistedEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        waitlistedEventsAdapter = new EventAdapter(new ArrayList<>(), this);
+        waitlistedEventsRecyclerView.setAdapter(waitlistedEventsAdapter);
 
         // Load Waitlisted Events
         loadUserWaitlistedEvents();
+
+        // Set up RecyclerView for Selected Events
+        selectedEventsRecyclerView = findViewById(R.id.selectedEventsRecyclerView);
+        selectedEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        selectedEventsAdapter = new EventAdapter(new ArrayList<>(), this);
+        selectedEventsRecyclerView.setAdapter(selectedEventsAdapter);
+
+        // Load Selected Events
+        loadUserSelectedEvents();
+
+        // Set up RecyclerView for Enrolled Events
+        enrolledEventsRecyclerView = findViewById(R.id.enrolledEventsRecyclerView);
+        enrolledEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        enrolledEventsAdapter = new EventAdapter(new ArrayList<>(), this);
+        enrolledEventsRecyclerView.setAdapter(enrolledEventsAdapter);
+
+        // Load Enrolled Events
+        loadUserEnrolledEvents();
 
         // Set Button Listeners
         organizerButton.setOnClickListener(v -> checkFacilityProfileAndLaunch());
@@ -92,54 +108,88 @@ public class UserHomeActivity extends AppCompatActivity {
             // Navigate to QRScanActivity
             startActivity(new Intent(UserHomeActivity.this, QRScanActivity.class));
         });
-
-        // Set up Date and Time Updater
-        updateDateTime();
     }
 
 
     /**
-
-     Loads waitlisted events for the current user.*/
+     Loads waitlisted events for the current user.
+     */
     private void loadUserWaitlistedEvents() {
-        eventController.refreshRepository(new DataCallback<Void>() {@Override
-        public void onSuccess(Void result) {
-            eventController.getUserWaitlistedEvents(deviceID, new DataCallback<ArrayList<Event>>() {@Override
-            public void onSuccess(ArrayList<Event> result) {
-                eventAdapter.updateEvents(result);}
+        eventController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                eventController.getUserWaitlistedEvents(deviceID, new DataCallback<ArrayList<Event>>() {
+                    @Override
+                    public void onSuccess(ArrayList<Event> result) {
+                        waitlistedEventsAdapter.updateEvents(result);
+                    }
 
-                @Override
-                public void onError(Exception e) {
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e(TAG, "Error loading user waitlisted events", e);
 
-                }
-            });
-        }
+                    }
+                });
+            }
 
             @Override
             public void onError(Exception e) {
-
+                Log.e(TAG, "Error refreshing events");
             }
         });
     }
 
-    /**
-     * Updates the date and time display.
-     */
-    private void updateDateTime() {
-        final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault());
-        dateFormat.setTimeZone(TimeZone.getTimeZone("America/Edmonton"));
+    private void loadUserSelectedEvents() {
+        eventController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                eventController.getUserSelectedEvents(deviceID, new DataCallback<ArrayList<Event>>() {
+                    @Override
+                    public void onSuccess(ArrayList<Event> result) {
+                        selectedEventsAdapter.updateEvents(result);
+                    }
 
-        new Thread(() -> {
-            while (!isFinishing()) {
-                runOnUiThread(() -> dateTextView.setText(dateFormat.format(new Date())));
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e(TAG, "Error loading user selected events", e);
+
+                    }
+                });
             }
-        }).start();
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error refreshing events");
+            }
+        });
     }
+
+    private void loadUserEnrolledEvents() {
+        eventController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                eventController.getUserConfirmedEvents(deviceID, new DataCallback<ArrayList<Event>>() {
+                    @Override
+                    public void onSuccess(ArrayList<Event> result) {
+                        enrolledEventsAdapter.updateEvents(result);
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e(TAG, "Error loading user enrolled events", e);
+
+                    }
+                });
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error refreshing events");
+            }
+        });
+    }
+
+
 
     /**
      * Checks if the user has a facility profile and launches the appropriate activity.
