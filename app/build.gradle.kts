@@ -43,6 +43,7 @@ android {
 }
 
 dependencies {
+    //implementation(files("/Users/jadenhuang/Library/Android/sdk/platforms/android-34/android.jar"))
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation("com.google.zxing:core:3.4.1")
     implementation(libs.espresso.intents)
