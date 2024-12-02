@@ -11,7 +11,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Represents an event in the Event Lottery System.
+ * The {@code Event} class represents an event in the Event Lottery System.
+ * It includes details about the event such as its name, description, capacity,
+ * participants, and organizer information. It also manages functionality for
+ * waiting lists, confirmed participants, and geolocation requirements.
  */
 public class Event implements Serializable {
 
@@ -272,11 +275,11 @@ public class Event implements Serializable {
     }
 
 
-
-
-
-
-
+    /**
+     * Returns a string representation of the event.
+     *
+     * @return String detailing the event's attributes.
+     */
     @Override
     public String toString() {
         return "Event{" +
