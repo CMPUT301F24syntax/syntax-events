@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,14 +17,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ManageFacilityProfileActivity extends AppCompatActivity {
     private final String TAG = "ManageFacilityProfileActivity";
 
-    private EditText facilityNameEditText;
-    private EditText facilityLocationEditText;
-    private Button buttonSave;
-    private ImageButton buttonBack;
-    private UserController userController;
-    private EventController eventController;
-    private User currentUser;
-
+    public EditText facilityNameEditText;
+    public EditText facilityLocationEditText;
+    private Button buttonBack;
+    public Button buttonSave;
+    public UserController userController;
+    public EventController eventController;
+    public User currentUser;
     private String deviceID;
     private Facility facility;
 
