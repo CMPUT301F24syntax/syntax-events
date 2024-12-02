@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,7 +20,8 @@ public class ManageFacilityProfileActivity extends AppCompatActivity {
 
     private EditText facilityNameEditText;
     private EditText facilityLocationEditText;
-    private Button buttonBack, buttonSave;
+    private Button buttonSave;
+    private ImageButton buttonBack;
     private UserController userController;
     private EventController eventController;
     private User currentUser;
