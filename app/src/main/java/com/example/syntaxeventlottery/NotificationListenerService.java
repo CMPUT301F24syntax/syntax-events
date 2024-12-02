@@ -38,7 +38,8 @@ public class NotificationListenerService extends Service {
         startForeground(NOTIFICATION_ID, getNotification());
 
         // Start listening to Firestore
-        startListeningToNotifications();
+            startListeningToNotifications();
+
     }
 
     /**
@@ -158,7 +159,6 @@ public class NotificationListenerService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        // We don't provide binding, so return null
         return null;
     }
 }

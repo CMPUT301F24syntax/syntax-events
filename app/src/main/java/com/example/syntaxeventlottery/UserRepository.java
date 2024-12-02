@@ -190,7 +190,6 @@ public class UserRepository {
                 });
     }
 
-
     public HashMap<String, Object> userToHashData(User user) {
         HashMap<String, Object> data = new HashMap<>();
         data.put("userID", user.getUserID());
@@ -201,6 +200,7 @@ public class UserRepository {
         data.put("username", user.getUsername());
         data.put("facility", user.getFacility());
         data.put("receiveNotifications", user.isReceiveNotifications());
+        data.put("allowNotification", user.isAllowNotification());
         return data;
     }
 }
