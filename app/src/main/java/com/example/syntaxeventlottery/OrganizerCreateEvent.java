@@ -235,6 +235,40 @@ public class OrganizerCreateEvent extends AppCompatActivity {
     public boolean validateEventInput(String eventName, String eventDescription,
                                       String startDateStr, String endDateStr, String capacityStr,
                                       String waitingListLimitStr) {
+        // Check if any required field is empty
+        if (eventName.isEmpty() || eventDescription.isEmpty() || startDateStr.isEmpty() ||
+                endDateStr.isEmpty() || capacityStr.isEmpty()) {
+            Toast.makeText(this, "Please fill all required fields", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        // Validate capacity format
+        try {
+            int capacity = Integer.parseInt(capacityStr);
+            if (capacity <= 0) {
+                Toast.makeText(this, "Capacity must be greater than 0", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Please enter a valid number for capacity", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        // Validate waiting list limit if enabled
+        if (waitingListLimitSwitch.isChecked()) {
+            if (waitingListLimitStr == null || waitingListLimitStr.isEmpty()) {
+                Toast.makeText(this, "Please enter limit or uncheck switch", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+            try {
+                int limit = Integer.parseInt(waitingListLimitStr);
+                if (limit <= 0) {
+                    Toast.makeText(this, "Waiting list limit must be greater than 0", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Please enter a valid number for waiting list limit", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        }
         // Validation logic...
         return true;
     }
