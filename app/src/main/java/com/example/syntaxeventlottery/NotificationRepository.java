@@ -2,7 +2,6 @@ package com.example.syntaxeventlottery;
 
 import android.util.Log;
 
-import com.example.syntaxeventlottery.DataCallback;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -18,6 +17,14 @@ public class NotificationRepository {
         this.db = FirebaseFirestore.getInstance();
     }
 
+    /**
+     * Adds notifications for a list of users.
+     *
+     * @param userIds   List of user device IDs.
+     * @param message   Notification message.
+     * @param eventId   Related event ID.
+     * @param callback  Callback to handle success or error.
+     */
     public void addNotifications(List<String> userIds, String message, String eventId, DataCallback<Void> callback) {
         for (String userId : userIds) {
             // Retrieve user's allowNotification setting
