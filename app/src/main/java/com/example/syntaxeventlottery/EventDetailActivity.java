@@ -127,7 +127,7 @@ public class EventDetailActivity extends AppCompatActivity {
                 } else {
                     // If the current user is an entrant, handle location requirement
                     if (event.getLocationRequired()) {
-                        if (FirstTimeVist = true) {
+                        if (FirstTimeVist) {
                             showLocationWarningDialog(deviceID);
                             FirstTimeVist = false;
                         }
