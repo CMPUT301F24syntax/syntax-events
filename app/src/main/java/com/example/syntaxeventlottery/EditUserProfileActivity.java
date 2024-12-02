@@ -17,7 +17,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 
-
+/**
+ * The {@code EditUserProfileActivity} class allows users to edit their profile details.
+ * Users can update their name, email, phone number, profile picture, and notification preferences.
+ * Uses {@link UserController} for managing user-related operations.
+ */
 public class EditUserProfileActivity extends AppCompatActivity {
 
     private EditText nameEditText, emailEditText, phoneEditText;
@@ -34,7 +38,12 @@ public class EditUserProfileActivity extends AppCompatActivity {
     private Switch notificationSwitch;
 
 
-
+    /**
+     * Called when the activity is first created.
+     * Initializes UI components, retrieves the user profile, and sets up button listeners.
+     *
+     * @param savedInstanceState The saved instance state, or {@code null} if none exists.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,6 +83,9 @@ public class EditUserProfileActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Loads the user's profile from the repository.
+     */
     private void loadUserProfile() {
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
@@ -91,6 +103,9 @@ public class EditUserProfileActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Displays the user's profile details in the UI.
+     */
     private void displayUserDetails() {
         nameEditText.setText(user.getUsername());
         emailEditText.setText(user.getEmail());
@@ -103,6 +118,10 @@ public class EditUserProfileActivity extends AppCompatActivity {
                 .into(profileImageView);
     }
 
+    /**
+     * Saves the updated user profile.
+     * Validates the inputs and updates the profile in the repository.
+     */
     private void saveUserProfile() {
         String newName = nameEditText.getText().toString().trim();
         String newEmail = emailEditText.getText().toString().trim();
@@ -161,6 +180,9 @@ public class EditUserProfileActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Resets the user's profile photo to the default state.
+     */
     private void resetProfilePhoto() {
         selectedImageUri = null;
         user.setProfilePhotoUrl(null);
@@ -168,11 +190,21 @@ public class EditUserProfileActivity extends AppCompatActivity {
         displayUserDetails();
     }
 
+    /**
+     * Opens the image picker for the user to select a new profile picture.
+     */
     private void openImagePicker() {
         Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, REQUEST_CODE_SELECTED_IMAGE);
     }
 
+    /**
+     * Handles the result of the image picker activity.
+     *
+     * @param requestCode The request code passed to the image picker.
+     * @param resultCode  The result code returned by the image picker.
+     * @param data        The intent containing the selected image URI.
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

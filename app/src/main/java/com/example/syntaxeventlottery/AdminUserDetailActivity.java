@@ -20,7 +20,8 @@ import java.util.ArrayList;
 
 /**
  * The {@code AdminUserDetailActivity} class displays detailed information about a user
- * to administrators, including username, user ID, email, phone number, and profile image.
+ * to administrators. It provides functionality to view and manage user details,
+ * including username, user ID, email, phone number, profile image, and facility information.
  */
 public class AdminUserDetailActivity extends AppCompatActivity {
     private final String TAG="AdminUserDetailActivity";
@@ -33,6 +34,12 @@ public class AdminUserDetailActivity extends AppCompatActivity {
     private String userID;
     private User user;
 
+    /**
+     * Called when the activity is first created.
+     * Initializes UI components, sets up button functionality, and loads user details.
+     *
+     * @param savedInstanceState The saved instance state, or {@code null} if none exists.
+     */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,7 +89,9 @@ public class AdminUserDetailActivity extends AppCompatActivity {
         });
     }
 
-    // get the most updated user info
+    /**
+     * Loads the user's details from the repository and updates the UI.
+     */
     private void loadUserDetails() {
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
@@ -133,7 +142,7 @@ public class AdminUserDetailActivity extends AppCompatActivity {
     }
 
     /**
-     * Deletes the user's facility profile, and all events created with this profile
+     * Deletes the user's facility profile and all associated events.
      */
     private void deleteFacility() {
         user.setFacility(null);
@@ -153,7 +162,11 @@ public class AdminUserDetailActivity extends AppCompatActivity {
         });
     }
 
-    // delete events which are held at this facility
+    /**
+     * Deletes all events associated with the user's facility profile.
+     *
+     * @param userID The ID of the user whose facility events are to be deleted.
+     */
     private void deleteFacilityEvents(String userID) {
         eventController.refreshRepository(new DataCallback<Void>() {
             @Override

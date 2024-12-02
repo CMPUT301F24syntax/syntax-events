@@ -20,6 +20,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
 
+/**
+ * The {@code AdminUserAdapter} class extends {@link ArrayAdapter} to provide a custom adapter
+ * for displaying and managing user profiles in a list view for administrators.
+ */
 public class AdminUserAdapter extends ArrayAdapter<User> {
     private final String TAG="AdminUserAdapter";
 
@@ -27,12 +31,26 @@ public class AdminUserAdapter extends ArrayAdapter<User> {
     private List<User> userList;
     private UserController userController;
 
+    /**
+     * Constructs a new {@code AdminUserAdapter}.
+     *
+     * @param context  The current context.
+     * @param userList The list of users to display.
+     */
     public AdminUserAdapter(Context context, List<User> userList) {
         super(context, R.layout.admin_user_item, userList);
         this.context = context;
         this.userList = userList;
     }
 
+    /**
+     * Provides a view for an AdapterView.
+     *
+     * @param position    The position of the item within the adapter's data set.
+     * @param convertView The old view to reuse, if possible.
+     * @param parent      The parent that this view will eventually be attached to.
+     * @return A View corresponding to the data at the specified position.
+     */
     @NonNull
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -72,12 +90,22 @@ public class AdminUserAdapter extends ArrayAdapter<User> {
         return convertView;
     }
 
+    /**
+     * Fetches the details of a user and starts the {@code AdminUserDetailActivity}.
+     *
+     * @param userID The unique identifier of the user.
+     */
     private void fetchUserDetailsAndShow(String userID) {
         Intent intent = new Intent(context, AdminUserDetailActivity.class);
         intent.putExtra("userID", userID);
         context.startActivity(intent);
     }
 
+    /**
+     * Deletes a user's profile from the database and updates the adapter.
+     *
+     * @param user The user object to delete.
+     */
     private void deleteUserProfile(User user) {
         userController.deleteUser(user, new DataCallback<Void>() {
             @Override
