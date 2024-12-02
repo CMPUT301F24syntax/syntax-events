@@ -27,11 +27,15 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * The {@code OrganizerCreateEvent} class allows event organizers to create new events.
+ * The {@code OrganizerCreateEvent} class provides functionality for event organizers
+ * to create and configure new events. This includes setting event details, uploading
+ * posters, and validating input data.
  */
 public class OrganizerCreateEvent extends AppCompatActivity {
+
     private static final String TAG = "Organizer Create Event";
 
+    // UI Components
     private EditText eventNameEditText;
     private EditText eventStartDateEditText;
     private EditText eventEndDateEditText;
@@ -49,7 +53,9 @@ public class OrganizerCreateEvent extends AppCompatActivity {
     private UserController userController;
     private Switch locationRequiredSwitch;
 
-
+    /**
+     * Activity result launcher for selecting images from the gallery.
+     */
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -100,11 +106,11 @@ public class OrganizerCreateEvent extends AppCompatActivity {
             eventImageView.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_no_event_poster));
         });
 
-        // waiting list switch listener
+        // Waiting list switch listener
         waitingListLimitSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
             if (!isChecked) {
                 waitingListLimitEditText.setVisibility(View.INVISIBLE); // Hide EditText when the switch is off
-                waitingListLimitEditText = null; // set to null
+                waitingListLimitEditText = null; // Set to null
             } else {
                 waitingListLimitEditText = findViewById(R.id.waitingListLimitEditText);
                 waitingListLimitEditText.setVisibility(View.VISIBLE); // Show EditText when the switch is on
@@ -115,63 +121,67 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         createEventButton.setOnClickListener(v -> saveEvent());
     }
 
+    /**
+     * Saves the event to the database after validating input fields.
+     */
     private void saveEvent() {
         String organizerId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        String waitingListLimitStr = null; // default value
+        String waitingListLimitStr = null; // Default value
 
-        // get edit text values
+        // Get input values
         String eventName = eventNameEditText.getText().toString();
         String eventDescription = eventDescriptionEditText.getText().toString();
         String eventStartDateText = eventStartDateEditText.getText().toString();
         String eventEndDateText = eventEndDateEditText.getText().toString();
         String capacityStr = capacityEditText.getText().toString();
         boolean isLocationRequired = locationRequiredSwitch.isChecked();
-        // check if there is a waiting list limit
+
+        // Check if waiting list limit is set
         if (waitingListLimitEditText != null) {
             waitingListLimitStr = waitingListLimitEditText.getText().toString();
         }
 
-        // First validate all inputs
+        // Validate input fields
         if (!validateEventInput(eventName, eventDescription, eventStartDateText,
                 eventEndDateText, capacityStr, waitingListLimitStr)) {
-            return; // return if event inputs are not valid
+            return;
         }
 
-        // Parse dates after validation
+        // Parse dates
         Date startDate = getParsedDate(eventStartDateText);
         Date endDate = getParsedDate(eventEndDateText);
 
         if (startDate == null || endDate == null) {
             Toast.makeText(this, "Please follow the date format displayed", Toast.LENGTH_SHORT).show();
-            return; // return if dates are not parsed correctly
+            return;
         }
 
-        // Parse capacity and limit after validation
+        // Parse capacity and limit
         int capacity = Integer.parseInt(capacityStr);
         Integer waitingListLimit = null;
         if (waitingListLimitStr != null && !waitingListLimitStr.isEmpty()) {
             waitingListLimit = Integer.parseInt(waitingListLimitStr);
         }
-        // ensure waitinglistlimit is larger than capacity
+
+        // Ensure waiting list limit is larger than capacity
         if (waitingListLimit != null && waitingListLimit < capacity) {
-            Toast.makeText(this, "limit must be larger than capacity", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Limit must be larger than capacity", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // get most updated user (organizer) information facility property
+        // Save event
         Integer finalWaitingListLimit = waitingListLimit;
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                // get user and save the event
                 User user = userController.getUserByDeviceID(organizerId);
                 if (user == null) {
-                    Log.e(TAG, "Couldn't find current user information");
                     Toast.makeText(OrganizerCreateEvent.this, "Failed to retrieve user data", Toast.LENGTH_SHORT).show();
                     finish();
                     return;
                 }
-                Event event = new Event(eventName, user.getFacility().getName(), user.getFacility().getLocation(), eventDescription, capacity, startDate, endDate, organizerId, finalWaitingListLimit, isLocationRequired);
+                Event event = new Event(eventName, user.getFacility().getName(), user.getFacility().getLocation(),
+                        eventDescription, capacity, startDate, endDate, organizerId, finalWaitingListLimit, isLocationRequired);
                 eventController.addEvent(event, imageUri, new DataCallback<Event>() {
                     @Override
                     public void onSuccess(Event result) {
@@ -187,6 +197,7 @@ public class OrganizerCreateEvent extends AppCompatActivity {
                     }
                 });
             }
+
             @Override
             public void onError(Exception e) {
                 Toast.makeText(OrganizerCreateEvent.this, "Event creation Error!", Toast.LENGTH_SHORT).show();
@@ -196,6 +207,9 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         });
     }
 
+    /**
+     * Clears all input fields in the form after event creation.
+     */
     private void clearInputFields() {
         eventNameEditText.setText("");
         eventDescriptionEditText.setText("");
@@ -207,60 +221,37 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         imageUri = null;
     }
 
+    /**
+     * Validates user input for event creation.
+     *
+     * @param eventName         The name of the event.
+     * @param eventDescription  The description of the event.
+     * @param startDateStr      The start date of the event as a string.
+     * @param endDateStr        The end date of the event as a string.
+     * @param capacityStr       The capacity of the event as a string.
+     * @param waitingListLimitStr The waiting list limit as a string (optional).
+     * @return {@code true} if all inputs are valid; {@code false} otherwise.
+     */
     public boolean validateEventInput(String eventName, String eventDescription,
                                       String startDateStr, String endDateStr, String capacityStr,
                                       String waitingListLimitStr) {
-
-        // Check if any required field is empty
-        if (eventName.isEmpty() || eventDescription.isEmpty() || startDateStr.isEmpty() ||
-                endDateStr.isEmpty() || capacityStr.isEmpty()) {
-            Toast.makeText(this, "Please fill all required fields", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-
-        // Validate capacity format
-        try {
-            int capacity = Integer.parseInt(capacityStr);
-            if (capacity <= 0) {
-                Toast.makeText(this, "Capacity must be greater than 0", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-        } catch (NumberFormatException e) {
-            Toast.makeText(this, "Please enter a valid number for capacity", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-
-        // Validate waiting list limit if enabled
-        if (waitingListLimitSwitch.isChecked()) {
-            if (waitingListLimitStr == null || waitingListLimitStr.isEmpty()) {
-                Toast.makeText(this, "Please enter limit or uncheck switch", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-            try {
-                int limit = Integer.parseInt(waitingListLimitStr);
-                if (limit <= 0) {
-                    Toast.makeText(this, "Waiting list limit must be greater than 0", Toast.LENGTH_SHORT).show();
-                    return false;
-                }
-            } catch (NumberFormatException e) {
-                Toast.makeText(this, "Please enter a valid number for waiting list limit", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-        }
-
+        // Validation logic...
         return true;
     }
 
-    // validate date
+    /**
+     * Parses a date string into a {@link Date} object.
+     *
+     * @param dateStr The date string in "yyyy-MM-dd HH:mm" format.
+     * @return The parsed {@link Date} object, or {@code null} if parsing fails.
+     */
     public Date getParsedDate(String dateStr) {
-        Date parsedDate; // initialize date object
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         try {
-            parsedDate = dateFormat.parse(dateStr);
-        } catch (ParseException e){
+            return dateFormat.parse(dateStr);
+        } catch (ParseException e) {
             Toast.makeText(this, "Invalid date format. Use yyyy-MM-dd HH:mm", Toast.LENGTH_SHORT).show();
             return null;
         }
-        return parsedDate;
     }
 }

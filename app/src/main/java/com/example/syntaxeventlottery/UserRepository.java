@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Manages data operations related to users, including Entrants.
+ * Repository class for managing user-related data operations, including Firebase Firestore and Firebase Storage integration.
  */
 public class UserRepository {
 
@@ -31,7 +31,9 @@ public class UserRepository {
     private StorageReference usersImageRef;
     private ArrayList<User> usersDataList;
 
-
+    /**
+     * Initializes the UserRepository with Firestore and Firebase Storage references.
+     */
     public UserRepository() {
         this.db = FirebaseFirestore.getInstance();
         this.storage = FirebaseStorage.getInstance();
@@ -40,11 +42,20 @@ public class UserRepository {
         this.usersDataList = new ArrayList<>();
     }
 
-    // Returns the cached list of users
+    /**
+     * Retrieves the cached list of users.
+     *
+     * @return A copy of the local users list.
+     */
     public ArrayList<User> getLocalUsersList() {
         return new ArrayList<>(usersDataList);
     }
 
+    /**
+     * Fetches all users from Firestore and updates the local cache.
+     *
+     * @param callback Callback to handle the success or failure of the operation.
+     */
     public void fetchAllUsers(DataCallback<Void> callback) {
         usersRef.get()
                 .addOnSuccessListener(querySnapshot -> {
@@ -61,20 +72,31 @@ public class UserRepository {
                 });
     }
 
-
+    /**
+     * Adds a new user to Firestore and uploads their profile photo if provided.
+     *
+     * @param user      The user to be added.
+     * @param imageUri  The URI of the user's profile photo (optional).
+     * @param callback  Callback to handle the success or failure of the operation.
+     */
     public void addUserToRepo(User user, @Nullable Uri imageUri, DataCallback<User> callback) {
         usersDataList.add(user);
         HashMap<String, Object> data = userToHashData(user);
         if (imageUri != null) {
             uploadProfilePhoto(user, data, imageUri, callback);
         } else {
-            // generate default photo if there is not image uri
             if (user.getProfilePhotoUrl() == null || user.getProfilePhotoUrl().isEmpty()) {
                 uploadDefaultPhoto(user, data, callback);
             }
         }
     }
 
+    /**
+     * Deletes a user from Firestore and removes them from the local cache.
+     *
+     * @param user      The user to be deleted.
+     * @param callback  Callback to handle the success or failure of the operation.
+     */
     public void deleteUserfromRepo(User user, DataCallback<Void> callback) {
         usersRef.document(user.getUserID()).delete()
                 .addOnSuccessListener(aVoid -> {
@@ -84,6 +106,14 @@ public class UserRepository {
                 .addOnFailureListener(callback::onError);
     }
 
+    /**
+     * Uploads a user's profile photo to Firebase Storage and updates Firestore with the photo URL.
+     *
+     * @param user      The user whose photo is being uploaded.
+     * @param data      The user's data to be updated in Firestore.
+     * @param imageUri  The URI of the profile photo.
+     * @param callback  Callback to handle the success or failure of the operation.
+     */
     public void uploadProfilePhoto(User user, HashMap<String, Object> data, Uri imageUri, DataCallback<User> callback) {
         StorageReference profilePhotoRef = usersImageRef.child("user_images/" + user.getUserID());
         profilePhotoRef.putFile(imageUri)
@@ -104,6 +134,13 @@ public class UserRepository {
                 });
     }
 
+    /**
+     * Uploads user data to Firestore.
+     *
+     * @param user      The user whose data is being uploaded.
+     * @param data      The user's data to be updated in Firestore.
+     * @param callback  Callback to handle the success or failure of the operation.
+     */
     private void uploadUserData(User user, HashMap<String, Object> data, DataCallback<User> callback) {
         usersRef.document(user.getUserID()).set(data, SetOptions.merge())
                 .addOnSuccessListener(aVoid -> {
@@ -116,6 +153,13 @@ public class UserRepository {
                 });
     }
 
+    /**
+     * Updates the details of an existing user in Firestore and uploads their profile photo if provided.
+     *
+     * @param user      The user to be updated.
+     * @param imageUri  The URI of the new profile photo (optional).
+     * @param callback  Callback to handle the success or failure of the operation.
+     */
     public void updateUserDetails(User user, @Nullable Uri imageUri, DataCallback<User> callback) {
         for (int i = 0; i < usersDataList.size(); i++) {
             if (usersDataList.get(i).getUserID().equals(user.getUserID())) {
@@ -129,20 +173,24 @@ public class UserRepository {
             user.setDefaultPhoto(false);
             uploadProfilePhoto(user, data, imageUri, callback);
         } else {
-            // generate default photo if there is not image uri
             if (user.getProfilePhotoUrl() == null || user.getProfilePhotoUrl().isEmpty()) {
                 uploadDefaultPhoto(user, data, callback);
             } else {
-                // if only updating other information
                 uploadUserData(user, data, callback);
             }
         }
     }
 
+    /**
+     * Uploads a default profile photo for the user based on their username.
+     *
+     * @param user      The user to receive the default profile photo.
+     * @param data      The user's data to be updated in Firestore.
+     * @param callback  Callback to handle the success or failure of the operation.
+     */
     public void uploadDefaultPhoto(User user, HashMap<String, Object> data, DataCallback<User> callback) {
         String username = user.getUsername();
-        // get first letter of username
-        if (Character.isLetter(username.charAt(0))) { // make sure it is a letter
+        if (Character.isLetter(username.charAt(0))) {
             char firstLetter = Character.toUpperCase(username.charAt(0));
             StorageReference defaultPhotoRef = usersImageRef.child(firstLetter + ".png");
             defaultPhotoRef.getDownloadUrl()
@@ -158,7 +206,6 @@ public class UserRepository {
         }
     }
 
-
     /**
      * Updates the user's location data in Firestore.
      *
@@ -172,11 +219,9 @@ public class UserRepository {
             return;
         }
 
-        // Create a map to store the location data
         HashMap<String, Object> updateData = new HashMap<>();
         updateData.put("location", location);
 
-        // Update Firestore with the new location data
         usersRef.document(user.getUserID())
                 .update(updateData)
                 .addOnSuccessListener(aVoid -> {
@@ -189,6 +234,12 @@ public class UserRepository {
                 });
     }
 
+    /**
+     * Converts a User object to a HashMap for Firestore storage.
+     *
+     * @param user The user to be converted.
+     * @return A HashMap representation of the user.
+     */
     public HashMap<String, Object> userToHashData(User user) {
         HashMap<String, Object> data = new HashMap<>();
         data.put("userID", user.getUserID());

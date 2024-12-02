@@ -14,21 +14,43 @@ import java.util.ArrayList;
 
 import android.Manifest;
 
+/**
+ * The {@code UserController} class handles operations related to user management.
+ * It acts as a mediator between the {@code UserRepository} and the rest of the application,
+ * managing user data validation, CRUD operations, and location updates.
+ */
 public class UserController {
 
     private UserRepository userRepository;
     private LocationManager locationManager;
 
+    /**
+     * Constructs a {@code UserController} with the specified {@code UserRepository}.
+     *
+     * @param userRepository The {@code UserRepository} to use for data operations.
+     */
     public UserController(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-    public UserController(UserRepository userRepository,LocationManager locationManager) {
+    /**
+     * Constructs a {@code UserController} with the specified {@code UserRepository} and {@code LocationManager}.
+     *
+     * @param userRepository The {@code UserRepository} to use for data operations.
+     * @param locationManager The {@code LocationManager} to use for location-related operations.
+     */
+    public UserController(UserRepository userRepository, LocationManager locationManager) {
         this.userRepository = userRepository;
         this.locationManager = locationManager;
     }
 
-    // User validation
+    /**
+     * Validates the provided {@code User} object.
+     *
+     * @param user     The {@code User} to validate.
+     * @param callback The callback to notify if validation fails.
+     * @return {@code true} if the user is valid, {@code false} otherwise.
+     */
     private boolean validateUser(User user, DataCallback<?> callback) {
         if (user == null) {
             callback.onError(new IllegalArgumentException("User cannot be null"));
@@ -54,17 +76,31 @@ public class UserController {
         return true;
     }
 
-
+    /**
+     * Retrieves the cached list of users.
+     *
+     * @return A list of users from the local cache.
+     */
     public ArrayList<User> getLocalUsersList() {
         return (ArrayList<User>) userRepository.getLocalUsersList();
     }
 
+    /**
+     * Refreshes the user repository by fetching all users from the data source.
+     *
+     * @param callback The callback to handle the result of the operation.
+     */
     public void refreshRepository(DataCallback<Void> callback) {
         userRepository.fetchAllUsers(callback);
     }
 
+    /**
+     * Retrieves a user by their device ID.
+     *
+     * @param deviceId The device ID of the user.
+     * @return The {@code User} object if found, {@code null} otherwise.
+     */
     public User getUserByDeviceID(String deviceId) {
-        // Check if deviceId is null
         if (deviceId == null) {
             return null;
         }
@@ -74,10 +110,16 @@ public class UserController {
                 return user;
             }
         }
-        // return null if no matching user found
         return null;
     }
 
+    /**
+     * Adds a new user to the repository.
+     *
+     * @param user     The {@code User} to add.
+     * @param imageUri The profile image URI of the user (nullable).
+     * @param callback The callback to handle the result of the operation.
+     */
     public void addUser(User user, @Nullable Uri imageUri, DataCallback<User> callback) {
         if (!validateUser(user, callback)) {
             return;
@@ -85,14 +127,27 @@ public class UserController {
         userRepository.addUserToRepo(user, imageUri, callback);
     }
 
+    /**
+     * Updates the details of an existing user.
+     *
+     * @param user     The {@code User} to update.
+     * @param imageUri The new profile image URI of the user (nullable).
+     * @param callback The callback to handle the result of the operation.
+     */
     public void updateUser(User user, @Nullable Uri imageUri, DataCallback<User> callback) {
         if (!validateUser(user, callback)) {
-            Log.d("UserController"," invalid user when updating");
+            Log.d("UserController", "Invalid user when updating");
             return;
         }
         userRepository.updateUserDetails(user, imageUri, callback);
     }
 
+    /**
+     * Deletes a user's profile photo and sets it to the default photo.
+     *
+     * @param user     The {@code User} whose profile photo is to be deleted.
+     * @param callback The callback to handle the result of the operation.
+     */
     public void deleteUserProfilePhoto(User user, DataCallback<User> callback) {
         if (!validateUser(user, callback)) {
             callback.onError(new IllegalArgumentException("Invalid user"));
@@ -103,11 +158,22 @@ public class UserController {
         userRepository.updateUserDetails(user, null, callback);
     }
 
+    /**
+     * Deletes a user from the repository.
+     *
+     * @param user     The {@code User} to delete.
+     * @param callback The callback to handle the result of the operation.
+     */
     public void deleteUser(User user, DataCallback<Void> callback) {
         userRepository.deleteUserfromRepo(user, callback);
     }
 
-
+    /**
+     * Retrieves the facility information of a user.
+     *
+     * @param user The {@code User} whose facility information is to be retrieved.
+     * @return The {@code Facility} object associated with the user, or {@code null} if not found.
+     */
     public Facility getUserFacility(User user) {
         if (user == null) {
             return null;
@@ -119,6 +185,13 @@ public class UserController {
         return null;
     }
 
+    /**
+     * Updates a user's location based on the device's current location.
+     *
+     * @param user     The {@code User} whose location is to be updated.
+     * @param context  The application context.
+     * @param callback The callback to handle the result of the operation.
+     */
     public void updateUserLocation_main(User user, Context context, DataCallback<User> callback) {
         if (user == null) {
             callback.onError(new IllegalArgumentException("User object is null"));
@@ -153,17 +226,15 @@ public class UserController {
             return;
         }
 
-        // Update user location
         ArrayList<Double> newLocation = new ArrayList<>();
         newLocation.add(location.getLatitude());
         newLocation.add(location.getLongitude());
         user.setLocation(newLocation);
 
-        // Update Firestore
         userRepository.updateLocation(user, newLocation, new DataCallback<User>() {
             @Override
             public void onSuccess(User result) {
-                callback.onSuccess(user); // Return updated user
+                callback.onSuccess(user);
             }
 
             @Override
@@ -173,20 +244,25 @@ public class UserController {
         });
     }
 
-    // For location
+    /**
+     * Updates a user's location based on specific latitude and longitude.
+     *
+     * @param user      The {@code User} whose location is to be updated.
+     * @param latitude  The latitude of the new location.
+     * @param longitude The longitude of the new location.
+     * @param callback  The callback to handle the result of the operation.
+     */
     public void updateUserLocation_eventdetail(User user, double latitude, double longitude, DataCallback<User> callback) {
         if (user == null) {
             callback.onError(new IllegalArgumentException("User cannot be null"));
             return;
         }
 
-        // update user location info
         ArrayList<Double> location = new ArrayList<>();
         location.add(latitude);
         location.add(longitude);
         user.setLocation(location);
 
-        userRepository.updateUserDetails(user, null, callback); // only update the location info
+        userRepository.updateUserDetails(user, null, callback);
     }
-
 }
