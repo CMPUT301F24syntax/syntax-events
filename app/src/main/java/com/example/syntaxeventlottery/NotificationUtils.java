@@ -15,6 +15,10 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+/**
+ * Utility class for handling notifications within the application.
+ * Provides methods to create notification channels and send notifications.
+ */
 public class NotificationUtils {
     private static final String CHANNEL_ID = "EventNotificationsChannel";
     private static final String CHANNEL_NAME = "Event Notifications";
