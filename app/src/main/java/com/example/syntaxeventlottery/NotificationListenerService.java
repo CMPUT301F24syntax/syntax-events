@@ -18,6 +18,9 @@ import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 
+/**
+ * A service that listens for real-time notification updates from Firestore and displays system notifications.
+ */
 public class NotificationListenerService extends Service {
     private static final String TAG = "NotificationListenerService";
     private static final String CHANNEL_ID = "NotificationListenerChannel";
@@ -26,6 +29,10 @@ public class NotificationListenerService extends Service {
     private ListenerRegistration notificationListener;
     private String deviceId;
 
+    /**
+     * Called when the service is created. Initializes the service, sets up the notification channel,
+     * and starts listening to Firestore for notifications.
+     */
     @Override
     public void onCreate() {
         super.onCreate();
@@ -38,8 +45,7 @@ public class NotificationListenerService extends Service {
         startForeground(NOTIFICATION_ID, getNotification());
 
         // Start listening to Firestore
-            startListeningToNotifications();
-
+        startListeningToNotifications();
     }
 
     /**
@@ -141,12 +147,22 @@ public class NotificationListenerService extends Service {
                 .addOnFailureListener(e -> Log.e(TAG, "Failed to mark notification as read", e));
     }
 
+    /**
+     * Called when the service is started. Ensures the service restarts if killed by the system.
+     *
+     * @param intent  The Intent that was used to bind to the service.
+     * @param flags   Additional data about the start request.
+     * @param startId A unique integer representing this specific start request.
+     * @return The mode indicating what happens if the service is killed by the system.
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // If the service is killed by the system, recreate it
         return START_STICKY;
     }
 
+    /**
+     * Called when the service is destroyed. Removes the Firestore listener to prevent memory leaks.
+     */
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -156,6 +172,12 @@ public class NotificationListenerService extends Service {
         }
     }
 
+    /**
+     * Binds the service to a client. Not used in this implementation.
+     *
+     * @param intent The Intent that was used to bind to the service.
+     * @return An IBinder instance, or null if the service does not allow binding.
+     */
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
