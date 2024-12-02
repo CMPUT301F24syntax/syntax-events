@@ -19,8 +19,8 @@
             android:layout_alignParentTop="true"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Back"
-            android:scaleType="fitXY"
-            android:src="@drawable/baseline_arrow_back_24" />
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_back_arrow" />
 
         <!-- View Participants Button -->
 
