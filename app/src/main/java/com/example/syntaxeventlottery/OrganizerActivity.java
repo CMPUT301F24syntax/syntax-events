@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * OrganizerActivity allows the event organizer to view and manage their created events.
@@ -29,9 +28,9 @@ public class OrganizerActivity extends AppCompatActivity {
     private EventAdapter eventAdapter;
     private TextView organizerEventDetailTextView;
     private String deviceID;
-    private EventController eventController;
+    public EventController eventController;
     private UserController userController;
-    private User currentUser;
+    public User currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,7 +114,7 @@ public class OrganizerActivity extends AppCompatActivity {
         });
     }
 
-    private void loadEvents(String userId) {
+    public void loadEvents(String userId) {
         eventController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
