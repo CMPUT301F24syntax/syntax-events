@@ -137,16 +137,16 @@ public class EditUserProfileActivity extends AppCompatActivity {
         }
         // if user has changed their profile name
         // and did not update their profile photo, reset so that a new profile picture is generated
-        if (!user.getUsername().equals(newName)) {
-            if (user.getProfilePhotoUrl() == null && selectedImageUri == null) {
-                resetProfilePhoto();
-            }
+        if (newName.equals(user.getUsername()) && selectedImageUri == null && user.isDefaultPhoto()) {
+            resetProfilePhoto();
         }
 
         user.setUsername(newName);
         user.setEmail(newEmail);
         user.setPhoneNumber(newPhone);
         user.setReceiveNotifications(receiveNotifications);
+
+
 
         userController.updateUser(user, selectedImageUri, new DataCallback<User>() {
             @Override
@@ -166,6 +166,7 @@ public class EditUserProfileActivity extends AppCompatActivity {
     private void resetProfilePhoto() {
         selectedImageUri = null;
         user.setProfilePhotoUrl(null);
+        user.setDefaultPhoto(true);  // Mark that this user now has a default profile photo
         displayUserDetails();
     }
 
@@ -181,6 +182,7 @@ public class EditUserProfileActivity extends AppCompatActivity {
             selectedImageUri = data.getData();
             if (selectedImageUri != null) {
                 profileImageView.setImageURI(selectedImageUri);
+                user.setDefaultPhoto(false);
                 Log.d(TAG, "Profile photo updated successfully");
             }
         }
