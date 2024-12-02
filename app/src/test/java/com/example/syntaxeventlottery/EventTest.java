@@ -173,33 +173,33 @@ public class EventTest {
         assertEquals("CancelledParticipant1", event.getCancelledParticipants().get(0));
     }
 
-    @Test
-    public void testLocationDetails() {
-
-        // Create an empty list to store maps, where each map holds event ID and its location
-        List<Map<String, String>> locationDetails = new ArrayList<>();
-
-        // Create a map to store an event ID and its corresponding location
-        Map<String, String> location = new HashMap<>();
-
-        // Add an event ID and location to the map
-        location.put("Event1", "Location1");
-        locationDetails.add(location);
-
-        // Set the list of location details to the event
-        event.setLocationDetails(locationDetails);
-
-        // Test that the list has 1 item
-        assertEquals(1, event.getLocationDetails().size());
-        assertEquals("Location1", event.getLocationDetails().get(0).get("Event1"));
-
-        // Add another event ID and location to the map
-        event.addLocationDetail("Event2", "Location2");
-
-        // Test that the list has 2 items
-        assertEquals(2, event.getLocationDetails().size());
-        assertEquals("Location2", event.getLocationDetails().get(1).get("Event2"));
-    }
+//    @Test
+//    public void testLocationDetails() {
+//
+//        // Create an empty list to store maps, where each map holds event ID and its location
+//        List<Map<String, String>> locationDetails = new ArrayList<>();
+//
+//        // Create a map to store an event ID and its corresponding location
+//        Map<String, String> location = new HashMap<>();
+//
+//        // Add an event ID and location to the map
+//        location.put("Event1", "Location1");
+//        locationDetails.add(location);
+//
+//        // Set the list of location details to the event
+//        event.setLocationDetails(locationDetails);
+//
+//        // Test that the list has 1 item
+//        assertEquals(1, event.getLocationDetails().size());
+//        assertEquals("Location1", event.getLocationDetails().get(0).get("Event1"));
+//
+//        // Add another event ID and location to the map
+//        event.addLocationDetail("Event2", "Location2");
+//
+//        // Test that the list has 2 items
+//        assertEquals(2, event.getLocationDetails().size());
+//        assertEquals("Location2", event.getLocationDetails().get(1).get("Event2"));
+//    }
 
     @Test
     public void testIsLocationRequired() {

@@ -46,7 +46,6 @@ public class Event implements Serializable {
 
     // Geolocation new attributes
     private boolean locationRequired;
-    private List<Map<String, String>> locationDetails;
 
     // -------------------------------------------------------------------------
     // Constructors
@@ -90,7 +89,7 @@ public class Event implements Serializable {
         this.waitingListFull = false;
         this.drawed = false;
         this.locationRequired = locationRequired;
-        this.locationDetails = new ArrayList<>();
+
 
     }
 
@@ -272,19 +271,11 @@ public class Event implements Serializable {
         this.locationRequired = locationRequired;
     }
 
-    public List<Map<String, String>> getLocationDetails() {
-        return locationDetails;
-    }
 
-    public void setLocationDetails(List<Map<String, String>> locationDetails) {
-        this.locationDetails = locationDetails;
-    }
 
-    public void addLocationDetail(String eventID, String location) {
-        Map<String, String> locationDetail = new HashMap<>();
-        locationDetail.put(eventID, location);
-        this.locationDetails.add(locationDetail);
-    }
+
+
+
 
     @Override
     public String toString() {

@@ -44,6 +44,7 @@ public class EventDetailActivity extends AppCompatActivity {
     private Button notifyWaitingListButton;
     private Button notifySelectedEntrantsButton;
     private Button notifyCancelledEntrantsButton;
+    private boolean FirstTimeVist = true;
 
     // Controller and Data
     private EventController eventController;
@@ -126,7 +127,10 @@ public class EventDetailActivity extends AppCompatActivity {
                 } else {
                     // If the current user is an entrant, handle location requirement
                     if (event.getLocationRequired()) {
-                        showLocationWarningDialog(deviceID);
+                        if (FirstTimeVist = true) {
+                            showLocationWarningDialog(deviceID);
+                            FirstTimeVist = false;
+                        }
                     } else {
                         updateUI(event);
                     }
