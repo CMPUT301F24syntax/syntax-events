@@ -91,7 +91,7 @@ dependencies {
     testImplementation("org.mockito:mockito-core:5.4.0")
 
     // Mockito core library for android testing
-    androidTestImplementation("org.mockito:mockito-android:5.4.0")
+    androidTestImplementation("org.mockito:mockito-android:5.5.0")
 
     implementation ("androidx.core:core:1.8.0")
 
