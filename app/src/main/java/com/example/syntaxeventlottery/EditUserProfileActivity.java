@@ -109,6 +109,32 @@ public class EditUserProfileActivity extends AppCompatActivity {
         String newPhone = phoneEditText.getText().toString().trim();
         boolean receiveNotifications = notificationSwitch.isChecked();
 
+        // Validate Input
+        if (newName.isEmpty()) {
+            Toast.makeText(EditUserProfileActivity.this, "Name cannot be empty.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (newEmail.isEmpty()) {
+            Toast.makeText(EditUserProfileActivity.this, "Email cannot be empty", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!newEmail.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            Toast.makeText(EditUserProfileActivity.this, "Please enter a valid email", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!newPhone.isEmpty()) {
+            if (!newPhone.matches("\\d+")) {
+                Toast.makeText(EditUserProfileActivity.this, "Phone number must contain only digits", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (newPhone.length() > 10) {
+                Toast.makeText(EditUserProfileActivity.this, "Phone number cannot be more than 10 digits", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
         // if user has changed their profile name
         // and did not update their profile photo, reset so that a new profile picture is generated
         if (!user.getUsername().equals(newName)) {
