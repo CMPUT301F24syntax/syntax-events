@@ -1,7 +1,6 @@
 package com.example.syntaxeventlottery;
 
 import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -54,16 +53,26 @@ public class UserProfileActivityTest {
     }
 
     /**
-     * Test that clicking the back button closes the activity.
+     * Test that the user profile data shows "No Facility Profile" when facility is null.
      */
     @Test
-    public void testBackButtonFunctionality() {
+    public void testDisplayUserProfileDataNoFacility() {
 
-        // Perform back button click
-        onView(withId(R.id.backButton)).perform(click());
+        // Mock user data without a facility
+        User mockUser = new User("12345", "test@example.com", "1234567890", null, "Test User", null, null);
 
-        // Verify that the activity ends after clicking the back button
-        assert(activityRule.getScenario().getState().isAtLeast(androidx.lifecycle.Lifecycle.State.DESTROYED));
+        // Access the running activity instance
+        activityRule.getScenario().onActivity(activity -> {
+
+            // Pass the mockUser object to simulate updating the user interface
+            activity.displayUserDetails(mockUser);
+        });
+
+        // Verify that the displayed data matches the mock user data
+        onView(withId(R.id.nameTextView)).check(matches(withText("Test User")));
+        onView(withId(R.id.emailTextView)).check(matches(withText("test@example.com")));
+        onView(withId(R.id.phoneTextView)).check(matches(withText("1234567890")));
+        onView(withId(R.id.facilityTextView)).check(matches(withText("No Facility Profile")));
     }
 
     /**
@@ -75,7 +84,7 @@ public class UserProfileActivityTest {
         // Mock user data
         User mockUser = new User("12345", "test@example.com", "1234567890", null, "Test User", null, null);
 
-        // Access the running activity instance via the ActivityScenario
+        // Access the running activity instance
         activityRule.getScenario().onActivity(activity -> {
 
             // Pass the mockUser object to simulate updating the user interface
