@@ -81,17 +81,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         Log.d(TAG, "Map is ready");
 
         // Load participant locations onto the map
-        if (event.isDrawed()){
-            loadSelectedParticipantLocations();
-        }else {
+
             loadParticipantLocations();
-        }
+
 
     }
 
     private void loadParticipantLocations() {
         // Use EventController to get participant locations
-        eventController.getParticipantLocations(eventID, new DataCallback<List<LatLng>>() {
+        eventController.getAllParticipantLocations(eventID, new DataCallback<List<LatLng>>() {
             @Override
             public void onSuccess(List<LatLng> participantLocations) {
                 if (participantLocations != null && !participantLocations.isEmpty()) {
@@ -117,34 +115,34 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         });
     }
-    private void loadSelectedParticipantLocations() {
-        // Use EventController to get participant locations
-        eventController.getSelectedParticipantLocations(eventID, new DataCallback<List<LatLng>>() {
-            @Override
-            public void onSuccess(List<LatLng> participantLocations) {
-                if (participantLocations != null && !participantLocations.isEmpty()) {
-                    for (LatLng latLng : participantLocations) {
-                        // Add a marker for each participant's location on the map
-                        googleMap.addMarker(new MarkerOptions()
-                                .position(latLng)
-                                .title("Participant"));
-                        // Move the camera to the first location
-                        if (participantLocations.indexOf(latLng) == 0) {
-                            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
-                        }
-                    }
-                } else {
-                    Toast.makeText(MapActivity.this, "No participant locations found.", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onError(Exception e) {
-                Log.e(TAG, "Failed to load participant locations", e);
-                Toast.makeText(MapActivity.this, "Failed to load participant locations.", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
+//    private void loadSelectedParticipantLocations() {
+//        // Use EventController to get participant locations
+//        eventController.getSelectedParticipantLocations(eventID, new DataCallback<List<LatLng>>() {
+//            @Override
+//            public void onSuccess(List<LatLng> participantLocations) {
+//                if (participantLocations != null && !participantLocations.isEmpty()) {
+//                    for (LatLng latLng : participantLocations) {
+//                        // Add a marker for each participant's location on the map
+//                        googleMap.addMarker(new MarkerOptions()
+//                                .position(latLng)
+//                                .title("Participant"));
+//                        // Move the camera to the first location
+//                        if (participantLocations.indexOf(latLng) == 0) {
+//                            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
+//                        }
+//                    }
+//                } else {
+//                    Toast.makeText(MapActivity.this, "No participant locations found.", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//
+//            @Override
+//            public void onError(Exception e) {
+//                Log.e(TAG, "Failed to load participant locations", e);
+//                Toast.makeText(MapActivity.this, "Failed to load participant locations.", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+//    }
 
     @Override
     protected void onStart() {

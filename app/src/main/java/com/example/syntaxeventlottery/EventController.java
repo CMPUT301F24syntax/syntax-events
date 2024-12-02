@@ -41,39 +41,60 @@ public class EventController {
      * @param eventID The ID of the event.
      * @param callback The callback to handle the list of LatLng locations.
      */
-    public void getParticipantLocations(String eventID, DataCallback<List<LatLng>> callback) {
+//    public void getParticipantLocations(String eventID, DataCallback<List<LatLng>> callback) {
+//        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+//        firestore.collection("events")
+//                .document(eventID)
+//                .get()
+//                .addOnSuccessListener(documentSnapshot -> {
+//                    if (documentSnapshot.exists()) {
+//                        List<String> participants = (List<String>) documentSnapshot.get("participants");
+//                        if (participants != null && !participants.isEmpty()) {
+//                            // Retrieve user locations for each participant
+//                            fetchParticipantLocations(participants, callback);
+//                        } else {
+//                            callback.onError(new Exception("No participants found for this event."));
+//                        }
+//                    } else {
+//                        callback.onError(new Exception("Event not found."));
+//                    }
+//                })
+//                .addOnFailureListener(e -> {
+//                    callback.onError(e);
+//                });
+//    }
+    public void getAllParticipantLocations(String eventID, DataCallback<List<LatLng>> callback) {
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
         firestore.collection("events")
                 .document(eventID)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
+                        // Combine participants, selectedParticipants, and confirmedParticipants into one list
+                        List<String> allParticipants = new ArrayList<>();
+
+                        // Add participants to the list
                         List<String> participants = (List<String>) documentSnapshot.get("participants");
                         if (participants != null && !participants.isEmpty()) {
-                            // Retrieve user locations for each participant
-                            fetchParticipantLocations(participants, callback);
-                        } else {
-                            callback.onError(new Exception("No participants found for this event."));
+                            allParticipants.addAll(participants);
                         }
-                    } else {
-                        callback.onError(new Exception("Event not found."));
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    callback.onError(e);
-                });
-    }
-    public void getSelectedParticipantLocations(String eventID, DataCallback<List<LatLng>> callback) {
-        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-        firestore.collection("events")
-                .document(eventID)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
+
+                        // Add selectedParticipants to the list
                         List<String> selectedParticipants = (List<String>) documentSnapshot.get("selectedParticipants");
                         if (selectedParticipants != null && !selectedParticipants.isEmpty()) {
-                            // Retrieve user locations for each participant
-                            fetchParticipantLocations(selectedParticipants, callback);
+                            allParticipants.addAll(selectedParticipants);
+                        }
+
+                        // Add confirmedParticipants to the list
+                        List<String> confirmedParticipants = (List<String>) documentSnapshot.get("confirmedParticipants");
+                        if (confirmedParticipants != null && !confirmedParticipants.isEmpty()) {
+                            allParticipants.addAll(confirmedParticipants);
+                        }
+
+                        // Check if the combined list is not empty
+                        if (!allParticipants.isEmpty()) {
+                            // Fetch locations for all participants
+                            fetchParticipantLocations(allParticipants, callback);
                         } else {
                             callback.onError(new Exception("No participants found for this event."));
                         }
@@ -81,10 +102,10 @@ public class EventController {
                         callback.onError(new Exception("Event not found."));
                     }
                 })
-                .addOnFailureListener(e -> {
-                    callback.onError(e);
-                });
+                .addOnFailureListener(callback::onError);
     }
+
+
 
     /**
      * Helper method to fetch participant locations based on their device IDs.
