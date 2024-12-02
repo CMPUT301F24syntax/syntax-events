@@ -530,6 +530,45 @@ public class EventController {
     }
 
     /**
+     * Notify all selected entrant but not accept event to accept accept the event.
+     */
+    public void notifyAcceptInvitation(Event event, DataCallback<Void> callback) {
+        UserController userController = new UserController(new UserRepository());
+        userController.refreshRepository(new DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                // Prepare lists
+                final List<String> selectedUsers = new ArrayList<>(event.getSelectedParticipants());
+
+                final String selectedMessage = "You've been selected for the event: " + event.getEventName() + "\nPlease accept the event as soon as possible.";
+                final String eventId = event.getEventID();
+
+                // Add notifications for selected users
+                addNotificationsToDatabase(selectedUsers, selectedMessage, eventId, new DataCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        Log.d(TAG, "Notifications for selected users added successfully.");
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e(TAG, "Error adding notifications for selected users.", e);
+                    }
+                });
+
+                // Notify the original callback that the process is complete
+                callback.onSuccess(null);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error refreshing user repository while sending notifications.", e);
+                callback.onError(e);
+            }
+        });
+    }
+
+    /**
      * Adds notifications to the database for a list of users.
      */
     public void addNotificationsToDatabase(List<String> userIds, String message, String eventId, DataCallback<Void> callback) {

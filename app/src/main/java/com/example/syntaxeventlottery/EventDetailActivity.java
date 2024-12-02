@@ -43,6 +43,7 @@ public class EventDetailActivity extends AppCompatActivity {
     private Button notifyWaitingListButton;
     private Button notifySelectedEntrantsButton;
     private Button notifyCancelledEntrantsButton;
+    private Button notifyAcceptInvitationButton;
     private boolean FirstTimeVist = true;
 
     // Controller and Data
@@ -423,8 +424,11 @@ public class EventDetailActivity extends AppCompatActivity {
 
         // notification part
         notifyWaitingListButton = findViewById(R.id.notifyWaitingListButton);
+        notifyAcceptInvitationButton = findViewById(R.id.notifyAcceptInvitationButton);
         notifySelectedEntrantsButton = findViewById(R.id.notifySelectedEntrantsButton);
         notifyCancelledEntrantsButton = findViewById(R.id.notifyCancelledEntrantsButton);
+
+
         viewMapButton = findViewById(R.id.viewMapButton);
 
         configureButtonVisibility();
@@ -603,6 +607,22 @@ public class EventDetailActivity extends AppCompatActivity {
         });
 
         notifyWaitingListButton.setOnClickListener(v -> sendNotificationToGroup("waitingList"));
+        notifyAcceptInvitationButton.setOnClickListener(v -> {
+            eventController.notifyAcceptInvitation(event, new DataCallback<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                    Toast.makeText(EventDetailActivity.this, "Invitations sent successfully.", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Notifications were successfully sent.");
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    // Handle the error scenario, such as showing an error message
+                    Toast.makeText(EventDetailActivity.this, "Failed to send invitations.", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Error sending invitations.", e);
+                }
+            });
+        });
         notifySelectedEntrantsButton.setOnClickListener(v -> sendNotificationToGroup("selectedParticipants"));
         notifyCancelledEntrantsButton.setOnClickListener(v -> sendNotificationToGroup("cancelledParticipants"));
     }
@@ -719,6 +739,7 @@ public class EventDetailActivity extends AppCompatActivity {
         manageParticipantsButton.setVisibility(View.VISIBLE);
         drawButton.setVisibility(View.VISIBLE);
         notifyWaitingListButton.setVisibility(View.VISIBLE);
+        notifyAcceptInvitationButton.setVisibility(View.VISIBLE);
         notifySelectedEntrantsButton.setVisibility(View.VISIBLE);
         notifyCancelledEntrantsButton.setVisibility(View.VISIBLE);
         viewMapButton.setVisibility(View.VISIBLE);
@@ -733,6 +754,7 @@ public class EventDetailActivity extends AppCompatActivity {
         manageParticipantsButton.setVisibility(View.GONE);
         drawButton.setVisibility(View.GONE);
         notifyWaitingListButton.setVisibility(View.GONE);
+        notifyAcceptInvitationButton.setVisibility(View.GONE);
         notifySelectedEntrantsButton.setVisibility(View.GONE);
         notifyCancelledEntrantsButton.setVisibility(View.GONE);
         viewMapButton.setVisibility(View.GONE);
