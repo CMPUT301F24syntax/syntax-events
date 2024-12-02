@@ -350,6 +350,11 @@ public class EventController {
             return;
         }
 
+        if (event.getParticipants().isEmpty()) {
+            callback.onError(new IllegalArgumentException("Cannot Draw: No users in the waiting list"));
+            return;
+        }
+
         ArrayList<String> selectedList = new ArrayList<>();
         ArrayList<String> participants = event.getParticipants();
         ArrayList<String> updatedWaitingList = new ArrayList<>(participants);
@@ -638,6 +643,15 @@ public class EventController {
         if (event.getStartDate().before(new Date())) {
             callback.onError(new IllegalArgumentException("Start date cannot be in the past"));
             return false;
+        }
+        if (event.getWaitingListLimit() != null)
+            if (event.getWaitingListLimit() < event.getCapacity()) {
+            callback.onError(new IllegalArgumentException("Waiting list limit cannot be smaller than the capacity"));
+        }
+        if (event.getConfirmedParticipants() != null) {
+            if (event.getCapacity() < event.getConfirmedParticipants().size()) {
+                callback.onError(new IllegalArgumentException(event.getConfirmedParticipants().size() + " entrants confirmed, capacity cannot be reduced smaller"));
+            }
         }
         return true;
     }

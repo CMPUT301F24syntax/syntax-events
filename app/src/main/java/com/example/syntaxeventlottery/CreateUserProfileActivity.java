@@ -87,7 +87,7 @@ public class CreateUserProfileActivity extends AppCompatActivity {
      * Set click listeners for buttons.
      */
     private void setClickListeners() {
-        btnSave.setOnClickListener(v -> saveEntrantData());
+        btnSave.setOnClickListener(v -> saveUserData());
         uploadProfilePictureButton.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             imagePickerLauncher.launch(intent);
@@ -98,20 +98,36 @@ public class CreateUserProfileActivity extends AppCompatActivity {
     /**
      * Saves the Entrant's profile data to Firebase, including uploading a new profile photo if selected.
      */
-    private void saveEntrantData() {
+    private void saveUserData() {
         String username = editUsername.getText().toString().trim();
         String email = editEmail.getText().toString().trim();
         String phone = editPhone.getText().toString().trim();
 
-        if (username.isEmpty() || email.isEmpty()) {
-            Toast.makeText(this, "Username and Email are required.", Toast.LENGTH_SHORT).show();
+        // Validate Input
+        if (username.isEmpty()) {
+            Toast.makeText(CreateUserProfileActivity.this, "Name cannot be empty.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // only allow characters
-        if (!username.matches("[a-zA-Z]+")) {
-            Toast.makeText(this, "Username contain only alphabet characters.", Toast.LENGTH_SHORT).show();
+        if (email.isEmpty()) {
+            Toast.makeText(CreateUserProfileActivity.this, "Email cannot be empty", Toast.LENGTH_SHORT).show();
             return;
+        }
+
+        if (email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            Toast.makeText(CreateUserProfileActivity.this, "Please enter a valid email", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!phone.isEmpty()) {
+            if (!phone.matches("\\d+")) {
+                Toast.makeText(CreateUserProfileActivity.this, "Phone number must contain only digits", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (phone.length() > 10) {
+                Toast.makeText(CreateUserProfileActivity.this, "Phone number cannot be more than 10 digits", Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
 
         Entrant entrant = new Entrant(deviceId, email, phone, null, username, new HashSet<String>());
@@ -127,7 +143,7 @@ public class CreateUserProfileActivity extends AppCompatActivity {
             @Override
             public void onError(Exception e) {
                 Log.e(TAG, "Error creating new user profile", e);
-                Toast.makeText(CreateUserProfileActivity.this, "Error creating profile: "+e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(CreateUserProfileActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

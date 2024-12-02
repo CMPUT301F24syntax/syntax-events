@@ -142,13 +142,8 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         Date endDate = getParsedDate(eventEndDateText);
 
         if (startDate == null || endDate == null) {
+            Toast.makeText(this, "Please follow the date format displayed", Toast.LENGTH_SHORT).show();
             return; // return if dates are not parsed correctly
-        }
-
-        // Check date order
-        if (startDate.after(endDate)) {
-            Toast.makeText(this, "Start date is after event ends", Toast.LENGTH_SHORT).show();
-            return;
         }
 
         // Parse capacity and limit after validation
@@ -187,15 +182,14 @@ public class OrganizerCreateEvent extends AppCompatActivity {
 
                     @Override
                     public void onError(Exception e) {
-                        Toast.makeText(OrganizerCreateEvent.this, "Start Date must later than now!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(OrganizerCreateEvent.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                         Log.e(TAG, e.toString());
-                        finish();
                     }
                 });
             }
             @Override
             public void onError(Exception e) {
-                Toast.makeText(OrganizerCreateEvent.this, "Event creation Error2!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(OrganizerCreateEvent.this, "Event creation Error!", Toast.LENGTH_SHORT).show();
                 Log.e(TAG, e.toString());
                 finish();
             }
