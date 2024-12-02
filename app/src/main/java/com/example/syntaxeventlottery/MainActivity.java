@@ -9,7 +9,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -18,6 +20,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
@@ -30,9 +35,12 @@ public class MainActivity extends AppCompatActivity {
     private UserController userController;
     private User currentUser;
     private ActivityResultLauncher<String> requestPermissionLauncher;
+    private TextView details;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ArrayList<String> adminIds = new ArrayList<>(Arrays.asList("07c9f475dcac6a3e", "7c207232961b9c19", "93fe8a6349183a29"));
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -72,9 +80,21 @@ public class MainActivity extends AppCompatActivity {
         }
         userController = new UserController(new UserRepository(), locationManager);
 
-        // Initialize buttons
+        // Initialize UI
         adminButton = findViewById(R.id.adminButton);
         userButton = findViewById(R.id.userButton);
+        details = findViewById(R.id.adminDetails);
+
+        if (!adminIds.contains(deviceId)) {
+            adminButton.setEnabled(false);
+            adminButton.setVisibility(View.GONE);
+            userButton.setEnabled(false);
+            userButton.setVisibility(View.GONE);
+            details.setVisibility(View.GONE);
+            checkUserInDatabase();
+        } else {
+            details.setText("Your device has been recognized as an administrator. \n"+"How would you like to use the application?");
+        }
 
         // Set click listener for the Admin button
         adminButton.setOnClickListener(v -> {
@@ -89,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
         // Check and request location permission
         // checkAndRequestLocationPermission();
     }
+
 
     /**
      * Starts the NotificationListenerService as a foreground service.
