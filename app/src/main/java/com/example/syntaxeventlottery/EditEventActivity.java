@@ -82,7 +82,6 @@ public class EditEventActivity extends AppCompatActivity {
 
         // get event using intent
         currentEvent = (Event) getIntent().getSerializableExtra("event");
-        Log.d(TAG, "current event from intent: "+ currentEvent);
 
         if (currentEvent == null || currentEvent.getEventID() == null || currentEvent.getEventID().isEmpty()) { // if event cannot be found
             Log.d("EditEventActivity","Event Object was null");
@@ -130,8 +129,8 @@ public class EditEventActivity extends AppCompatActivity {
         editCapacity.setText(String.valueOf(currentEvent.getCapacity()));
         locationSwitch.setChecked(currentEvent.getLocationRequired());
 
-        if (currentEvent.getPosterUrl() != null && !currentEvent.getPosterUrl().isEmpty()) {
-            Glide.with(this)  // Glide automatically cancels when the activity is destroyed
+        if (currentEvent.getPosterUrl() != null || !currentEvent.getPosterUrl().isEmpty()) {
+            Glide.with(this)
                     .load(currentEvent.getPosterUrl())
                     .into(updatePosterView);
         } else {
@@ -209,7 +208,7 @@ public class EditEventActivity extends AppCompatActivity {
             @Override
             public void onError(Exception e) {
                 Log.e(TAG, "Error updating event information");
-                Toast.makeText(EditEventActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                finish();
             }
         });
     }

@@ -46,7 +46,6 @@ public class UserController {
         }
         if (!user.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
             callback.onError(new IllegalArgumentException("User email is invalid"));
-            return false;
         }
         if (user.getPhoneNumber() != null && !user.getPhoneNumber().trim().isEmpty() && !user.getPhoneNumber().matches("\\d+")) {
             callback.onError(new IllegalArgumentException("User phone number must only contain digits"));
@@ -89,7 +88,6 @@ public class UserController {
     public void updateUser(User user, @Nullable Uri imageUri, DataCallback<User> callback) {
         if (!validateUser(user, callback)) {
             Log.d("UserController"," invalid user when updating");
-            return;
         }
         userRepository.updateUserDetails(user, imageUri, callback);
     }

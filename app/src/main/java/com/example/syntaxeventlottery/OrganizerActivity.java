@@ -122,11 +122,11 @@ public class OrganizerActivity extends AppCompatActivity {
                 ArrayList<Event> updatedEvents = eventController.getOrganizerEvents(userId);
 
                 if (updatedEvents.isEmpty()) {
-                    organizerEventDetailTextView.setText("You have not created any events.\n" + "Click \"Create Event\" to host an event!");
-                } else {
-                    organizerEventDetailTextView.setText("My Events");
+                    organizerEventDetailTextView.setText("You have not created any events.\n" +
+                            "Click \"Create Event\" to host an event!");
                 }
                 eventAdapter.updateEvents(updatedEvents);
+
             }
 
             @Override

@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -64,19 +65,19 @@ public class UserHomeActivity extends AppCompatActivity {
 
         // Set up RecyclerView for Waitlisted Events
         waitlistedEventsRecyclerView = findViewById(R.id.waitlistedEventsRecyclerView);
-        waitlistedEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        waitlistedEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         waitlistedEventsAdapter = new EventAdapter(new ArrayList<>(), this);
         waitlistedEventsRecyclerView.setAdapter(waitlistedEventsAdapter);
 
         // Set up RecyclerView for Selected Events
         selectedEventsRecyclerView = findViewById(R.id.selectedEventsRecyclerView);
-        selectedEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        selectedEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         selectedEventsAdapter = new EventAdapter(new ArrayList<>(), this);
         selectedEventsRecyclerView.setAdapter(selectedEventsAdapter);
 
         // Set up RecyclerView for Enrolled Events
         enrolledEventsRecyclerView = findViewById(R.id.enrolledEventsRecyclerView);
-        enrolledEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        enrolledEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         enrolledEventsAdapter = new EventAdapter(new ArrayList<>(), this);
         enrolledEventsRecyclerView.setAdapter(enrolledEventsAdapter);
 
