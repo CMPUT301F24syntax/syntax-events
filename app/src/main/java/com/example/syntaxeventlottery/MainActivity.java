@@ -24,6 +24,11 @@ import androidx.core.content.ContextCompat;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+/**
+ * MainActivity is the entry point of the application.
+ * It checks the user's device ID against predefined administrator IDs or database records to determine their role.
+ * This activity manages user permissions, notification services, and navigation to Admin or User modes.
+ */
 public class MainActivity extends AppCompatActivity {
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private static final int REQUEST_NOTIFICATION_PERMISSION = 101;
@@ -37,6 +42,12 @@ public class MainActivity extends AppCompatActivity {
     private ActivityResultLauncher<String> requestPermissionLauncher;
     private TextView details;
 
+    /**
+     * Called when the activity is starting. Initializes UI components, services, and checks user permissions and roles.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously being shut down,
+     *                           this Bundle contains the most recent data supplied. Otherwise, it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ArrayList<String> adminIds = new ArrayList<>(Arrays.asList("07c9f475dcac6a3e", "7c207232961b9c19", "93fe8a6349183a29"));

@@ -14,6 +14,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Activity for managing the facility profile associated with a user.
+ * Allows the user to update the facility's name and location, and propagates changes to all associated events.
+ */
 public class ManageFacilityProfileActivity extends AppCompatActivity {
     private final String TAG = "ManageFacilityProfileActivity";
 
@@ -27,6 +31,12 @@ public class ManageFacilityProfileActivity extends AppCompatActivity {
     private String deviceID;
     private Facility facility;
 
+    /**
+     * Called when the activity is starting. Initializes views, sets up button listeners, and retrieves current facility details.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously being shut down,
+     *                           this Bundle contains the most recent data supplied. Otherwise, it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,6 +70,10 @@ public class ManageFacilityProfileActivity extends AppCompatActivity {
         getCurrentFacilityDetails();
     }
 
+    /**
+     * Retrieves the current user's facility details.
+     * If no facility is found, redirects to `FacilityProfileActivity` to create one.
+     */
     public void getCurrentFacilityDetails() {
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
@@ -92,6 +106,10 @@ public class ManageFacilityProfileActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Updates the facility details based on user input.
+     * Propagates the changes to all events associated with the current facility.
+     */
     public void updateFacilityDetails() {
         String facilityName = facilityNameEditText.getText().toString();
         String facilityLocation = facilityLocationEditText.getText().toString();
@@ -126,6 +144,13 @@ public class ManageFacilityProfileActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Updates all events associated with the user to reflect changes in the facility details.
+     *
+     * @param user              The user whose events are to be updated.
+     * @param newFacilityName   The updated facility name.
+     * @param newFacilityLocation The updated facility location.
+     */
     private void updateUserEvents(User user, String newFacilityName, String newFacilityLocation) {
         eventController.refreshRepository(new DataCallback<Void>() {
             @Override

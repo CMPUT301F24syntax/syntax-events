@@ -13,6 +13,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
+/**
+ * Activity for managing and displaying the list of participants in an event.
+ * Allows navigation between different participant lists (Waiting, Selected, Confirmed, and Cancelled).
+ */
 public class EventParticipantsListActivity extends AppCompatActivity {
     private final String TAG = "EventParticipantsListActivity";
 
@@ -31,6 +35,12 @@ public class EventParticipantsListActivity extends AppCompatActivity {
     private Button confirmedListButton;
     private Button cancelledListButton;
 
+    /**
+     * Initializes the activity, including event controllers, UI components, and button listeners.
+     * Retrieves the event ID passed from the previous activity and loads the event data.
+     *
+     * @param savedInstanceState The previously saved instance state, if available.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,6 +87,9 @@ public class EventParticipantsListActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Refreshes the event repository and loads the event data for the specified event ID.
+     */
     private void loadEventData() {
         eventController.refreshRepository(new DataCallback<Void>() {
             @Override
@@ -93,6 +106,9 @@ public class EventParticipantsListActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Loads and displays the list of users in the event's waiting list.
+     */
     private void loadWaitingList() {
         // set title
         listTitle.setText("Waiting List");
@@ -135,6 +151,9 @@ public class EventParticipantsListActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Loads and displays the list of users selected for the event.
+     */
     private void loadSelectedList() {
         // set title
         listTitle.setText("Selected Participants");
@@ -174,6 +193,9 @@ public class EventParticipantsListActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Loads and displays the list of users who confirmed their participation in the event.
+     */
     private void loadConfirmedList() {
         // set title
         listTitle.setText("Confirmed Participants");
@@ -214,6 +236,9 @@ public class EventParticipantsListActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Loads and displays the list of users who have been cancelled or declined their invitation.
+     */
     private void loadCancelledList() {
         // set title
         listTitle.setText("Cancelled Participants");
@@ -269,7 +294,9 @@ public class EventParticipantsListActivity extends AppCompatActivity {
         };
     }
 
-
+    /**
+     * Refreshes the currently displayed participant list.
+     */
     private void refreshCurrentList() {
         String currentTitle = listTitle.getText().toString();
         switch (currentTitle) {
