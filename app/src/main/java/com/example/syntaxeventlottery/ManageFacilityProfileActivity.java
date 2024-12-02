@@ -17,12 +17,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ManageFacilityProfileActivity extends AppCompatActivity {
     private final String TAG = "ManageFacilityProfileActivity";
 
-    private EditText facilityNameEditText;
-    private EditText facilityLocationEditText;
-    private Button buttonBack, buttonSave;
-    private UserController userController;
-    private EventController eventController;
-    private User currentUser;
+    public EditText facilityNameEditText;
+    public EditText facilityLocationEditText;
+    private Button buttonBack;
+    public Button buttonSave;
+    public UserController userController;
+    public EventController eventController;
+    public User currentUser;
     private String deviceID;
     private Facility facility;
 
@@ -59,7 +60,7 @@ public class ManageFacilityProfileActivity extends AppCompatActivity {
         getCurrentFacilityDetails();
     }
 
-    private void getCurrentFacilityDetails() {
+    public void getCurrentFacilityDetails() {
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
@@ -91,7 +92,7 @@ public class ManageFacilityProfileActivity extends AppCompatActivity {
         });
     }
 
-    private void updateFacilityDetails() {
+    public void updateFacilityDetails() {
         String facilityName = facilityNameEditText.getText().toString();
         String facilityLocation = facilityLocationEditText.getText().toString();
 
