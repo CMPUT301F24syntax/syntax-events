@@ -45,7 +45,7 @@ public class EditEventActivity extends AppCompatActivity {
     private ImageButton updatePosterButton;
     private ImageButton resetPosterButton;
     private ImageView updatePosterView;
-    private Switch locationSwitch;
+    public Switch locationSwitch;
     private Uri imageUri;
 
     private EventController eventController;
