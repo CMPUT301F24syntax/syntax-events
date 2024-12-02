@@ -60,14 +60,14 @@ public class NotificationCenterActivity extends AppCompatActivity {
         notificationListView.setAdapter(adapter);
 
         // Load notifications
-        loadNotifications();
+        loadNotificationsInApp();
 
         // Set item click listener to mark as read when clicked
         notificationListView.setOnItemClickListener((parent, view, position, id) -> {
             String notificationId = notificationIds.get(position);
             String message = notificationMessages.get(position);
-            Toast.makeText(NotificationCenterActivity.this, "Notification marked as read", Toast.LENGTH_SHORT).show();
-            markNotificationAsRead(notificationId);
+            Toast.makeText(NotificationCenterActivity.this, "Notification marked as read3", Toast.LENGTH_SHORT).show();
+            NotificationController.markNotificationAsReadById(notificationId);
         });
 
         // Set click listener for Back Button
@@ -77,10 +77,11 @@ public class NotificationCenterActivity extends AppCompatActivity {
     /**
      * Loads unread notifications for the current user.
      */
-    private void loadNotifications() {
+    private void loadNotificationsInApp() {
         db.collection("notifications")
                 .whereEqualTo("deviceId", deviceId)
                 .whereEqualTo("isRead", true)
+                .whereEqualTo("inAppRead",false)
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
                 .addOnCompleteListener(task -> {
@@ -107,15 +108,4 @@ public class NotificationCenterActivity extends AppCompatActivity {
                 });
     }
 
-    /**
-     * Marks a notification as read.
-     *
-     * @param notificationId The ID of the notification to mark as read.
-     */
-    private void markNotificationAsRead(String notificationId) {
-        db.collection("notifications").document(notificationId)
-                .update("isRead", true)
-                .addOnSuccessListener(aVoid -> Log.d("NotificationCenter", "Notification marked as read"))
-                .addOnFailureListener(e -> Log.e("NotificationCenter", "Failed to mark notification as read", e));
-    }
 }

@@ -16,6 +16,8 @@ public class Notification {
     private String eventId;
     private String message;
     private boolean read;
+
+    private boolean inAppRead;
     @ServerTimestamp
     private Date timestamp;
 
@@ -79,5 +81,13 @@ public class Notification {
         } else {
             return "";
         }
+    }
+
+    public boolean isInAppRead() {
+        return inAppRead;
+    }
+
+    public void setInAppRead(boolean inAppRead) {
+        this.inAppRead = inAppRead;
     }
 }

@@ -10,7 +10,7 @@ import java.util.List;
 
 public class NotificationController {
     private static final String TAG = "NotificationController";
-    private FirebaseFirestore db;
+    private static FirebaseFirestore db;
 
     public NotificationController() {
         this.db = FirebaseFirestore.getInstance();
@@ -45,7 +45,7 @@ public class NotificationController {
     }
 
     /**
-     * Marks a notification as read in Firestore.
+     * Marks a notification read as system notification in Firestore.
      *
      * @param notification The notification to mark as read.
      */
@@ -54,7 +54,20 @@ public class NotificationController {
 
         db.collection("notifications").document(notification.getId())
                 .update("isRead", true)
-                .addOnSuccessListener(aVoid -> Log.d(TAG, "Notification marked as read"))
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Notification marked as read2"))
                 .addOnFailureListener(e -> Log.e(TAG, "Failed to mark notification as read", e));
     }
+
+    /**
+     * Marks a notification read as in-app notification read.
+     *
+     * @param notificationId The ID of the notification to mark as read.
+     */
+    static void markNotificationAsReadById(String notificationId) {
+        db.collection("notifications").document(notificationId)
+                .update("inAppRead", true)
+                .addOnSuccessListener(aVoid -> Log.d("NotificationCenter", "Notification marked as read1"))
+                .addOnFailureListener(e -> Log.e("NotificationCenter", "Failed to mark notification as read", e));
+    }
+
 }

@@ -32,6 +32,7 @@ public class NotificationRepository {
                                 notificationData.put("message", message);
                                 notificationData.put("eventId", eventId);
                                 notificationData.put("isRead", false);
+                                notificationData.put("inAppRead", false);
                                 notificationData.put("timestamp", FieldValue.serverTimestamp());
 
                                 db.collection("notifications")
