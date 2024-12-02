@@ -19,7 +19,8 @@ import java.util.List;
 
 /**
  * The {@code EventAdapter} class extends {@link RecyclerView.Adapter} to provide a custom adapter
- * for displaying event items in a {@link RecyclerView}. It binds event data to the views in each item.
+ * for displaying event items in a {@link RecyclerView}. It binds event data to the views in each item
+ * and handles user interactions with the event items.
  */
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
     private final String TAG = "EventAdapter";

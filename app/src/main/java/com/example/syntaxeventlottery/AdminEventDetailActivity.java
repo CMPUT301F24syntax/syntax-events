@@ -29,7 +29,7 @@ import java.util.Set;
 /**
  * The {@code AdminEventDetailActivity} class displays detailed information about an event
  * to administrators, including event name, description, capacity, and event poster.
- * Administrators can delete the poster image if necessary.
+ * Administrators can delete the poster image or QR code if necessary.
  */
 public class AdminEventDetailActivity extends AppCompatActivity {
     private final String TAG = "AdminEventDetailActivity";
@@ -41,6 +41,12 @@ public class AdminEventDetailActivity extends AppCompatActivity {
     private String eventID;
     private Event event;
 
+    /**
+     * Called when the activity is first created.
+     * Initializes UI components and loads event details.
+     *
+     * @param savedInstanceState The saved instance state, or {@code null} if none exists.
+     */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

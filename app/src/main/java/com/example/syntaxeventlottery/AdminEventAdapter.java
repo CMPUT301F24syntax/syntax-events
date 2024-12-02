@@ -21,17 +21,21 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * The {@code AdminEventAdapter} class extends {@link ArrayAdapter} to provide a custom adapter
- * for displaying event items in a list view for administrators.
+ * for displaying and managing event items in a list view for administrators.
  */
 public class AdminEventAdapter extends ArrayAdapter<Event> {
     private final String TAG = "Admin Event Adapter";
 
+    /** The application context. */
     private Context context;
+
+    /** The list of events to display. */
     private List<Event> eventList;
+
+    /** The controller responsible for event-related operations. */
     private EventController eventController;
 
     /**
@@ -58,7 +62,6 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
     @NonNull
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        // Inflate the view if it's not already created
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.admin_event_item, parent, false);
         }
@@ -73,25 +76,21 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
         TextView eventStartDate = convertView.findViewById(R.id.eventStartDate);
         ImageView posterImage = convertView.findViewById(R.id.eventPoster);
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd"); // Specify the desired format
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String formattedDate = dateFormat.format(event.getStartDate());
         eventName.setText(event.getEventName());
-        eventOrganizerId.setText("Created by: "+event.getOrganizerId());
-        eventLocation.setText("Facility: " +event.getFacilityName());
+        eventOrganizerId.setText("Created by: " + event.getOrganizerId());
+        eventLocation.setText("Facility: " + event.getFacilityName());
         eventStartDate.setText("Starts: " + formattedDate);
 
         // Load the event poster image using Glide
         if (event.getPosterUrl() != null && !event.getPosterUrl().isEmpty()) {
-            Glide.with(context)
-                    .load(event.getPosterUrl())
-                    .into(posterImage);
+            Glide.with(context).load(event.getPosterUrl()).into(posterImage);
         } else {
-            Glide.with(context)
-                    .load(R.drawable.ic_no_event_poster)
-                    .into(posterImage);
+            Glide.with(context).load(R.drawable.ic_no_event_poster).into(posterImage);
         }
 
-        // Set click listener to fetch and show event details from the database
+        // Set click listener to fetch and show event details
         convertView.setOnClickListener(v -> displayEventDetails(event.getEventID()));
 
         // Delete button functionality
@@ -109,8 +108,9 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
     }
 
     /**
-     * Fetches displays Event details
+     * Fetches and displays details of an event.
      *
+     * @param eventID The unique identifier of the event.
      */
     private void displayEventDetails(String eventID) {
         Intent intent = new Intent(context, AdminEventDetailActivity.class);
@@ -121,11 +121,9 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
     /**
      * Deletes an event from the database and updates the adapter.
      *
-     * @param event the event object to delete
+     * @param event The event object to delete.
      */
-
     private void deleteEvent(Event event) {
-
         eventController.deleteEvent(event, new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
@@ -137,7 +135,7 @@ public class AdminEventAdapter extends ArrayAdapter<Event> {
             @Override
             public void onError(Exception e) {
                 Toast.makeText(AdminEventAdapter.this.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
-                Log.e(TAG, "error deleting event", e);
+                Log.e(TAG, "Error deleting event", e);
             }
         });
     }

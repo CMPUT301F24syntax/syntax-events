@@ -19,6 +19,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * The {@code AdminUsersActivity} class displays a list of users to administrators.
+ * It provides functionality to view all users and navigate back to the previous screen.
+ */
 public class AdminUsersActivity extends AppCompatActivity {
     private final String TAG="AdminUsersActivity";
 
@@ -28,6 +32,12 @@ public class AdminUsersActivity extends AppCompatActivity {
     private Button backButton;
     private UserController userController;
 
+    /**
+     * Called when the activity is first created.
+     * Initializes UI components, sets up the back button functionality, and loads users from the database.
+     *
+     * @param savedInstanceState The saved instance state, or {@code null} if none exists.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,6 +63,10 @@ public class AdminUsersActivity extends AppCompatActivity {
         loadUsersFromDatabase();
     }
 
+    /**
+     * Loads the most updated list of users from the database
+     * and refreshes the user list in the adapter.
+     */
     private void loadUsersFromDatabase() {
         // refresh user repository to get most updated data
         userController.refreshRepository(new DataCallback<Void>() {

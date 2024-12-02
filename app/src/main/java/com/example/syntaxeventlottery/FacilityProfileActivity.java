@@ -21,6 +21,10 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Activity for creating or updating a facility profile.
+ * Allows the user to input the facility's name and location and saves the data to the current user's profile.
+ */
 public class FacilityProfileActivity extends AppCompatActivity {
     private final String TAG = "FacilityProfileActivity";
 
@@ -30,6 +34,12 @@ public class FacilityProfileActivity extends AppCompatActivity {
     private UserController userController;
     private User currentUser;
 
+    /**
+     * Called when the activity is starting. Initializes views and sets up button listeners.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously being shut down,
+     *                           this Bundle contains the most recent data supplied. Otherwise, it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +69,11 @@ public class FacilityProfileActivity extends AppCompatActivity {
         buttonSave.setOnClickListener(v -> saveFacilityDetails());
     }
 
+
+    /**
+     * Saves the facility details entered by the user.
+     * Validates the input, updates the facility information for the current user, and saves it to the database.
+     */
     private void saveFacilityDetails() {
         // Get the device ID
         String deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);

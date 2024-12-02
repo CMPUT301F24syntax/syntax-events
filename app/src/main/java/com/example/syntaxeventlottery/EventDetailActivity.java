@@ -57,6 +57,15 @@ public class EventDetailActivity extends AppCompatActivity {
     private UserController userController;
     private User currentUser;
 
+
+    /**
+     * Called when the activity is first created.
+     * Initializes the event details screen by setting up controllers, retrieving device and event IDs,
+     * and loading the event details. Handles invalid or missing event data by closing the activity.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously being shut down,
+     *                           this Bundle contains the data it most recently supplied in onSaveInstanceState.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,6 +101,10 @@ public class EventDetailActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Called when the activity comes to the foreground.
+     * Ensures the most up-to-date event details are displayed by reloading the event information.
+     */
     @Override
     protected void onResume() {
         super.onResume();
@@ -99,6 +112,13 @@ public class EventDetailActivity extends AppCompatActivity {
         loadEvent(deviceID);
     }
 
+    /**
+     * Loads the event details by refreshing the event repository and retrieving the specified event.
+     * Updates the UI based on whether the user is an organizer or a participant.
+     * Handles location requirements for participants if the event requires location sharing.
+     *
+     * @param deviceID The unique ID of the device, used to identify the current user.
+     */
     private void loadEvent(String deviceID) {
         // Refresh the event repository and load the details of the specified event
         eventController.refreshRepository(new DataCallback<Void>() {
@@ -150,6 +170,12 @@ public class EventDetailActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Displays a dialog warning the user that location permission is required for the event.
+     * Allows the user to enable location permissions or decline and navigate back to the home screen.
+     *
+     * @param deviceID The unique ID of the device, used to identify the current user.
+     */
     private void showLocationWarningDialog(String deviceID) {
         new AlertDialog.Builder(this)
                 .setTitle("Location Permission Required")
@@ -167,6 +193,10 @@ public class EventDetailActivity extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * Redirects the user to the UserHomeActivity and ends the current activity.
+     * Typically called when the user declines to enable location services for the event.
+     */
     private void navigateToUserHome() {
         // Redirect the user to the UserHomeActivity
         Intent intent = new Intent(this, UserHomeActivity.class);
@@ -175,6 +205,13 @@ public class EventDetailActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * Handles location requirements for events that require location sharing.
+     * Checks if the user's location is already stored; if not, requests location permissions.
+     * Updates the UI after location data is successfully retrieved.
+     *
+     * @param deviceID The unique ID of the device, used to identify the current user.
+     */
     private void handleLocationRequirement(String deviceID) {
         Log.d(TAG, "Entered handleLocationRequirement with deviceID: " + deviceID);
 
@@ -215,7 +252,11 @@ public class EventDetailActivity extends AppCompatActivity {
         });
     }
 
-
+    /**
+     * Checks whether location services are enabled on the device.
+     * If disabled, prompts the user to enable location services.
+     * If enabled, proceeds to access the user's location data.
+     */
     private void checkAndRequestLocationPermission() {
         Log.d(TAG, "Checking if location service is enabled.");
 
@@ -256,7 +297,15 @@ public class EventDetailActivity extends AppCompatActivity {
     }
 
 
-
+    /**
+     * Handles the result of permission requests, specifically for location permissions.
+     * If the location permission is granted, it proceeds to access the user's location.
+     * Otherwise, logs the denial and does not proceed.
+     *
+     * @param requestCode  The integer request code originally supplied to requestPermissions().
+     * @param permissions  The requested permissions.
+     * @param grantResults The results for the corresponding permissions.
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
@@ -276,6 +325,11 @@ public class EventDetailActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Proceeds to access the user's location after verifying that location permissions are granted.
+     * Retrieves the last known location if available, otherwise registers a listener for real-time updates.
+     * Saves the retrieved location to the database.
+     */
     private void proceedWithLocationAccess() {
         Log.d(TAG, "Proceeding with location access...");
 
@@ -313,7 +367,11 @@ public class EventDetailActivity extends AppCompatActivity {
         }
     }
 
-    // Listener to receive real-time location updates
+
+    /**
+     * A listener to receive real-time location updates.
+     * Updates the UI and saves the location to the database when the location changes.
+     */
     private final LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(@NonNull Location location) {
@@ -338,6 +396,14 @@ public class EventDetailActivity extends AppCompatActivity {
         public void onProviderDisabled(@NonNull String provider) {}
     };
 
+
+    /**
+     * Saves the user's location to the database.
+     * Updates the user's current location in the `User` object and persists the changes in the database.
+     *
+     * @param latitude  The latitude of the user's current location.
+     * @param longitude The longitude of the user's current location.
+     */
     private void saveUserLocation(double latitude, double longitude) {
         Log.d(TAG, "Saving user location: Lat=" + latitude + ", Lng=" + longitude);
 
@@ -365,12 +431,24 @@ public class EventDetailActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Updates the user interface with the details of the given event.
+     * Initializes the UI components and displays the event details.
+     *
+     * @param event The {@link Event} object containing details to be displayed.
+     */
     private void updateUI(Event event) {
         this.event = event;
         initializeUI(event);
         displayEventDetails(event);
     }
 
+    /**
+     * Displays the details of the provided event on the screen.
+     * Updates text views, images, and other UI elements with event-specific information.
+     *
+     * @param event The {@link Event} object containing details to display.
+     */
     private void displayEventDetails(Event event) {
         eventNameTextView.setText(event.getEventName());
         eventDescriptionTextView.setText(event.getDescription());
@@ -400,7 +478,11 @@ public class EventDetailActivity extends AppCompatActivity {
         }
     }
 
-
+    /**
+     * Initializes the UI components for displaying event details and participant/organizer actions.
+     *
+     * @param event The {@link Event} object containing details to display.
+     */
     private void initializeUI(Event event) {
         posterImageView = findViewById(R.id.eventPosterImageView);
         qrCodeImageView = findViewById(R.id.eventQRCodeImageView);
@@ -448,6 +530,11 @@ public class EventDetailActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Sets up click listeners for various buttons in the event detail screen.
+     * Handles actions such as joining/leaving waiting lists, accepting/declining invitations,
+     * performing draws, managing participants, and sending notifications.
+     */
     private void setupButtonListeners() {
         // user joins waiting list
         joinWaitingListButton.setOnClickListener(v -> eventController.addUserToWaitingList(event, deviceID, new DataCallback<Event>() {
@@ -627,6 +714,12 @@ public class EventDetailActivity extends AppCompatActivity {
         notifyCancelledEntrantsButton.setOnClickListener(v -> sendNotificationToGroup("cancelledParticipants"));
     }
 
+    /**
+     * Opens a dialog to prompt the user for a custom notification message
+     * and sends the notification to a specific group of participants.
+     *
+     * @param group The group to send the notification to (e.g., "waitingList", "selectedParticipants").
+     */
     private void sendNotificationToGroup(String group) {
         final EditText input = new EditText(this);
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
@@ -641,6 +734,12 @@ public class EventDetailActivity extends AppCompatActivity {
         builder.show();
     }
 
+    /**
+     * Sends a notification to a specified group of participants with a custom message.
+     *
+     * @param group   The group to notify (e.g., "waitingList", "selectedParticipants").
+     * @param message The custom notification message.
+     */
     private void sendNotifications(String group, String message) {
         eventController.sendNotificationsToGroup(event, group, message, this, new DataCallback<Void>() {
             @Override
@@ -657,6 +756,10 @@ public class EventDetailActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Checks for new unread notifications for the current user.
+     * If unread notifications are found, they are displayed as notifications and marked as read in the database.
+     */
     private void checkForNewNotifications() {
         NotificationController notificationController = new NotificationController();
         notificationController.fetchUnreadNotificationsForUser(deviceID, new DataCallback<List<Notification>>() {
@@ -679,6 +782,12 @@ public class EventDetailActivity extends AppCompatActivity {
     }
 
     //------------ helper methods for displaying UI --------------//
+
+    /**
+     * Displays the appropriate participant action buttons based on the user's current status in the event.
+     * The buttons are conditionally shown or hidden depending on whether the user is in the waiting list,
+     * selected list, confirmed list, or cancelled list.
+     */
     private void displayParticipantButtons() {
         boolean isInWaitingList = eventController.isUserInWaitingList(event, deviceID);
         boolean isInSelectedList = eventController.isUserInSelectedList(event, deviceID);
@@ -732,6 +841,11 @@ public class EventDetailActivity extends AppCompatActivity {
             }
     }
 
+
+    /**
+     * Displays the appropriate organizer action buttons and updates the organizer-specific UI elements.
+     * Organizer options include editing event details, managing participants, performing draws, and sending notifications.
+     */
     private void displayOrganizerButtons() {
         eventActionsTextView.setText("You are the organizer of this event!\n" + "Edit event details, perfom the event draw or manage entrants who have joined");
         // Organizer buttons
@@ -749,6 +863,10 @@ public class EventDetailActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Hides all buttons and actions specific to event organizers.
+     * This is used when the current user is not the organizer of the event.
+     */
     private void hideAllOrganizerButtons() {
         editInfoButton.setVisibility(View.GONE);
         manageParticipantsButton.setVisibility(View.GONE);
@@ -760,6 +878,10 @@ public class EventDetailActivity extends AppCompatActivity {
         viewMapButton.setVisibility(View.GONE);
     }
 
+    /**
+     * Hides all buttons and actions specific to event participants.
+     * This is used when the current user is the organizer of the event.
+     */
     private void hideAllParticipantButtons() {
         joinWaitingListButton.setVisibility(View.GONE);
         acceptInvitationButton.setVisibility(View.GONE);

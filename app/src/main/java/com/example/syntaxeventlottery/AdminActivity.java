@@ -5,11 +5,26 @@ import android.os.Bundle;
 import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 
+/**
+ * The AdminActivity class represents the main admin interface,
+ * allowing administrators to browse events, browse users, and navigate back.
+ */
 public class AdminActivity extends AppCompatActivity {
 
+    /** Button for browsing events. */
     private Button browseEventsButton;
+
+    /** Button for browsing users. */
     private Button browseUsersButton;
 
+    /**
+     * Called when the activity is first created.
+     * Initializes the UI components and sets up click listeners for buttons.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after
+     *                           previously being shut down, this contains the most
+     *                           recent data supplied. Otherwise, it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,6 +49,5 @@ public class AdminActivity extends AppCompatActivity {
         // Set click listener for the Back button
         Button backButton = findViewById(R.id.backButton);
         backButton.setOnClickListener(v -> finish()); // Finish the current activity and return
-
     }
 }

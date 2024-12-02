@@ -26,8 +26,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * The EditEventActivity class allows organizers to edit event details.
- * It uses the EventController to handle business logic.
+ * The {@code EditEventActivity} class allows organizers to edit event details.
+ * It provides functionality to update event name, description, start and end dates,
+ * capacity, location requirements, and poster images.
+ * Uses {@link EventController} to handle business logic.
  */
 public class EditEventActivity extends AppCompatActivity {
 
@@ -59,6 +61,12 @@ public class EditEventActivity extends AppCompatActivity {
             }
     );
 
+    /**
+     * Called when the activity is first created.
+     * Initializes UI components, retrieves the event details, and sets up event listeners.
+     *
+     * @param savedInstanceState The saved instance state, or {@code null} if none exists.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -142,7 +150,7 @@ public class EditEventActivity extends AppCompatActivity {
     }
 
     /**
-     * Saves the updated event details.
+     * Saves the updated event details, including validation and updating the event in the repository.
      */
     private void saveEventDetails() {
         if (currentEvent == null) {

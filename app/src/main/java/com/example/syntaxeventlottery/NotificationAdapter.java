@@ -1,5 +1,3 @@
-// NotificationAdapter.java
-
 package com.example.syntaxeventlottery;
 
 import android.content.Context;
@@ -29,6 +27,11 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     private FirebaseFirestore db;
     private String deviceId;
 
+    /**
+     * Constructor to initialize the adapter with a context.
+     *
+     * @param context The application context.
+     */
     public NotificationAdapter(Context context) {
         this.context = context;
         this.notificationList = new ArrayList<>();
@@ -36,6 +39,11 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         this.deviceId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
+    /**
+     * Adds a notification to the list and updates the RecyclerView.
+     *
+     * @param notification The notification to be added.
+     */
     public void addNotification(Notification notification) {
         notificationList.add(notification);
         notifyItemInserted(notificationList.size() - 1);
@@ -78,9 +86,17 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         return notificationList.size();
     }
 
+    /**
+     * ViewHolder class for holding notification item views.
+     */
     static class NotificationViewHolder extends RecyclerView.ViewHolder {
         TextView messageTextView, timestampTextView;
 
+        /**
+         * Constructor to initialize the TextViews for the notification item.
+         *
+         * @param itemView The item view for a notification.
+         */
         public NotificationViewHolder(@NonNull View itemView) {
             super(itemView);
             messageTextView = itemView.findViewById(R.id.notificationMessageTextView);

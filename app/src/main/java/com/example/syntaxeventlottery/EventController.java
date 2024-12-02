@@ -22,47 +22,30 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
-
+/**
+ * The {@code EventController} class manages the business logic for handling {@link Event} objects
+ * in the Event Lottery System. It interacts with the {@link EventRepository} to perform CRUD
+ * operations and additional functionalities, such as managing participant lists and sending notifications.
+ */
 public class EventController {
     private EventRepository repository;
 
-
-
-
-
+    /**
+     * Constructs a new {@code EventController}.
+     *
+     * @param repository The {@link EventRepository} instance used for data operations.
+     */
     public EventController(EventRepository repository) {
         this.repository = repository;
     }
 
 
     /**
-     * Fetches the locations of all participants for a given event ID.
+     * Fetches the locations of all participants for a given event.
      *
-     * @param eventID The ID of the event.
-     * @param callback The callback to handle the list of LatLng locations.
+     * @param eventID  The ID of the event.
+     * @param callback The callback to handle the list of {@link LatLng} locations.
      */
-//    public void getParticipantLocations(String eventID, DataCallback<List<LatLng>> callback) {
-//        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-//        firestore.collection("events")
-//                .document(eventID)
-//                .get()
-//                .addOnSuccessListener(documentSnapshot -> {
-//                    if (documentSnapshot.exists()) {
-//                        List<String> participants = (List<String>) documentSnapshot.get("participants");
-//                        if (participants != null && !participants.isEmpty()) {
-//                            // Retrieve user locations for each participant
-//                            fetchParticipantLocations(participants, callback);
-//                        } else {
-//                            callback.onError(new Exception("No participants found for this event."));
-//                        }
-//                    } else {
-//                        callback.onError(new Exception("Event not found."));
-//                    }
-//                })
-//                .addOnFailureListener(e -> {
-//                    callback.onError(e);
-//                });
-//    }
     public void getAllParticipantLocations(String eventID, DataCallback<List<LatLng>> callback) {
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
         firestore.collection("events")
@@ -156,10 +139,22 @@ public class EventController {
         return repository.getLocalEventsList();
     }
 
+    /**
+     * Refreshes the local repository of events.
+     *
+     * @param callback The callback to handle the refresh result.
+     */
     public void refreshRepository(DataCallback<Void> callback) {
         repository.updateLocalEventsList(callback);
     }
 
+    /**
+     * Adds a new event to the repository, including uploading an optional image and generating a QR code.
+     *
+     * @param event      The {@link Event} object to add.
+     * @param imageUri   The {@link Uri} of the event poster image (optional).
+     * @param callback   The callback to handle the operation result.
+     */
     public void addEvent(Event event, @Nullable Uri imageUri, DataCallback<Event> callback) {
         if (!validateEvent(event, callback)) {
             return;
@@ -169,6 +164,14 @@ public class EventController {
         repository.addEventToRepo(event, imageUri, qrCodeBitmap, callback);
     }
 
+    /**
+     * Updates the details of an existing event in the repository.
+     *
+     * @param event          The {@link Event} object with updated details.
+     * @param imageUri       The {@link Uri} of the new event poster image (optional).
+     * @param qrCodeBitmap   The updated QR code as a {@link Bitmap} (optional).
+     * @param callback       The callback to handle the operation result.
+     */
     public void updateEvent(Event event, @Nullable Uri imageUri,
                             @Nullable Bitmap qrCodeBitmap, DataCallback<Event> callback) {
         if (!validateEvent(event, callback)) {
@@ -177,11 +180,23 @@ public class EventController {
         repository.updateEventDetails(event, imageUri, qrCodeBitmap, callback);
     }
 
+
+    /**
+     * Deletes an event from the repository.
+     *
+     * @param event    The {@link Event} object to delete.
+     * @param callback The callback to handle the operation result.
+     */
     public void deleteEvent(Event event, DataCallback<Void> callback) {
         repository.deleteEventFromRepo(event, callback);
     }
 
-    // Synchronous method to get event by ID from local cache
+    /**
+     * Retrieves an {@link Event} by its unique ID.
+     *
+     * @param eventId The unique identifier of the event to retrieve.
+     * @return The {@link Event} object matching the specified ID, or {@code null} if not found.
+     */
     public Event getEventById(String eventId) {
         // Check if eventId is null
         if (eventId == null) {
@@ -198,7 +213,12 @@ public class EventController {
     }
 
 
-
+    /**
+     * Retrieves a list of events organized by a specific user.
+     *
+     * @param organizerID The ID of the organizer.
+     * @return A list of {@link Event} objects organized by the specified user.
+     */
     public ArrayList<Event> getOrganizerEvents(String organizerID) {
         if (organizerID == null || organizerID.isEmpty()) {
             return null;
@@ -216,7 +236,12 @@ public class EventController {
 
     //------------- Event participant lists methods --------------//
     /**
-     * Adds a user to an event's waiting list
+     * Adds a user to the waiting list of a specified event.
+     * Validates the input, checks for duplicate participation, and ensures the waiting list is not full.
+     *
+     * @param event    The {@link Event} object representing the event to which the user is being added.
+     * @param userID   The unique ID of the user being added to the waiting list.
+     * @param callback The {@link DataCallback} to handle the result of the operation.
      */
     public void addUserToWaitingList(Event event, String userID, DataCallback<Event> callback) {
         // Validate inputs
@@ -245,8 +270,12 @@ public class EventController {
     }
 
     /**
-     * Removes a user from a associated event data
-     * This is called when a user leaves the waiting list
+     * Removes a user from all relevant lists in the specified event.
+     * This method is invoked when a user opts to leave the event or is removed.
+     *
+     * @param event    The {@link Event} object from which the user is being removed.
+     * @param userID   The unique ID of the user being removed.
+     * @param callback The {@link DataCallback} to handle the result of the operation.
      */
     public void removeUserFromEvent(Event event, String userID, DataCallback<Event> callback) {
         // Validate inputs
@@ -289,7 +318,13 @@ public class EventController {
         updateEvent(event, null, null, callback);
     }
 
-    // sets the specified user as a cancelled entrant in the event object
+    /**
+     * Sets the specified user as a cancelled entrant in the event.
+     *
+     * @param event   The {@link Event} object containing the user's participation.
+     * @param userID  The unique ID of the user to cancel.
+     * @param callback The {@link DataCallback} to handle the result of the operation.
+     */
     public void setUserCancelled(Event event, String userID, DataCallback<Event> callback) {
         // Validate inputs
         if (event == null || userID == null || userID.isEmpty()) {
@@ -327,7 +362,13 @@ public class EventController {
         updateEvent(event, null, null, callback);
     }
 
-    // called when a user accepts their invitation to the event
+    /**
+     * Adds a user to the confirmed list for the event.
+     *
+     * @param event   The {@link Event} object containing the user.
+     * @param userID  The unique ID of the user to confirm.
+     * @param callback The {@link DataCallback} to handle the result of the operation.
+     */
     public void addUserToConfirmedList(Event event, String userID, DataCallback<Event> callback) {
         // Validate parameters
         if (event == null || userID == null || userID.isEmpty()) {
@@ -362,9 +403,13 @@ public class EventController {
         updateEvent(event, null, null, callback);
     }
 
-    // lottery implementation
-    // perform a draw on the waiting list
-    // if chosen, remove them from the waiting list and add them to the selected list
+    /**
+     * Performs a draw on the waiting list of the event, selecting participants.
+     *
+     * @param event   The {@link Event} object for which the draw is being performed.
+     * @param context The {@link Context} of the calling activity.
+     * @param callback The {@link DataCallback} to handle the result of the operation.
+     */
     public void performDraw(Event event, Context context, DataCallback<Event> callback) {
         if (event.isDrawed()) {
             callback.onError(new IllegalArgumentException("Event draw has already been performed"));
@@ -415,7 +460,13 @@ public class EventController {
         updateEvent(event, null, null, callback);
     }
 
-    // This method redraws from the event's waiting list in the case of cancelled participants
+    /**
+     * Redraws participants from the waiting list in the event of cancellations.
+     *
+     * @param event   The {@link Event} object for which the redraw is being performed.
+     * @param context The {@link Context} of the calling activity.
+     * @param callback The {@link DataCallback} to handle the result of the operation.
+     */
     public void performRedraw(Event event, Context context, DataCallback<Event> callback) {
         // Check that the initial draw has occurred
         if (!event.isDrawed()) {

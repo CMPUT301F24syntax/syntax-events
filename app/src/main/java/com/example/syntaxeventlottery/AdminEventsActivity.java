@@ -17,6 +17,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * The {@code AdminEventsActivity} class displays a list of events to the administrator.
+ * It provides functionality to view all events and navigate back to the previous screen.
+ */
 public class AdminEventsActivity extends AppCompatActivity {
     private final String TAG = "AdminEventsActivity";
 
@@ -26,6 +30,12 @@ public class AdminEventsActivity extends AppCompatActivity {
     private EventController eventController;
     private ArrayList<Event> eventsList;
 
+    /**
+     * Called when the activity is first created.
+     * Initializes UI components, sets up the back button functionality, and loads events.
+     *
+     * @param savedInstanceState The saved instance state, or {@code null} if none exists.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,11 +59,18 @@ public class AdminEventsActivity extends AppCompatActivity {
         loadEvents();
     }
 
+    /**
+     * Called when the activity resumes.
+     * Ensures the latest events are loaded and displayed.
+     */
     protected void onResume() {
         super.onResume();
         loadEvents();
     }
 
+    /**
+     * Loads all events from the event repository and updates the list view.
+     */
     private void loadEvents() {
         eventController.refreshRepository(new DataCallback<Void>() {
             @Override

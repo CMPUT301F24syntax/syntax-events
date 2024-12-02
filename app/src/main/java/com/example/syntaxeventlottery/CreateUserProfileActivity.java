@@ -19,7 +19,9 @@ import java.util.HashSet;
 
 
 /**
- * Handles the creation and updating of an Entrant's profile.
+ * The {@code CreateUserProfileActivity} class handles the creation and updating of an Entrant's profile.
+ * It provides functionality for users to enter their profile details, upload a profile picture, and save
+ * the profile to the database.
  */
 public class CreateUserProfileActivity extends AppCompatActivity {
     private final String TAG = "CreateUserProfileActivity";
@@ -46,6 +48,12 @@ public class CreateUserProfileActivity extends AppCompatActivity {
             }
     );
 
+    /**
+     * Called when the activity is first created.
+     * Initializes UI components, sets up click listeners, and retrieves or generates the device ID.
+     *
+     * @param savedInstanceState The saved instance state, or {@code null} if none exists.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -148,7 +156,7 @@ public class CreateUserProfileActivity extends AppCompatActivity {
 
 
     /**
-     * Navigates the user to the UserHomeActivity.
+     * Navigates the user to the {@code UserHomeActivity}.
      */
     private void navigateToHome() {
         Intent intent = new Intent(CreateUserProfileActivity.this, UserHomeActivity.class);
