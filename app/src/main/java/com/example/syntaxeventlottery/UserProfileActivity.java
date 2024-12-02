@@ -1,14 +1,13 @@
-// UserProfileActivity.java
-
 package com.example.syntaxeventlottery;
 
 import android.content.Intent;
-
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,7 +16,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 
-
 /**
  * The {@code UserProfileActivity} class displays the user's profile information, including
  * name, email, phone number, facility, and profile picture. Users can edit their profile
@@ -25,28 +23,19 @@ import com.bumptech.glide.Glide;
  */
 public class UserProfileActivity extends AppCompatActivity {
 
-    //UI Components
+    // UI Components
     private Button backButton;
     private Button editButton;
     private ImageView profileImageView;
     private TextView nameTextView, emailTextView, phoneTextView, facilityTextView;
-
-
+    private Switch allowNotificationSwitch;
 
     private User currentUser;
-    public UserController userController;
+    private UserController userController;
     private String deviceID;
     private static final String TAG = "UserProfileActivity";
     private static final int REQUEST_CODE_EDIT_PROFILE = 2001;
 
-
-    /**
-     * Called when the activity is first created.
-     *
-     * @param savedInstanceState If the activity is being re-initialized after previously
-     *                           being shut down, then this Bundle contains the data it most
-     *                           recently supplied in {@link #onSaveInstanceState}. Otherwise, it is null.
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,6 +55,7 @@ public class UserProfileActivity extends AppCompatActivity {
         emailTextView = findViewById(R.id.emailTextView);
         phoneTextView = findViewById(R.id.phoneTextView);
         facilityTextView = findViewById(R.id.facilityTextView);
+        allowNotificationSwitch = findViewById(R.id.NotificationPermission);
 
         loadUserProfile();
 
@@ -74,8 +64,27 @@ public class UserProfileActivity extends AppCompatActivity {
 
         editButton.setOnClickListener(v -> {
             Intent intent = new Intent(UserProfileActivity.this, EditUserProfileActivity.class);
-            intent.putExtra("deviceID", deviceID); // Pass user to edit activity
+            intent.putExtra("deviceID", deviceID);
             startActivityForResult(intent, REQUEST_CODE_EDIT_PROFILE);
+        });
+
+        allowNotificationSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                currentUser.setAllowNotification(isChecked);
+                userController.updateUser(currentUser, null, new DataCallback<User>() {
+                    @Override
+                    public void onSuccess(User result) {
+                        Toast.makeText(UserProfileActivity.this, "Notification preference updated", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e(TAG, "Failed to update notification preference", e);
+                        Toast.makeText(UserProfileActivity.this, "Failed to update preference", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
         });
     }
 
@@ -117,13 +126,15 @@ public class UserProfileActivity extends AppCompatActivity {
         if (user.getFacility() == null || user.getFacility().getName().isEmpty()) {
             facilityTextView.setText("No Facility Profile");
         } else {
-            facilityTextView.setText("Facility Name: "+user.getFacility().getName());
+            facilityTextView.setText("Facility Name: " + user.getFacility().getName());
         }
 
         Glide.with(this)
                 .load(user.getProfilePhotoUrl())
                 .placeholder(R.drawable.ic_profile)
                 .into(profileImageView);
+
+        allowNotificationSwitch.setChecked(user.isAllowNotification());
 
         Log.d(TAG, "User profile data loaded successfully");
     }

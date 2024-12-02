@@ -25,6 +25,7 @@ public class ManageFacilityProfileActivity extends AppCompatActivity {
     private UserController userController;
     private EventController eventController;
     private User currentUser;
+
     private String deviceID;
     private Facility facility;
 
@@ -61,7 +62,7 @@ public class ManageFacilityProfileActivity extends AppCompatActivity {
         getCurrentFacilityDetails();
     }
 
-    private void getCurrentFacilityDetails() {
+    public void getCurrentFacilityDetails() {
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
@@ -93,7 +94,7 @@ public class ManageFacilityProfileActivity extends AppCompatActivity {
         });
     }
 
-    private void updateFacilityDetails() {
+    public void updateFacilityDetails() {
         String facilityName = facilityNameEditText.getText().toString();
         String facilityLocation = facilityLocationEditText.getText().toString();
 

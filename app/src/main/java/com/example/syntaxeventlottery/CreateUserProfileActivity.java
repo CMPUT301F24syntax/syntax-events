@@ -1,5 +1,3 @@
-// CreateUserProfileActivity.java
-
 package com.example.syntaxeventlottery;
 
 import android.content.Intent;

@@ -146,8 +146,6 @@ public class EditUserProfileActivity extends AppCompatActivity {
         user.setPhoneNumber(newPhone);
         user.setReceiveNotifications(receiveNotifications);
 
-
-
         userController.updateUser(user, selectedImageUri, new DataCallback<User>() {
             @Override
             public void onSuccess(User updatedUser) {

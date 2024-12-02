@@ -207,9 +207,9 @@ public class OrganizerCreateEvent extends AppCompatActivity {
         imageUri = null;
     }
 
-    private boolean validateEventInput(String eventName, String eventDescription,
-                                       String startDateStr, String endDateStr, String capacityStr,
-                                       String waitingListLimitStr) {
+    public boolean validateEventInput(String eventName, String eventDescription,
+                                      String startDateStr, String endDateStr, String capacityStr,
+                                      String waitingListLimitStr) {
 
         // Check if any required field is empty
         if (eventName.isEmpty() || eventDescription.isEmpty() || startDateStr.isEmpty() ||

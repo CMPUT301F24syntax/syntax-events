@@ -1,4 +1,3 @@
-// EventDetailActivity.java
 package com.example.syntaxeventlottery;
 import android.Manifest;
 import android.content.Context;
@@ -44,6 +43,8 @@ public class EventDetailActivity extends AppCompatActivity {
     private Button notifyWaitingListButton;
     private Button notifySelectedEntrantsButton;
     private Button notifyCancelledEntrantsButton;
+    private Button notifyAcceptInvitationButton;
+    private boolean FirstTimeVist = true;
 
     // Controller and Data
     private EventController eventController;
@@ -123,11 +124,18 @@ public class EventDetailActivity extends AppCompatActivity {
                 if (isOrganizer) {
                     // If the current user is the organizer, proceed to update the UI
                     updateUI(event);
-                } else {
+                }
+                else {
                     // If the current user is an entrant, handle location requirement
                     if (event.getLocationRequired()) {
-                        showLocationWarningDialog(deviceID);
-                    } else {
+                        if (FirstTimeVist == true) {
+                            showLocationWarningDialog(deviceID);
+                            FirstTimeVist = false;
+                            updateUI(event);
+                        }
+                        updateUI(event);
+                    }
+                    else {
                         updateUI(event);
                     }
                 }
@@ -416,8 +424,11 @@ public class EventDetailActivity extends AppCompatActivity {
 
         // notification part
         notifyWaitingListButton = findViewById(R.id.notifyWaitingListButton);
+        notifyAcceptInvitationButton = findViewById(R.id.notifyAcceptInvitationButton);
         notifySelectedEntrantsButton = findViewById(R.id.notifySelectedEntrantsButton);
         notifyCancelledEntrantsButton = findViewById(R.id.notifyCancelledEntrantsButton);
+
+
         viewMapButton = findViewById(R.id.viewMapButton);
 
         configureButtonVisibility();
@@ -596,6 +607,22 @@ public class EventDetailActivity extends AppCompatActivity {
         });
 
         notifyWaitingListButton.setOnClickListener(v -> sendNotificationToGroup("waitingList"));
+        notifyAcceptInvitationButton.setOnClickListener(v -> {
+            eventController.notifyAcceptInvitation(event, new DataCallback<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                    Toast.makeText(EventDetailActivity.this, "Invitations sent successfully.", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Notifications were successfully sent.");
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    // Handle the error scenario, such as showing an error message
+                    Toast.makeText(EventDetailActivity.this, "Failed to send invitations.", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Error sending invitations.", e);
+                }
+            });
+        });
         notifySelectedEntrantsButton.setOnClickListener(v -> sendNotificationToGroup("selectedParticipants"));
         notifyCancelledEntrantsButton.setOnClickListener(v -> sendNotificationToGroup("cancelledParticipants"));
     }
@@ -666,42 +693,43 @@ public class EventDetailActivity extends AppCompatActivity {
         // if user is not associated with the event
         if (!(isInWaitingList || isInSelectedList || isInConfirmedList || isInCancelledList)) {
             // if the waiting list is full or draw has occurred
-            if (event.getWaitingListFull() || event.isDrawed()) {
-                if (event.isDrawed()) {
-                    eventActionsTextView.setText("Event draw has already occurred, check out another event!");
-                } else {
-                    eventActionsTextView.setText("Event waiting list is currently full, come back later");
+            if (event.isDrawed()) {
+                eventActionsTextView.setText("Event draw has already occurred, checkout another event!");
+            }
+            if (event.getWaitingListLimit() != null) {
+                if (event.getWaitingListFull()) {
+                    eventActionsTextView.setText("Waiting list is currently full, try again later.");
                 }
-                joinWaitingListButton.setVisibility(View.GONE);
             } else {
                 eventActionsTextView.setText("Join the waiting list for a chance to participate!");
                 joinWaitingListButton.setVisibility(View.VISIBLE);
+                return;
             }
-            return;
         }
 
-        // if user is in the waiting list
-        if (isInWaitingList) {
-            eventActionsTextView.setText("You are currently in the waiting list for this event!");
-            leaveWaitingListButton.setVisibility(View.VISIBLE);
-            return;
-        }
 
-        if (isInSelectedList) {
-            eventActionsTextView.setText("You have been selected to participate!\n" + "Please accept or decline your invitation as soon as possible");
-            declineInvitationButton.setVisibility(View.VISIBLE);
-            acceptInvitationButton.setVisibility(View.VISIBLE);
-            return;
-        }
-
-        if (isInConfirmedList || isInCancelledList) {
-            if (isInConfirmedList) {
-                eventActionsTextView.setText("You are currently enrolled for this event.\n" + "See you there!");
-            } else {
-                eventActionsTextView.setText("Either you have been removed by the creator of this event or you have previously declined your invitation");
+            // if user is in the waiting list
+            if (isInWaitingList) {
+                eventActionsTextView.setText("You are currently in the waiting list for this event!");
+                leaveWaitingListButton.setVisibility(View.VISIBLE);
+                return;
             }
-            return;
-        }
+
+            if (isInSelectedList) {
+                eventActionsTextView.setText("You have been selected to participate!\n" + "Please accept or decline your invitation as soon as possible");
+                declineInvitationButton.setVisibility(View.VISIBLE);
+                acceptInvitationButton.setVisibility(View.VISIBLE);
+                return;
+            }
+
+            if (isInConfirmedList || isInCancelledList) {
+                if (isInConfirmedList) {
+                    eventActionsTextView.setText("You are currently enrolled for this event.\n" + "See you there!");
+                } else {
+                    eventActionsTextView.setText("Either you have been removed by the creator of this event or you have previously declined your invitation");
+                }
+                return;
+            }
     }
 
     private void displayOrganizerButtons() {
@@ -711,6 +739,7 @@ public class EventDetailActivity extends AppCompatActivity {
         manageParticipantsButton.setVisibility(View.VISIBLE);
         drawButton.setVisibility(View.VISIBLE);
         notifyWaitingListButton.setVisibility(View.VISIBLE);
+        notifyAcceptInvitationButton.setVisibility(View.VISIBLE);
         notifySelectedEntrantsButton.setVisibility(View.VISIBLE);
         notifyCancelledEntrantsButton.setVisibility(View.VISIBLE);
         viewMapButton.setVisibility(View.VISIBLE);
@@ -725,6 +754,7 @@ public class EventDetailActivity extends AppCompatActivity {
         manageParticipantsButton.setVisibility(View.GONE);
         drawButton.setVisibility(View.GONE);
         notifyWaitingListButton.setVisibility(View.GONE);
+        notifyAcceptInvitationButton.setVisibility(View.GONE);
         notifySelectedEntrantsButton.setVisibility(View.GONE);
         notifyCancelledEntrantsButton.setVisibility(View.GONE);
         viewMapButton.setVisibility(View.GONE);
