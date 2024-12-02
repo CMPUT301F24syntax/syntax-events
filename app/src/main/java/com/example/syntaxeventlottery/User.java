@@ -23,6 +23,7 @@ public class User implements Serializable {
     private ArrayList<Double> location;
     private boolean receiveNotifications = true;
     private boolean allowNotification;
+    private boolean isDefaultPhoto;
 
     // No-argument constructor required by Firebase
     public User() {}
@@ -130,6 +131,13 @@ public class User implements Serializable {
 
     public void setReceiveNotifications(boolean receiveNotifications) {
         this.receiveNotifications = receiveNotifications;
+    }
+    public boolean isDefaultPhoto() {
+        return isDefaultPhoto;
+    }
+
+    public void setDefaultPhoto(boolean isDefaultPhoto) {
+        this.isDefaultPhoto = isDefaultPhoto;
     }
 
     public boolean isAllowNotification() {

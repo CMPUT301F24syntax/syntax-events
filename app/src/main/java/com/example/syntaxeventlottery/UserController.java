@@ -1,4 +1,3 @@
-// Refactor Complete
 package com.example.syntaxeventlottery;
 
 import android.content.Context;
@@ -100,6 +99,7 @@ public class UserController {
             return;
         }
         user.setProfilePhotoUrl(null);
+        user.setDefaultPhoto(true);
         userRepository.updateUserDetails(user, null, callback);
     }
 

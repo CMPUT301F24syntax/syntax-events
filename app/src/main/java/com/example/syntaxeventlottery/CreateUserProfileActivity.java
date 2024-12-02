@@ -1,5 +1,3 @@
-// CreateUserProfileActivity.java
-
 package com.example.syntaxeventlottery;
 
 import android.content.Intent;
@@ -114,7 +112,7 @@ public class CreateUserProfileActivity extends AppCompatActivity {
             return;
         }
 
-        if (email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
             Toast.makeText(CreateUserProfileActivity.this, "Please enter a valid email", Toast.LENGTH_SHORT).show();
             return;
         }

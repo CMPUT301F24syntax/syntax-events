@@ -1,4 +1,3 @@
-// EventDetailActivity.java
 package com.example.syntaxeventlottery;
 import android.Manifest;
 import android.content.Context;
