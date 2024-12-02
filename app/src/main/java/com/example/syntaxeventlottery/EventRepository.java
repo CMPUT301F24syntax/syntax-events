@@ -1,9 +1,15 @@
 package com.example.syntaxeventlottery;
 
+import static android.content.ContentValues.TAG;
+
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -13,6 +19,7 @@ import com.google.firebase.storage.StorageReference;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -148,6 +155,8 @@ public class EventRepository  {
                 .addOnFailureListener(callback::onError);
     }
 
+
+
     public void updateEventDetails(Event event, @Nullable Uri imageUri,
                                    @Nullable Bitmap qrCodeBitmap, DataCallback<Event> callback) {
         // Update local list
@@ -217,7 +226,7 @@ public class EventRepository  {
         data.put("waitingListFull", event.getWaitingListFull());
         data.put("drawed", event.isDrawed());
         data.put("locationRequired", event.getLocationRequired());
-        data.put("locationDetails", event.getLocationDetails());
+
         return data;
     }
 

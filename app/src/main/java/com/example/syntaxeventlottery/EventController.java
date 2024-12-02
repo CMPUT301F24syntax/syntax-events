@@ -8,6 +8,8 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
 
+import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
@@ -16,15 +18,139 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
+
 
 public class EventController {
     private EventRepository repository;
 
+
+
+
+
     public EventController(EventRepository repository) {
         this.repository = repository;
     }
+
+
+    /**
+     * Fetches the locations of all participants for a given event ID.
+     *
+     * @param eventID The ID of the event.
+     * @param callback The callback to handle the list of LatLng locations.
+     */
+//    public void getParticipantLocations(String eventID, DataCallback<List<LatLng>> callback) {
+//        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+//        firestore.collection("events")
+//                .document(eventID)
+//                .get()
+//                .addOnSuccessListener(documentSnapshot -> {
+//                    if (documentSnapshot.exists()) {
+//                        List<String> participants = (List<String>) documentSnapshot.get("participants");
+//                        if (participants != null && !participants.isEmpty()) {
+//                            // Retrieve user locations for each participant
+//                            fetchParticipantLocations(participants, callback);
+//                        } else {
+//                            callback.onError(new Exception("No participants found for this event."));
+//                        }
+//                    } else {
+//                        callback.onError(new Exception("Event not found."));
+//                    }
+//                })
+//                .addOnFailureListener(e -> {
+//                    callback.onError(e);
+//                });
+//    }
+    public void getAllParticipantLocations(String eventID, DataCallback<List<LatLng>> callback) {
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        firestore.collection("events")
+                .document(eventID)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        // Combine participants, selectedParticipants, and confirmedParticipants into one list
+                        List<String> allParticipants = new ArrayList<>();
+
+                        // Add participants to the list
+                        List<String> participants = (List<String>) documentSnapshot.get("participants");
+                        if (participants != null && !participants.isEmpty()) {
+                            allParticipants.addAll(participants);
+                        }
+
+                        // Add selectedParticipants to the list
+                        List<String> selectedParticipants = (List<String>) documentSnapshot.get("selectedParticipants");
+                        if (selectedParticipants != null && !selectedParticipants.isEmpty()) {
+                            allParticipants.addAll(selectedParticipants);
+                        }
+
+                        // Add confirmedParticipants to the list
+                        List<String> confirmedParticipants = (List<String>) documentSnapshot.get("confirmedParticipants");
+                        if (confirmedParticipants != null && !confirmedParticipants.isEmpty()) {
+                            allParticipants.addAll(confirmedParticipants);
+                        }
+
+                        // Check if the combined list is not empty
+                        if (!allParticipants.isEmpty()) {
+                            // Fetch locations for all participants
+                            fetchParticipantLocations(allParticipants, callback);
+                        } else {
+                            callback.onError(new Exception("No participants found for this event."));
+                        }
+                    } else {
+                        callback.onError(new Exception("Event not found."));
+                    }
+                })
+                .addOnFailureListener(callback::onError);
+    }
+
+
+
+    /**
+     * Helper method to fetch participant locations based on their device IDs.
+     *
+     * @param participants List of participant device IDs.
+     * @param callback     The callback to handle the list of LatLng locations.
+     */
+    private void fetchParticipantLocations(List<String> participants, DataCallback<List<LatLng>> callback) {
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        List<LatLng> participantLocations = new ArrayList<>();
+        AtomicInteger remaining = new AtomicInteger(participants.size());
+
+        for (String deviceID : participants) {
+            firestore.collection("Users")
+                    .document(deviceID)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            // Retrieve the location field for the participant
+                            List<Double> location = (List<Double>) documentSnapshot.get("location");
+                            if (location != null && location.size() == 2) {
+                                double latitude = location.get(0);
+                                double longitude = location.get(1);
+                                LatLng latLng = new LatLng(latitude, longitude);
+                                participantLocations.add(latLng);
+                            } else {
+                                Log.d(TAG, "Location not found for user: " + deviceID);
+                            }
+                        } else {
+                            Log.d(TAG, "User not found for deviceID: " + deviceID);
+                        }
+                        if (remaining.decrementAndGet() == 0) {
+                            callback.onSuccess(participantLocations);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Failed to load user data for deviceID: " + deviceID, e);
+                        if (remaining.decrementAndGet() == 0) {
+                            callback.onSuccess(participantLocations);
+                        }
+                    });
+        }
+    }
+
+
 
     public ArrayList<Event> getLocalEventsList() {
         return repository.getLocalEventsList();
@@ -70,6 +196,7 @@ public class EventController {
         // return null if no matching event found
         return null;
     }
+
 
 
     public ArrayList<Event> getOrganizerEvents(String organizerID) {
