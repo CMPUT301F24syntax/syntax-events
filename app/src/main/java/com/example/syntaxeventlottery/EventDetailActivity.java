@@ -130,6 +130,7 @@ public class EventDetailActivity extends AppCompatActivity {
                         if (FirstTimeVist) {
                             showLocationWarningDialog(deviceID);
                             FirstTimeVist = false;
+                            updateUI(event);
                         }
                     } else {
                         updateUI(event);
