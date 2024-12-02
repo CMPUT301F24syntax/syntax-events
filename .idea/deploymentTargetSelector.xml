@@ -8,16 +8,13 @@
       <SelectionState runConfigName="Tests in 'com.example.syntaxeventlottery'">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="AdminActivityTest">
+      <SelectionState runConfigName="EventParticipantsListActivityTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="MainActivityTest">
+      <SelectionState runConfigName="testActivityLaunchAndUIComponentsDisplayed()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="AdminUserDetailActivityTest">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="AdminEventDetailActivityTest">
+      <SelectionState runConfigName="EventDetailActivityTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

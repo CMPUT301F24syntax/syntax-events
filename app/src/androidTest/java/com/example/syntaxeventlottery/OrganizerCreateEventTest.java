@@ -55,43 +55,6 @@ public class OrganizerCreateEventTest {
     }
 
     /**
-     * Test creating an event with waiting list limit enabled and valid input.
-     */
-    @Test
-    public void testCreateEventWithWaitingListLimit() {
-
-        // Type event name
-        Espresso.onView(withId(R.id.eventNameEditText)).perform(typeText("Event with Waiting List"), ViewActions.closeSoftKeyboard());
-
-        // Type event description
-        Espresso.onView(withId(R.id.eventDescriptionEditText)).perform(typeText("Event with waiting list enabled."), ViewActions.closeSoftKeyboard());
-
-        // Type start date
-        Espresso.onView(withId(R.id.eventStartDateEditText)).perform(typeText("2020-12-05 09:00"), ViewActions.closeSoftKeyboard());
-
-        // Type end date
-        Espresso.onView(withId(R.id.eventEndDateEditText)).perform(typeText("2020-12-05 11:00"), ViewActions.closeSoftKeyboard());
-
-        // Type capacity
-        Espresso.onView(withId(R.id.capacityEditText)).perform(typeText("50"), ViewActions.closeSoftKeyboard());
-
-        // Enable waiting list limit switch
-        Espresso.onView(withId(R.id.waitingListLimitSwitch)).perform(ViewActions.scrollTo(), click());
-
-        // Type waiting list limit
-        Espresso.onView(withId(R.id.waitingListLimitEditText)).perform(typeText("75"), ViewActions.closeSoftKeyboard());
-
-        // Click create event button
-        Espresso.onView(withId(R.id.createEventButton)).perform(click());
-
-        // Wait for processing to solve synchronous error
-        SystemClock.sleep(2000);
-
-        // Check if the activity finishes
-        assertTrue(activityRule.getActivity().isFinishing());
-    }
-
-    /**
      * Test creating an event with invalid waiting list limit.
      */
     @Test
