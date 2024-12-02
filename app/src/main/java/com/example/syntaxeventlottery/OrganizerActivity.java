@@ -16,21 +16,29 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 
 /**
- * OrganizerActivity allows the event organizer to view and manage their created events.
+ * The {@code OrganizerActivity} class allows event organizers to view and manage their events.
+ * It provides functionality to create new events, manage facilities, and view the list of events
+ * created by the organizer.
  */
 public class OrganizerActivity extends AppCompatActivity {
+
     private static final String TAG = "OrganizerActivity";
 
+    // UI Components
     private Button createEventButton;
     private Button backButton;
     private Button manageFacilityButton;
     private RecyclerView eventRecyclerView;
-    private EventAdapter eventAdapter;
     private TextView organizerEventDetailTextView;
-    private String deviceID;
-    public EventController eventController;
+
+    // Controllers
+    private EventController eventController;
     private UserController userController;
+
+    // Data
+    private String deviceID;
     public User currentUser;
+    private EventAdapter eventAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,20 +64,20 @@ public class OrganizerActivity extends AppCompatActivity {
         eventController = new EventController(new EventRepository());
         userController = new UserController(new UserRepository());
 
+        // Fetch updated user information
         fetchUpdatedUserInfo();
 
+        // Set up button listeners
         manageFacilityButton.setOnClickListener(v -> {
             Intent intent = new Intent(OrganizerActivity.this, ManageFacilityProfileActivity.class);
             startActivity(intent);
         });
 
-        // Create event button listener
         createEventButton.setOnClickListener(v -> {
             Intent intent = new Intent(OrganizerActivity.this, OrganizerCreateEvent.class);
             startActivity(intent);
         });
 
-        // Back button listener
         backButton.setOnClickListener(v -> {
             Intent intent = new Intent(OrganizerActivity.this, UserHomeActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); // Clears the back stack
@@ -85,6 +93,10 @@ public class OrganizerActivity extends AppCompatActivity {
         fetchUpdatedUserInfo();
     }
 
+    /**
+     * Fetches updated user information from the repository.
+     * If the user does not have a facility profile, launches the facility profile creation activity.
+     */
     private void fetchUpdatedUserInfo() {
         userController.refreshRepository(new DataCallback<Void>() {
             @Override
@@ -95,8 +107,8 @@ public class OrganizerActivity extends AppCompatActivity {
                     finish();
                 }
                 if (currentUser.getFacility() == null) {
-                    // launch facility creation if user does not have a facility profile
-                    Log.d(TAG, "current user facility not found, launching FacilityProfileActivity");
+                    // Launch facility creation if the user does not have a facility profile
+                    Log.d(TAG, "Current user facility not found, launching FacilityProfileActivity");
                     Intent intent = new Intent(OrganizerActivity.this, FacilityProfileActivity.class);
                     intent.putExtra("currentUser", currentUser);
                     startActivity(intent);
@@ -114,6 +126,11 @@ public class OrganizerActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Loads the events created by the organizer and updates the RecyclerView.
+     *
+     * @param userId The ID of the user (organizer) whose events are to be loaded.
+     */
     public void loadEvents(String userId) {
         eventController.refreshRepository(new DataCallback<Void>() {
             @Override
@@ -121,7 +138,7 @@ public class OrganizerActivity extends AppCompatActivity {
                 ArrayList<Event> updatedEvents = eventController.getOrganizerEvents(userId);
 
                 if (updatedEvents.isEmpty()) {
-                    organizerEventDetailTextView.setText("You have not created any events.\n" + "Click \"Create Event\" to host an event!");
+                    organizerEventDetailTextView.setText("You have not created any events.\nClick \"Create Event\" to host an event!");
                 } else {
                     organizerEventDetailTextView.setText("My Events");
                 }
