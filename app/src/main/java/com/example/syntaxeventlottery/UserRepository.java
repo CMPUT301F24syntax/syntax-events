@@ -128,6 +128,7 @@ public class UserRepository {
         HashMap<String, Object> data = userToHashData(user);
 
         if (imageUri != null) {
+            user.setDefaultPhoto(false);
             uploadProfilePhoto(user, data, imageUri, callback);
         } else {
             // generate default photo if there is not image uri

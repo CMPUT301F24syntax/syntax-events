@@ -100,6 +100,7 @@ public class UserController {
             return;
         }
         user.setProfilePhotoUrl(null);
+        user.setDefaultPhoto(true);
         userRepository.updateUserDetails(user, null, callback);
     }
 
