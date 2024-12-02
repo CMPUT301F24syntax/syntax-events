@@ -799,46 +799,56 @@ public class EventDetailActivity extends AppCompatActivity {
         acceptInvitationButton.setVisibility(View.GONE);
         declineInvitationButton.setVisibility(View.GONE);
 
-        // if user is not associated with the event
         if (!(isInWaitingList || isInSelectedList || isInConfirmedList || isInCancelledList)) {
-            // if the waiting list is full or draw has occurred
+            // If the event draw has occurred
             if (event.isDrawed()) {
                 eventActionsTextView.setText("Event draw has already occurred, checkout another event!");
+                return;
             }
+
+            // If there is a waiting list limit
             if (event.getWaitingListLimit() != null) {
                 if (event.getWaitingListFull()) {
                     eventActionsTextView.setText("Waiting list is currently full, try again later.");
+                    return;
+                } else {
+                    // Waiting list is not full
+                    eventActionsTextView.setText("Join the waiting list for a chance to participate!");
+                    joinWaitingListButton.setVisibility(View.VISIBLE);
+                    return;
                 }
             } else {
+                // No waiting list limit (unlimited)
                 eventActionsTextView.setText("Join the waiting list for a chance to participate!");
                 joinWaitingListButton.setVisibility(View.VISIBLE);
                 return;
             }
+
         }
 
 
-            // if user is in the waiting list
-            if (isInWaitingList) {
-                eventActionsTextView.setText("You are currently in the waiting list for this event!");
-                leaveWaitingListButton.setVisibility(View.VISIBLE);
-                return;
-            }
+        // if user is in the waiting list
+        if (isInWaitingList) {
+            eventActionsTextView.setText("You are currently in the waiting list for this event!");
+            leaveWaitingListButton.setVisibility(View.VISIBLE);
+            return;
+        }
 
-            if (isInSelectedList) {
-                eventActionsTextView.setText("You have been selected to participate!\n" + "Please accept or decline your invitation as soon as possible");
-                declineInvitationButton.setVisibility(View.VISIBLE);
-                acceptInvitationButton.setVisibility(View.VISIBLE);
-                return;
-            }
+        if (isInSelectedList) {
+            eventActionsTextView.setText("You have been selected to participate!\n" + "Please accept or decline your invitation as soon as possible");
+            declineInvitationButton.setVisibility(View.VISIBLE);
+            acceptInvitationButton.setVisibility(View.VISIBLE);
+            return;
+        }
 
-            if (isInConfirmedList || isInCancelledList) {
-                if (isInConfirmedList) {
-                    eventActionsTextView.setText("You are currently enrolled for this event.\n" + "See you there!");
-                } else {
-                    eventActionsTextView.setText("Either you have been removed by the creator of this event or you have previously declined your invitation");
-                }
-                return;
+        if (isInConfirmedList || isInCancelledList) {
+            if (isInConfirmedList) {
+                eventActionsTextView.setText("You are currently enrolled for this event.\n" + "See you there!");
+            } else {
+                eventActionsTextView.setText("Either you have been removed by the creator of this event or you have previously declined your invitation");
             }
+            return;
+        }
     }
 
 
