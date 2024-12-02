@@ -10,14 +10,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Repository class for managing notifications in the application.
+ */
 public class NotificationRepository {
     private static final String TAG = "NotificationRepository";
     private FirebaseFirestore db;
 
+    /**
+     * Constructor to initialize the Firebase Firestore instance.
+     */
     public NotificationRepository() {
         this.db = FirebaseFirestore.getInstance();
     }
 
+    /**
+     * Adds notifications for a list of users based on their notification preferences.
+     *
+     * @param userIds  The list of user IDs to send notifications to.
+     * @param message  The message to include in the notification.
+     * @param eventId  The event ID associated with the notification.
+     * @param callback The callback to handle success or failure.
+     */
     public void addNotifications(List<String> userIds, String message, String eventId, DataCallback<Void> callback) {
         for (String userId : userIds) {
             // Retrieve user's allowNotification setting
